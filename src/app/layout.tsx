@@ -14,18 +14,20 @@ export default function RootLayout({
 }) {
   return (
     <html lang="th" className="dark">
-      <body className="bg-[#090a0c] text-zinc-100 min-h-screen flex flex-col antialiased selection:bg-emerald-500 selection:text-zinc-950 font-sans">
+      <body className="bg-[#090a0d] text-zinc-100 min-h-screen flex flex-col antialiased selection:bg-red-600 selection:text-white font-sans">
         <Navbar />
         <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6">
           {children}
         </main>
         
         {/* Footer */}
-        <footer className="border-t border-white/[0.06] bg-[#090a0c] py-6 text-center text-xs text-zinc-500">
+        <footer className="border-t border-white/[0.06] bg-[#090a0d] py-6 text-center text-xs text-zinc-500">
           <div className="max-w-6xl mx-auto px-4 space-y-1.5">
             <div className="flex items-center justify-center gap-2 font-mono text-[11px] text-zinc-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-              <span>ZERO-LOG ARCHITECTURE • NO IP ADDRESS LOGGED</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+              <span className="text-yellow-400 font-semibold">ZERO-LOG ARCHITECTURE</span>
+              <span className="text-zinc-600">•</span>
+              <span>NO IP ADDRESS LOGGED</span>
             </div>
             <p className="text-[11px] text-zinc-600">
               เนื้อหาจะถูกทำลายตามระยะเวลาที่กำหนด (TTL) และห้องแชทสดจำกัดเพียง 100 ข้อความล่าสุด

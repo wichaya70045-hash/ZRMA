@@ -12,7 +12,7 @@ import {
   Radio,
   FileText,
   Shield,
-  Layers,
+  Zap,
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -91,9 +91,15 @@ export default function HomePage() {
   return (
     <div className="space-y-6">
       
-      {/* Page Header (Single Focal Point, No Blurry Blobs) */}
+      {/* Page Header (Black, Red & Yellow Accents) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/[0.08]">
         <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+            <span className="text-[11px] font-mono text-yellow-400 font-semibold uppercase tracking-wider">
+              Secure & Anonymous Platform
+            </span>
+          </div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
             บอร์ดข่าวและกระทู้สนทนา
           </h1>
@@ -114,12 +120,12 @@ export default function HomePage() {
       </div>
 
       {/* Mobile Segmented Switcher */}
-      <div className="flex lg:hidden bg-white/[0.03] p-1 rounded-lg border border-white/[0.06] text-xs">
+      <div className="flex lg:hidden bg-black/40 p-1 rounded-lg border border-white/[0.06] text-xs">
         <button
           onClick={() => setActiveTabMobile('threads')}
           className={`flex-1 py-1.5 rounded font-medium transition-colors ${
             activeTabMobile === 'threads'
-              ? 'bg-zinc-800 text-white font-semibold'
+              ? 'bg-red-600 text-white font-semibold shadow-sm'
               : 'text-zinc-400 hover:text-zinc-200'
           }`}
         >
@@ -129,11 +135,11 @@ export default function HomePage() {
           onClick={() => setActiveTabMobile('chat')}
           className={`flex-1 py-1.5 rounded font-medium flex items-center justify-center gap-1.5 transition-colors ${
             activeTabMobile === 'chat'
-              ? 'bg-zinc-800 text-white font-semibold'
+              ? 'bg-yellow-400 text-zinc-950 font-bold shadow-sm'
               : 'text-zinc-400 hover:text-zinc-200'
           }`}
         >
-          <Radio size={12} className="text-emerald-400" />
+          <Radio size={12} className={activeTabMobile === 'chat' ? 'text-zinc-950' : 'text-yellow-400'} />
           <span>แชทสด</span>
         </button>
       </div>
@@ -155,7 +161,7 @@ export default function HomePage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="ค้นหากระทู้, คำสำคัญ, หรือรหัสผู้เขียน..."
-              className="w-full bg-[#101216] border border-white/[0.08] focus:border-zinc-500 rounded-lg pl-9 pr-8 py-2 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-600 transition-colors"
+              className="w-full bg-[#101217] border border-white/[0.08] focus:border-red-500 rounded-lg pl-9 pr-8 py-2 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-red-500 transition-colors"
             />
             {searchQuery && (
               <button
@@ -181,7 +187,7 @@ export default function HomePage() {
               {[1, 2, 3].map((n) => (
                 <div
                   key={n}
-                  className="bg-[#101216] border border-white/[0.06] rounded-xl p-4 animate-pulse space-y-2.5"
+                  className="bg-[#101217] border border-white/[0.06] rounded-xl p-4 animate-pulse space-y-2.5"
                 >
                   <div className="h-3 bg-white/[0.06] rounded w-1/4"></div>
                   <div className="h-4 bg-white/[0.06] rounded w-3/4"></div>
@@ -190,7 +196,7 @@ export default function HomePage() {
               ))}
             </div>
           ) : filteredThreads.length === 0 ? (
-            <div className="bg-[#101216] border border-white/[0.07] rounded-xl p-8 text-center space-y-3">
+            <div className="bg-[#101217] border border-white/[0.07] rounded-xl p-8 text-center space-y-3">
               <div className="w-10 h-10 rounded-lg bg-white/[0.04] text-zinc-400 flex items-center justify-center mx-auto border border-white/[0.08]">
                 <FileText size={18} />
               </div>
@@ -201,9 +207,9 @@ export default function HomePage() {
               <div className="pt-2">
                 <Link
                   href="/new"
-                  className="btn-secondary text-xs"
+                  className="btn-secondary text-xs hover:border-red-500/40"
                 >
-                  <Plus size={13} />
+                  <Plus size={13} className="text-red-400" />
                   <span>สร้างกระทู้ใหม่</span>
                 </Link>
               </div>
@@ -234,8 +240,8 @@ export default function HomePage() {
           <LiveChatBox roomId="global" title="ห้องสนทนาสดส่วนกลาง" />
 
           {/* Concise Telemetry Footer */}
-          <div className="p-3 bg-[#101216] border border-white/[0.06] rounded-xl text-xs text-zinc-400 flex items-center gap-2.5">
-            <Shield size={14} className="text-emerald-400 shrink-0" />
+          <div className="p-3 bg-[#101217] border border-white/[0.06] rounded-xl text-xs text-zinc-400 flex items-center gap-2.5">
+            <Shield size={14} className="text-red-400 shrink-0" />
             <p className="text-[11px] text-zinc-400 leading-relaxed">
               สตรีมแชทสดแบบ FIFO 100 ข้อความล่าสุด ไม่บันทึกประวัติถาวร
             </p>

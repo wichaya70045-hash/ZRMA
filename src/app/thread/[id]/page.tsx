@@ -19,8 +19,6 @@ import {
   Quote,
   Send,
   Dices,
-  Eye,
-  EyeOff,
   RefreshCw,
   Radio,
   Share2,
@@ -302,7 +300,7 @@ export default function ThreadDetailPage({
   if (errorMsg || !thread) {
     return (
       <div className="max-w-md mx-auto py-12 text-center space-y-3">
-        <div className="w-10 h-10 bg-rose-950/20 border border-rose-900/40 text-rose-400 rounded-lg flex items-center justify-center mx-auto">
+        <div className="w-10 h-10 bg-red-950/20 border border-red-900/40 text-red-400 rounded-lg flex items-center justify-center mx-auto">
           <AlertTriangle size={18} />
         </div>
         <h2 className="text-sm font-semibold text-zinc-100">ไม่พบกระทู้นี้</h2>
@@ -328,19 +326,19 @@ export default function ThreadDetailPage({
       <div className="flex items-center justify-between">
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-yellow-400 transition-colors"
         >
           <ArrowLeft size={13} />
           <span>กลับบอร์ดข่าว</span>
         </Link>
 
         {/* View Switcher: Comments vs Live Chat */}
-        <div className="inline-flex items-center bg-white/[0.03] border border-white/[0.06] p-0.5 rounded-lg text-xs">
+        <div className="inline-flex items-center bg-black/40 border border-white/[0.06] p-0.5 rounded-lg text-xs">
           <button
             onClick={() => setActiveView('comments')}
             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md transition-colors ${
               activeView === 'comments'
-                ? 'bg-zinc-800 text-white font-medium'
+                ? 'bg-red-600 text-white font-medium shadow-sm'
                 : 'text-zinc-400 hover:text-zinc-200'
             }`}
           >
@@ -352,22 +350,22 @@ export default function ThreadDetailPage({
             onClick={() => setActiveView('livechat')}
             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md transition-colors ${
               activeView === 'livechat'
-                ? 'bg-zinc-800 text-white font-medium'
+                ? 'bg-yellow-400 text-zinc-950 font-bold shadow-sm'
                 : 'text-zinc-400 hover:text-zinc-200'
             }`}
           >
-            <Radio size={13} className="text-emerald-400" />
+            <Radio size={13} className={activeView === 'livechat' ? 'text-zinc-950' : 'text-yellow-400'} />
             <span>แชทสดประจำข่าว</span>
           </button>
         </div>
       </div>
 
       {/* Main Post Card */}
-      <article className="bg-[#101216] border border-white/[0.08] rounded-xl p-5 sm:p-6 text-zinc-200">
+      <article className="bg-[#101217] border border-white/[0.08] rounded-xl p-5 sm:p-6 text-zinc-200 shadow-xl">
         {isThreadHidden && (
-          <div className="bg-rose-950/20 border border-rose-900/40 rounded-lg p-2.5 mb-4 text-xs text-rose-300 flex items-center justify-between">
+          <div className="bg-red-950/20 border border-red-900/40 rounded-lg p-2.5 mb-4 text-xs text-red-300 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <AlertTriangle size={14} className="text-rose-400" />
+              <AlertTriangle size={14} className="text-red-400" />
               <span>กระทู้นี้ถูกซ่อนอัตโนมัติเนื่องจากมีผู้รายงานครบ 5 ครั้ง</span>
             </div>
             <button
@@ -382,12 +380,12 @@ export default function ThreadDetailPage({
         <div className={isThreadHidden ? 'opacity-30 blur-sm pointer-events-none' : ''}>
           {/* Metadata Row */}
           <div className="flex flex-wrap items-center gap-2 mb-2.5 text-xs">
-            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-white/[0.04] text-zinc-300 border border-white/[0.06]">
+            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-red-500/10 text-red-400 border border-red-500/25">
               {thread.category.toUpperCase()}
             </span>
 
             <div className="flex items-center gap-1.5 font-medium text-zinc-200">
-              <IdentityAvatar iconKey={thread.author_avatar} size="xs" />
+              <IdentityAvatar iconKey={thread.author_avatar} theme="red" size="xs" />
               <span>{thread.author_alias}</span>
             </div>
 
@@ -400,8 +398,9 @@ export default function ThreadDetailPage({
               })}
             </span>
 
-            <div className="flex items-center gap-1 font-mono text-[10px] text-zinc-400 ml-auto bg-white/[0.03] px-2 py-0.5 rounded border border-white/[0.04] tabular-nums">
-              <Clock size={11} className="text-zinc-500" />
+            {/* Expiry Badge (Orange Touch) */}
+            <div className="flex items-center gap-1 font-mono text-[10px] text-orange-400 ml-auto bg-orange-500/10 px-2 py-0.5 rounded border border-orange-500/20 tabular-nums">
+              <Clock size={11} className="text-orange-400" />
               <span>
                 ทำลายใน:{' '}
                 {Math.max(
@@ -427,7 +426,7 @@ export default function ThreadDetailPage({
                 href={thread.source_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 bg-white/[0.02] border border-white/[0.06] px-2.5 py-1 rounded transition-colors font-mono"
+                className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-yellow-400 bg-white/[0.02] border border-white/[0.06] hover:border-yellow-500/25 px-2.5 py-1 rounded transition-colors font-mono"
               >
                 <ExternalLink size={12} />
                 <span>ข่าวต้นทาง: {thread.source_url}</span>
@@ -443,13 +442,13 @@ export default function ThreadDetailPage({
           {/* Footer: Votes & Share */}
           <div className="flex items-center justify-between pt-3 text-xs">
             <div className="flex items-center gap-2">
-              <div className="flex items-center bg-black/30 border border-white/[0.06] rounded-md p-0.5">
+              <div className="flex items-center bg-black/40 border border-white/[0.06] rounded-md p-0.5">
                 <button
                   onClick={() => handleThreadVote('up')}
                   className={`p-1 rounded transition-colors active:scale-95 ${
                     threadVote === 'up'
-                      ? 'text-emerald-400 bg-emerald-500/10'
-                      : 'text-zinc-500 hover:text-zinc-200'
+                      ? 'text-yellow-400 bg-yellow-500/15'
+                      : 'text-zinc-500 hover:text-yellow-400'
                   }`}
                   title="โหวตขึ้น"
                 >
@@ -457,11 +456,11 @@ export default function ThreadDetailPage({
                 </button>
 
                 <span
-                  className={`px-1.5 font-mono font-semibold tabular-nums ${
+                  className={`px-1.5 font-mono font-bold tabular-nums ${
                     threadScore > 0
-                      ? 'text-emerald-400'
+                      ? 'text-yellow-400'
                       : threadScore < 0
-                      ? 'text-rose-400'
+                      ? 'text-red-400'
                       : 'text-zinc-400'
                   }`}
                 >
@@ -472,8 +471,8 @@ export default function ThreadDetailPage({
                   onClick={() => handleThreadVote('down')}
                   className={`p-1 rounded transition-colors active:scale-95 ${
                     threadVote === 'down'
-                      ? 'text-rose-400 bg-rose-500/10'
-                      : 'text-zinc-500 hover:text-zinc-200'
+                      ? 'text-red-400 bg-red-500/15'
+                      : 'text-zinc-500 hover:text-red-400'
                   }`}
                   title="โหวตลง"
                 >
@@ -483,9 +482,9 @@ export default function ThreadDetailPage({
 
               <button
                 onClick={handleShare}
-                className="btn-secondary !py-1 !px-2.5 text-xs"
+                className="btn-secondary !py-1 !px-2.5 text-xs hover:border-yellow-500/30"
               >
-                {copiedLink ? <Check size={12} className="text-emerald-400" /> : <Share2 size={12} />}
+                {copiedLink ? <Check size={12} className="text-yellow-400" /> : <Share2 size={12} />}
                 <span>{copiedLink ? 'คัดลอกแล้ว' : 'แชร์'}</span>
               </button>
             </div>
@@ -498,7 +497,7 @@ export default function ThreadDetailPage({
                   title: thread.title,
                 })
               }
-              className="flex items-center gap-1 text-[11px] text-zinc-500 hover:text-rose-400 transition-colors"
+              className="flex items-center gap-1 text-[11px] text-zinc-500 hover:text-red-400 transition-colors"
             >
               <Flag size={12} />
               <span className="font-mono tabular-nums">
@@ -519,9 +518,9 @@ export default function ThreadDetailPage({
           
           {/* Identity Scoped Card */}
           {identity && (
-            <div className="bg-[#101216] border border-white/[0.06] rounded-xl p-3 flex items-center justify-between gap-3 text-xs">
+            <div className="bg-[#101217] border border-white/[0.06] rounded-xl p-3 flex items-center justify-between gap-3 text-xs">
               <div className="flex items-center gap-2.5">
-                <IdentityAvatar iconKey={identity.avatarIcon} size="sm" />
+                <IdentityAvatar iconKey={identity.avatarIcon} theme="red" size="sm" />
                 <div>
                   <div className="flex items-center gap-1.5">
                     <span className="text-zinc-400">คุณกำลังตอบในฐานะ:</span>
@@ -535,27 +534,27 @@ export default function ThreadDetailPage({
 
               <button
                 onClick={handleRerollIdentity}
-                className="btn-secondary !py-1 !px-2 text-xs shrink-0"
+                className="btn-secondary !py-1 !px-2 text-xs shrink-0 hover:border-yellow-500/30"
                 title="สุ่มชื่อใหม่เฉพาะกระทู้นี้"
               >
-                <Dices size={13} />
+                <Dices size={13} className="text-yellow-400" />
                 <span className="hidden sm:inline">สุ่มชื่อใหม่</span>
               </button>
             </div>
           )}
 
           {/* Reply Form */}
-          <div id="reply-form" className="bg-[#101216] border border-white/[0.08] rounded-xl p-4 space-y-3">
+          <div id="reply-form" className="bg-[#101217] border border-white/[0.08] rounded-xl p-4 space-y-3">
             <h3 className="text-xs font-semibold text-zinc-200 flex items-center gap-1.5">
-              <MessageSquare size={13} className="text-emerald-400" />
+              <MessageSquare size={13} className="text-yellow-400" />
               <span>แสดงความคิดเห็น</span>
             </h3>
 
-            {/* Quoted preview block */}
+            {/* Quoted preview block (Touch of Orange / Yellow) */}
             {quotedComment && (
-              <div className="bg-white/[0.02] border-l-2 border-emerald-500/70 p-2.5 rounded-r text-xs relative flex items-start justify-between gap-2">
+              <div className="bg-white/[0.02] border-l-2 border-orange-500/80 p-2.5 rounded-r text-xs relative flex items-start justify-between gap-2">
                 <div className="space-y-0.5">
-                  <div className="flex items-center gap-1 text-emerald-400 font-medium text-[11px]">
+                  <div className="flex items-center gap-1 text-orange-400 font-medium text-[11px]">
                     <Quote size={11} />
                     <span>อ้างอิงถึง {quotedComment.author}:</span>
                   </div>
@@ -580,12 +579,12 @@ export default function ThreadDetailPage({
                 value={commentContent}
                 onChange={(e) => setCommentContent(e.target.value)}
                 placeholder="แสดงความคิดเห็นอย่างสุภาพ (ไม่บันทึก IP หรือประวัติ)..."
-                className="w-full bg-white/[0.02] border border-white/[0.08] focus:border-zinc-500 rounded-lg p-2.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-600 transition-colors font-sans"
+                className="w-full bg-white/[0.02] border border-white/[0.08] focus:border-red-500 rounded-lg p-2.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-red-500 transition-colors font-sans"
               />
 
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                 <div className="flex items-center gap-2">
-                  <div className="px-2.5 py-1 bg-white/[0.03] border border-white/[0.08] rounded text-xs font-mono font-bold text-emerald-400 shrink-0">
+                  <div className="px-2.5 py-1 bg-yellow-500/10 border border-yellow-500/25 rounded text-xs font-mono font-bold text-yellow-400 shrink-0">
                     {captchaData ? captchaData.question : '...'}
                   </div>
                   <input
@@ -594,12 +593,12 @@ export default function ThreadDetailPage({
                     value={captchaAnswer}
                     onChange={(e) => setCaptchaAnswer(e.target.value)}
                     placeholder="คำตอบ..."
-                    className="w-20 bg-white/[0.02] border border-white/[0.08] rounded px-2.5 py-1 text-xs text-white focus:outline-none focus:border-zinc-500 font-mono"
+                    className="w-20 bg-white/[0.02] border border-white/[0.08] rounded px-2.5 py-1 text-xs text-white focus:outline-none focus:border-yellow-400 font-mono"
                   />
                   <button
                     type="button"
                     onClick={fetchCaptcha}
-                    className="p-1 text-zinc-500 hover:text-zinc-300"
+                    className="p-1 text-zinc-500 hover:text-yellow-400"
                     title="เปลี่ยนคำถาม"
                   >
                     <RefreshCw size={12} />
@@ -642,10 +641,10 @@ export default function ThreadDetailPage({
                 return (
                   <div
                     key={comment.id}
-                    className="bg-[#101216] border border-white/[0.06] rounded-xl p-3.5 space-y-2.5"
+                    className="bg-[#101217] border border-white/[0.06] rounded-xl p-3.5 space-y-2.5"
                   >
                     {isCommentHidden ? (
-                      <div className="bg-rose-950/20 border border-rose-900/40 rounded-lg p-2 text-xs text-rose-300 flex items-center justify-between">
+                      <div className="bg-red-950/20 border border-red-900/40 rounded-lg p-2 text-xs text-red-300 flex items-center justify-between">
                         <span>ความคิดเห็นนี้ถูกซ่อนเนื่องจากถูกรายงาน 5 ครั้ง</span>
                         <button
                           onClick={() => setRevealedIds((prev) => ({ ...prev, [comment.id]: true }))}
@@ -658,7 +657,7 @@ export default function ThreadDetailPage({
                       <>
                         <div className="flex items-center justify-between text-xs">
                           <div className="flex items-center gap-1.5">
-                            <IdentityAvatar iconKey={comment.author_avatar} size="xs" />
+                            <IdentityAvatar iconKey={comment.author_avatar} theme="red" size="xs" />
                             <span className="font-semibold text-zinc-200">{comment.author_alias}</span>
                             <span className="text-zinc-600">•</span>
                             <span className="font-mono text-zinc-500 text-[11px] tabular-nums">
@@ -671,7 +670,7 @@ export default function ThreadDetailPage({
 
                           <button
                             onClick={() => handleQuoteClick(comment)}
-                            className="inline-flex items-center gap-1 text-[11px] text-zinc-400 hover:text-zinc-200 transition-colors"
+                            className="inline-flex items-center gap-1 text-[11px] text-zinc-400 hover:text-yellow-400 transition-colors"
                           >
                             <Quote size={11} />
                             <span>อ้างอิง</span>
@@ -679,8 +678,8 @@ export default function ThreadDetailPage({
                         </div>
 
                         {comment.quote_text && (
-                          <div className="bg-white/[0.02] border-l-2 border-white/[0.14] pl-2.5 py-1 text-xs">
-                            <div className="text-[10px] font-mono text-zinc-500">
+                          <div className="bg-white/[0.02] border-l-2 border-orange-500/70 pl-2.5 py-1 text-xs">
+                            <div className="text-[10px] font-mono text-orange-400 font-medium">
                               อ้างอิงถึง {comment.quote_author || 'ความคิดเห็น'}:
                             </div>
                             <div className="text-zinc-400 italic text-[11px] line-clamp-2">
@@ -694,24 +693,24 @@ export default function ThreadDetailPage({
                         </div>
 
                         <div className="flex items-center justify-between pt-1.5 border-t border-white/[0.04] text-xs">
-                          <div className="flex items-center bg-black/30 border border-white/[0.06] rounded p-0.5">
+                          <div className="flex items-center bg-black/40 border border-white/[0.06] rounded p-0.5">
                             <button
                               onClick={() => handleCommentVote(comment.id, 'up')}
                               className={`p-0.5 rounded transition-colors active:scale-95 ${
                                 voteState.voted === 'up'
-                                  ? 'text-emerald-400 bg-emerald-500/10'
-                                  : 'text-zinc-500 hover:text-zinc-200'
+                                  ? 'text-yellow-400 bg-yellow-500/15'
+                                  : 'text-zinc-500 hover:text-yellow-400'
                               }`}
                             >
                               <ChevronUp size={13} strokeWidth={2.5} />
                             </button>
 
                             <span
-                              className={`px-1 text-[11px] font-mono font-semibold tabular-nums ${
+                              className={`px-1 text-[11px] font-mono font-bold tabular-nums ${
                                 voteState.score > 0
-                                  ? 'text-emerald-400'
+                                  ? 'text-yellow-400'
                                   : voteState.score < 0
-                                  ? 'text-rose-400'
+                                  ? 'text-red-400'
                                   : 'text-zinc-400'
                               }`}
                             >
@@ -722,8 +721,8 @@ export default function ThreadDetailPage({
                               onClick={() => handleCommentVote(comment.id, 'down')}
                               className={`p-0.5 rounded transition-colors active:scale-95 ${
                                 voteState.voted === 'down'
-                                  ? 'text-rose-400 bg-rose-500/10'
-                                  : 'text-zinc-500 hover:text-zinc-200'
+                                  ? 'text-red-400 bg-red-500/15'
+                                  : 'text-zinc-500 hover:text-red-400'
                               }`}
                             >
                               <ChevronDown size={13} strokeWidth={2.5} />
@@ -738,7 +737,7 @@ export default function ThreadDetailPage({
                                 title: comment.content,
                               })
                             }
-                            className="flex items-center gap-1 text-[11px] text-zinc-500 hover:text-rose-400 transition-colors"
+                            className="flex items-center gap-1 text-[11px] text-zinc-500 hover:text-red-400 transition-colors"
                           >
                             <Flag size={11} />
                             <span>รายงาน</span>

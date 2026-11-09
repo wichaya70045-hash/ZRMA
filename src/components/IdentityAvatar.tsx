@@ -10,17 +10,18 @@ import {
   EyeOff,
   Binary,
   Globe,
-  User,
 } from 'lucide-react';
 
 interface IdentityAvatarProps {
   iconKey?: string;
+  theme?: string; // 'red' | 'yellow' | 'orange' | 'amber' | 'zinc'
   className?: string;
   size?: 'xs' | 'sm' | 'md' | 'lg';
 }
 
 export default function IdentityAvatar({
   iconKey = 'shield',
+  theme = 'zinc',
   className = '',
   size = 'md',
 }: IdentityAvatarProps) {
@@ -55,14 +56,29 @@ export default function IdentityAvatar({
         return <Globe size={iconSize} strokeWidth={stroke} />;
       case 'shield':
       default:
-        // If it's an old emoji string or unknown key, fallback to a clean shield or user
         return <Shield size={iconSize} strokeWidth={stroke} />;
+    }
+  };
+
+  const getThemeClasses = () => {
+    switch (theme) {
+      case 'red':
+        return 'bg-red-500/10 text-red-400 border-red-500/25';
+      case 'yellow':
+        return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/25';
+      case 'orange':
+        return 'bg-orange-500/10 text-orange-400 border-orange-500/25';
+      case 'amber':
+        return 'bg-amber-500/10 text-amber-400 border-amber-500/25';
+      case 'zinc':
+      default:
+        return 'bg-white/[0.04] text-zinc-300 border-white/[0.08]';
     }
   };
 
   return (
     <div
-      className={`inline-flex items-center justify-center shrink-0 bg-white/[0.04] border border-white/[0.08] text-zinc-300 ${box} ${className}`}
+      className={`inline-flex items-center justify-center shrink-0 border ${getThemeClasses()} ${box} ${className}`}
       aria-hidden="true"
     >
       {renderIcon()}

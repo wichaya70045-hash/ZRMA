@@ -133,7 +133,7 @@ export default function LiveChatBox({
       const data = await res.json();
       if (res.ok) {
         setInputText('');
-        setCooldown(4); // anti-spam cooldown
+        setCooldown(4);
       } else {
         alert(data.error || 'ไม่สามารถส่งข้อความได้');
       }
@@ -149,11 +149,11 @@ export default function LiveChatBox({
   };
 
   return (
-    <div className="bg-[#101216] border border-white/[0.08] rounded-xl flex flex-col h-full overflow-hidden">
-      {/* Terminal-Grade Header */}
-      <div className="px-3.5 py-2.5 bg-black/40 border-b border-white/[0.06] flex items-center justify-between">
+    <div className="bg-[#101217] border border-white/[0.08] rounded-xl flex flex-col h-full overflow-hidden shadow-lg">
+      {/* Terminal Header (Red & Yellow Indicators) */}
+      <div className="px-3.5 py-2.5 bg-black/50 border-b border-white/[0.06] flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+          <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
           <div>
             <h3 className="text-xs font-semibold text-zinc-100 flex items-center gap-1.5">
               <span>{title}</span>
@@ -164,16 +164,16 @@ export default function LiveChatBox({
           </div>
         </div>
 
-        {/* Ephemeral Identity Indicator */}
+        {/* Identity with Yellow/Orange Reroll */}
         {identity && (
           <div className="flex items-center gap-1.5 bg-white/[0.03] border border-white/[0.06] px-2 py-1 rounded-md text-xs">
-            <IdentityAvatar iconKey={identity.avatarIcon} size="xs" />
+            <IdentityAvatar iconKey={identity.avatarIcon} theme="yellow" size="xs" />
             <span className="text-zinc-300 text-[11px] font-mono truncate max-w-[110px] hidden sm:inline">
               {identity.alias}
             </span>
             <button
               onClick={handleRerollIdentity}
-              className="p-1 text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.06] rounded transition-colors active:scale-95"
+              className="p-1 text-zinc-500 hover:text-yellow-400 hover:bg-white/[0.06] rounded transition-colors active:scale-95"
               title="สุ่มชื่อและตัวตนใหม่"
               aria-label="Reroll anonymous identity"
             >
@@ -205,21 +205,25 @@ export default function LiveChatBox({
                 key={msg.id}
                 className={`group flex items-start gap-2 ${isSelf ? 'flex-row-reverse' : ''}`}
               >
-                <IdentityAvatar iconKey={msg.author_avatar} size="xs" />
+                <IdentityAvatar
+                  iconKey={msg.author_avatar}
+                  theme={isSelf ? 'red' : 'yellow'}
+                  size="xs"
+                />
 
                 <div
                   className={`max-w-[80%] rounded-lg px-3 py-2 text-xs relative transition-colors ${
                     isMsgHidden
-                      ? 'bg-rose-950/20 border border-rose-900/40 text-rose-300'
+                      ? 'bg-red-950/20 border border-red-900/40 text-red-300'
                       : isSelf
-                      ? 'bg-zinc-800 text-zinc-100 border border-white/[0.08]'
+                      ? 'bg-red-950/50 text-zinc-100 border border-red-500/30 shadow-sm'
                       : 'bg-white/[0.03] text-zinc-200 border border-white/[0.06]'
                   }`}
                 >
                   {/* Alias & Timestamp */}
                   <div
                     className={`flex items-center gap-1.5 text-[10px] mb-1 font-mono ${
-                      isSelf ? 'text-zinc-400' : 'text-zinc-500'
+                      isSelf ? 'text-red-300' : 'text-zinc-500'
                     }`}
                   >
                     <span className="font-semibold text-zinc-300 truncate max-w-[120px]">
@@ -236,7 +240,7 @@ export default function LiveChatBox({
 
                   {/* Content */}
                   {isMsgHidden ? (
-                    <div className="flex items-center justify-between gap-2 text-[11px] text-rose-300">
+                    <div className="flex items-center justify-between gap-2 text-[11px] text-red-300">
                       <span>[ข้อความถูกซ่อนเนื่องจากถูกรายงาน 5 ครั้ง]</span>
                       <button
                         onClick={() => toggleRevealHidden(msg.id)}
@@ -256,7 +260,7 @@ export default function LiveChatBox({
                     <div className="absolute top-1 -right-6 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => setReportTarget(msg)}
-                        className="p-1 text-zinc-500 hover:text-rose-400 rounded transition-colors"
+                        className="p-1 text-zinc-500 hover:text-red-400 rounded transition-colors"
                         title="รายงานข้อความนี้"
                       >
                         <Flag size={11} />
@@ -271,10 +275,10 @@ export default function LiveChatBox({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Form */}
+      {/* Input Form with Red Submit and Orange Cooldown */}
       <form
         onSubmit={handleSendMessage}
-        className="p-2.5 bg-black/40 border-t border-white/[0.06] flex items-center gap-2"
+        className="p-2.5 bg-black/50 border-t border-white/[0.06] flex items-center gap-2"
       >
         <input
           type="text"
@@ -287,7 +291,7 @@ export default function LiveChatBox({
           }
           disabled={cooldown > 0 || isSending}
           maxLength={500}
-          className="flex-1 bg-white/[0.03] border border-white/[0.08] focus:border-zinc-500 rounded-md px-3 py-1.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-600 disabled:opacity-50 transition-colors font-sans"
+          className="flex-1 bg-white/[0.03] border border-white/[0.08] focus:border-red-500 rounded-md px-3 py-1.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-red-500 disabled:opacity-50 transition-colors font-sans"
         />
 
         <button

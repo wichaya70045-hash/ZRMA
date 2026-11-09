@@ -87,15 +87,15 @@ export default function ThreadCard({ thread, onVoteChange }: ThreadCardProps) {
   const getCategoryMeta = () => {
     switch (thread.category) {
       case 'breaking':
-        return { label: 'ข่าวด่วน', color: 'text-rose-400 bg-rose-500/10 border-rose-500/20' };
+        return { label: 'ข่าวด่วน', color: 'text-red-400 bg-red-500/10 border-red-500/25' };
       case 'tech':
-        return { label: 'เทคโนโลยี', color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20' };
+        return { label: 'เทคโนโลยี', color: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/25' };
       case 'society':
-        return { label: 'สังคม', color: 'text-zinc-300 bg-zinc-500/10 border-zinc-500/20' };
+        return { label: 'สังคม', color: 'text-orange-400 bg-orange-500/10 border-orange-500/25' };
       case 'finance':
-        return { label: 'เศรษฐกิจ', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' };
+        return { label: 'เศรษฐกิจ', color: 'text-amber-400 bg-amber-500/10 border-amber-500/25' };
       case 'science':
-        return { label: 'วิทยาศาสตร์', color: 'text-amber-400 bg-amber-500/10 border-amber-500/20' };
+        return { label: 'วิทยาศาสตร์', color: 'text-yellow-300 bg-yellow-400/10 border-yellow-400/25' };
       default:
         return { label: 'ทั่วไป', color: 'text-zinc-400 bg-zinc-800/40 border-zinc-700/50' };
     }
@@ -104,12 +104,12 @@ export default function ThreadCard({ thread, onVoteChange }: ThreadCardProps) {
   const cat = getCategoryMeta();
 
   return (
-    <article className="bg-[#101216] border border-white/[0.07] hover:border-white/[0.14] rounded-xl p-4 transition-colors relative group">
+    <article className="bg-[#101217] border border-white/[0.07] hover:border-red-500/30 rounded-xl p-4 transition-all relative group shadow-sm hover:shadow-red-950/20">
       {/* Hidden Banner */}
       {isHidden && !forceReveal && (
-        <div className="bg-rose-950/20 border border-rose-900/40 rounded-lg p-2.5 mb-3 text-xs text-rose-300 flex items-center justify-between">
+        <div className="bg-red-950/25 border border-red-900/40 rounded-lg p-2.5 mb-3 text-xs text-red-300 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <AlertTriangle size={14} className="text-rose-400 shrink-0" />
+            <AlertTriangle size={14} className="text-red-400 shrink-0" />
             <span>กระทู้นี้ถูกซ่อนอัตโนมัติเนื่องจากมีผู้รายงานครบ 5 ครั้ง</span>
           </div>
           <button
@@ -124,15 +124,15 @@ export default function ThreadCard({ thread, onVoteChange }: ThreadCardProps) {
 
       <div className={`flex gap-3.5 ${isHidden && !forceReveal ? 'opacity-30 blur-[1px]' : ''}`}>
         
-        {/* Vote Column */}
-        <div className="flex flex-col items-center bg-black/30 border border-white/[0.06] rounded-lg p-1 self-start shrink-0">
+        {/* Vote Column (Signal Yellow for Up, Vivid Red for Down) */}
+        <div className="flex flex-col items-center bg-black/40 border border-white/[0.06] rounded-lg p-1 self-start shrink-0">
           <button
             onClick={() => handleVote('up')}
             disabled={isVoting}
             className={`p-1 rounded transition-colors active:scale-95 ${
               userVote === 'up'
-                ? 'text-emerald-400 bg-emerald-500/10'
-                : 'text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.04]'
+                ? 'text-yellow-400 bg-yellow-500/15'
+                : 'text-zinc-500 hover:text-yellow-400 hover:bg-white/[0.04]'
             }`}
             title="โหวตขึ้น"
             aria-label="Upvote"
@@ -141,11 +141,11 @@ export default function ThreadCard({ thread, onVoteChange }: ThreadCardProps) {
           </button>
 
           <span
-            className={`text-xs font-mono font-semibold tabular-nums my-0.5 ${
+            className={`text-xs font-mono font-bold tabular-nums my-0.5 ${
               score > 0
-                ? 'text-emerald-400'
+                ? 'text-yellow-400'
                 : score < 0
-                ? 'text-rose-400'
+                ? 'text-red-400'
                 : 'text-zinc-400'
             }`}
           >
@@ -157,8 +157,8 @@ export default function ThreadCard({ thread, onVoteChange }: ThreadCardProps) {
             disabled={isVoting}
             className={`p-1 rounded transition-colors active:scale-95 ${
               userVote === 'down'
-                ? 'text-rose-400 bg-rose-500/10'
-                : 'text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.04]'
+                ? 'text-red-400 bg-red-500/15'
+                : 'text-zinc-500 hover:text-red-400 hover:bg-white/[0.04]'
             }`}
             title="โหวตลง"
             aria-label="Downvote"
@@ -172,12 +172,12 @@ export default function ThreadCard({ thread, onVoteChange }: ThreadCardProps) {
           
           {/* Metadata Row */}
           <div className="flex items-center gap-2 mb-1.5 text-xs">
-            <span className={`px-2 py-0.5 rounded text-[10px] font-medium border ${cat.color}`}>
+            <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${cat.color}`}>
               {cat.label}
             </span>
 
             <div className="flex items-center gap-1.5 text-zinc-300 font-medium text-xs">
-              <IdentityAvatar iconKey={thread.author_avatar} size="xs" />
+              <IdentityAvatar iconKey={thread.author_avatar} theme="red" size="xs" />
               <span className="truncate max-w-[130px]">{thread.author_alias}</span>
             </div>
 
@@ -187,9 +187,9 @@ export default function ThreadCard({ thread, onVoteChange }: ThreadCardProps) {
               {getTimeAgo()}
             </span>
 
-            {/* Expiration badge */}
-            <div className="flex items-center gap-1 font-mono text-[10px] text-zinc-400 ml-auto bg-white/[0.03] px-2 py-0.5 rounded border border-white/[0.04] tabular-nums">
-              <Clock size={11} className="text-zinc-500" />
+            {/* Expiration badge (Touch of Orange) */}
+            <div className="flex items-center gap-1 font-mono text-[10px] text-orange-400 ml-auto bg-orange-500/10 px-2 py-0.5 rounded border border-orange-500/20 tabular-nums">
+              <Clock size={11} className="text-orange-400" />
               <span>{getRemainingTime()}</span>
             </div>
           </div>
@@ -213,7 +213,7 @@ export default function ThreadCard({ thread, onVoteChange }: ThreadCardProps) {
                 href={thread.source_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-[11px] text-zinc-400 hover:text-zinc-200 bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.06] px-2 py-0.5 rounded transition-colors"
+                className="inline-flex items-center gap-1.5 text-[11px] text-zinc-400 hover:text-yellow-400 bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.06] hover:border-yellow-500/25 px-2 py-0.5 rounded transition-colors"
               >
                 <ExternalLink size={11} />
                 <span className="truncate max-w-xs font-mono">
@@ -227,7 +227,7 @@ export default function ThreadCard({ thread, onVoteChange }: ThreadCardProps) {
           <div className="flex items-center justify-between pt-2 border-t border-white/[0.04] text-xs">
             <Link
               href={`/thread/${thread.id}`}
-              className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-zinc-200 transition-colors"
+              className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-yellow-400 transition-colors"
             >
               <MessageSquare size={13} />
               <span className="font-mono text-[11px] tabular-nums">
@@ -248,7 +248,7 @@ export default function ThreadCard({ thread, onVoteChange }: ThreadCardProps) {
 
               <button
                 onClick={() => setShowReportModal(true)}
-                className="flex items-center gap-1 text-[11px] text-zinc-500 hover:text-rose-400 transition-colors"
+                className="flex items-center gap-1 text-[11px] text-zinc-500 hover:text-red-400 transition-colors"
                 title="รายงานข้อความ"
               >
                 <Flag size={12} />

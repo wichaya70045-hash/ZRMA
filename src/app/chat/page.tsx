@@ -12,15 +12,17 @@ export default function GlobalChatPage() {
       <div className="flex items-center justify-between">
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-yellow-400 transition-colors"
         >
           <ArrowLeft size={13} />
           <span>กลับบอร์ดข่าว</span>
         </Link>
 
-        <div className="flex items-center gap-2 font-mono text-[11px] text-zinc-400 bg-white/[0.03] border border-white/[0.06] px-2.5 py-1 rounded-md">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-          <span>LIVE • ZERO-LOG TERMINAL</span>
+        <div className="flex items-center gap-2 font-mono text-[11px] text-zinc-300 bg-white/[0.03] border border-white/[0.06] px-2.5 py-1 rounded-md">
+          <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+          <span className="text-yellow-400 font-semibold">LIVE</span>
+          <span className="text-zinc-500">•</span>
+          <span>ZERO-LOG TERMINAL</span>
         </div>
       </div>
 
@@ -33,14 +35,14 @@ export default function GlobalChatPage() {
       </div>
 
       {/* Footnote */}
-      <div className="p-3 bg-[#101216] border border-white/[0.06] rounded-xl text-xs text-zinc-400 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      <div className="p-3 bg-[#101217] border border-white/[0.06] rounded-xl text-xs text-zinc-400 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <Shield size={14} className="text-emerald-400 shrink-0" />
+          <Shield size={14} className="text-red-400 shrink-0" />
           <p className="text-[11px] text-zinc-400">
             ระบบจำกัดประวัติแชทสูงสุด 100 ข้อความล่าสุด (FIFO) และไม่มีการบันทึก IP ใดๆ ทั้งสิ้น
           </p>
         </div>
-        <span className="text-[10px] font-mono text-zinc-500">
+        <span className="text-[10px] font-mono text-yellow-500/80">
           SSE REAL-TIME
         </span>
       </div>

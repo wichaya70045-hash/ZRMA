@@ -1,9 +1,10 @@
 // Privacy & Anonymity Engine
 // Zero logs, zero tracking, ephemeral sessionStorage-scoped identities
+// Palette: Black, Red, Yellow, with Orange accents
 
 export interface AnonymousIdentity {
   alias: string;
-  avatarIcon: string; // Vector icon key: 'shield' | 'terminal' | 'cpu' | 'radar' | 'key' | 'lock' | 'fingerprint' | 'eye-off' | 'binary' | 'globe'
+  avatarIcon: string;
   color: string;
 }
 
@@ -44,11 +45,11 @@ export const AVATAR_ICON_KEYS = [
 ];
 
 export const IDENTITY_THEMES = [
-  { name: 'emerald', bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' },
-  { name: 'zinc', bg: 'bg-zinc-500/10', text: 'text-zinc-300', border: 'border-zinc-500/20' },
-  { name: 'cyan', bg: 'bg-cyan-500/10', text: 'text-cyan-400', border: 'border-cyan-500/20' },
+  { name: 'red', bg: 'bg-red-500/10', text: 'text-red-400', border: 'border-red-500/20' },
+  { name: 'yellow', bg: 'bg-yellow-500/10', text: 'text-yellow-400', border: 'border-yellow-500/20' },
+  { name: 'orange', bg: 'bg-orange-500/10', text: 'text-orange-400', border: 'border-orange-500/20' },
   { name: 'amber', bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' },
-  { name: 'sky', bg: 'bg-sky-500/10', text: 'text-sky-400', border: 'border-sky-500/20' },
+  { name: 'zinc', bg: 'bg-white/[0.04]', text: 'text-zinc-300', border: 'border-white/[0.08]' },
 ];
 
 export function generateRandomIdentity(): AnonymousIdentity {
@@ -69,7 +70,7 @@ export function getScopedIdentity(scopeKey: string): AnonymousIdentity {
     return generateRandomIdentity();
   }
 
-  const storageKey = `zrma_v2_anon_${scopeKey}`;
+  const storageKey = `zrma_v3_anon_${scopeKey}`;
   const existing = sessionStorage.getItem(storageKey);
   if (existing) {
     try {
@@ -78,7 +79,7 @@ export function getScopedIdentity(scopeKey: string): AnonymousIdentity {
         return {
           alias: parsed.alias,
           avatarIcon: parsed.avatarIcon || 'shield',
-          color: parsed.color || 'emerald',
+          color: parsed.color || 'red',
         };
       }
     } catch {
@@ -90,7 +91,7 @@ export function getScopedIdentity(scopeKey: string): AnonymousIdentity {
   try {
     sessionStorage.setItem(storageKey, JSON.stringify(newIdentity));
   } catch {
-    // sessionStorage quota or private mode
+    // ignore
   }
   return newIdentity;
 }
@@ -99,7 +100,7 @@ export function rerollScopedIdentity(scopeKey: string): AnonymousIdentity {
   if (typeof window === 'undefined') {
     return generateRandomIdentity();
   }
-  const storageKey = `zrma_v2_anon_${scopeKey}`;
+  const storageKey = `zrma_v3_anon_${scopeKey}`;
   const newIdentity = generateRandomIdentity();
   try {
     sessionStorage.setItem(storageKey, JSON.stringify(newIdentity));
