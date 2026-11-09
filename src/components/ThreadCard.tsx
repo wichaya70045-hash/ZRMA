@@ -493,11 +493,13 @@ export default function ThreadCard({
           </Link>
 
           {/* Post Snippet */}
-          <p className={`text-zinc-400 line-clamp-2 leading-relaxed mb-2.5 ${
-            settings.fontSize === 'comfortable' ? 'text-sm' : 'text-xs'
-          }`}>
-            {thread.content}
-          </p>
+          {thread.content && (
+            <p className={`text-zinc-400 line-clamp-2 leading-relaxed mb-2.5 ${
+              settings.fontSize === 'comfortable' ? 'text-sm' : 'text-xs'
+            }`}>
+              {thread.content}
+            </p>
+          )}
 
           {/* Media Preview: Image or Video with Auto-Blur Support */}
           {thread.media_url && (

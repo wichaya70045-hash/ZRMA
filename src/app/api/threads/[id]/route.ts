@@ -34,23 +34,18 @@ export async function PUT(
     const body = await req.json();
     const { title, content, category, flair, source_url, edit_token } = body;
 
-    if (!title || !title.trim() || title.length < 5 || title.length > 200) {
+    if (!title || !title.trim() || title.length > 200) {
       return NextResponse.json(
-        { error: 'หัวข้อกระทู้ต้องมีความยาวระหว่าง 5 ถึง 200 ตัวอักษร' },
+        { error: 'กรุณาระบุหัวข้อกระทู้ (ความยาวไม่เกิน 200 ตัวอักษร)' },
         { status: 400 }
       );
     }
 
-    if (!content || !content.trim() || content.length < 10) {
-      return NextResponse.json(
-        { error: 'เนื้อหากระทู้ต้องมีความยาวอย่างน้อย 10 ตัวอักษร' },
-        { status: 400 }
-      );
-    }
+    const cleanContent = typeof content === 'string' ? content.trim() : '';
 
     const result = updateThread(id, {
       title: title.trim(),
-      content: content.trim(),
+      content: cleanContent,
       category: category ? category.trim() : undefined,
       flair: flair !== undefined ? (flair?.trim() || null) : undefined,
       source_url: source_url !== undefined ? (source_url?.trim() || null) : undefined,

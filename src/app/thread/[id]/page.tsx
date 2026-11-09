@@ -670,11 +670,13 @@ export default function ThreadDetailPage({
                 )}
 
                 {/* Body Content */}
-                <div className={`text-zinc-300 leading-relaxed whitespace-pre-wrap pb-4 border-b border-white/[0.06] ${
-                  settings.fontSize === 'comfortable' ? 'text-sm sm:text-base leading-relaxed' : 'text-xs sm:text-sm leading-relaxed'
-                }`}>
-                  {thread.content}
-                </div>
+                {thread.content && (
+                  <div className={`text-zinc-300 leading-relaxed whitespace-pre-wrap pb-4 border-b border-white/[0.06] ${
+                    settings.fontSize === 'comfortable' ? 'text-sm sm:text-base leading-relaxed' : 'text-xs sm:text-sm leading-relaxed'
+                  }`}>
+                    {thread.content}
+                  </div>
+                )}
 
                 {/* Community Poll (if enabled) */}
                 {thread.poll && (

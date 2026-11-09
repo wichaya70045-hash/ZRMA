@@ -54,13 +54,8 @@ export default function EditThreadModal({
     e.preventDefault();
     setErrorMsg('');
 
-    if (!title.trim() || title.trim().length < 5) {
-      setErrorMsg('หัวข้อต้องมีความยาวอย่างน้อย 5 ตัวอักษร');
-      return;
-    }
-
-    if (!content.trim() || content.trim().length < 10) {
-      setErrorMsg('เนื้อหาต้องมีความยาวอย่างน้อย 10 ตัวอักษร');
+    if (!title.trim()) {
+      setErrorMsg('กรุณาระบุหัวข้อโพสต์');
       return;
     }
 
@@ -149,14 +144,15 @@ export default function EditThreadModal({
 
           {/* Content */}
           <div>
-            <label className="block text-zinc-400 font-medium mb-1">
-              เนื้อหาโพสต์ <span className="text-red-400">*</span>
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-zinc-400 font-medium">เนื้อหาโพสต์</label>
+              <span className="text-[10px] text-zinc-500 font-mono">OPTIONAL</span>
+            </div>
             <textarea
               rows={5}
-              required
               value={content}
               onChange={(e) => setContent(e.target.value)}
+              placeholder="เขียนรายละเอียดเพิ่มเติม (ไม่บังคับ)..."
               className="w-full bg-white/[0.03] border border-white/[0.08] focus:border-yellow-400 rounded-lg p-3 text-xs text-zinc-100 focus:outline-none leading-relaxed transition-colors font-sans"
             />
           </div>

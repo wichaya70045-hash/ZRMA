@@ -220,13 +220,8 @@ export default function NewThreadPage() {
     e.preventDefault();
     setErrorMsg('');
 
-    if (!title.trim() || title.length < 5) {
-      setErrorMsg('หัวข้อกระทู้ต้องมีความยาวอย่างน้อย 5 ตัวอักษร');
-      return;
-    }
-
-    if (!content.trim() || content.length < 10) {
-      setErrorMsg('เนื้อหากระทู้ต้องมีความยาวอย่างน้อย 10 ตัวอักษร');
+    if (!title.trim()) {
+      setErrorMsg('กรุณาระบุหัวข้อกระทู้');
       return;
     }
 
@@ -616,16 +611,18 @@ export default function NewThreadPage() {
 
           {/* Content */}
           <div className="space-y-1.5">
-            <label htmlFor="content" className="text-xs font-mono uppercase text-zinc-400">
-              5. รายละเอียดเนื้อหา (Body)
-            </label>
+            <div className="flex items-center justify-between">
+              <label htmlFor="content" className="text-xs font-mono uppercase text-zinc-400">
+                5. รายละเอียดเนื้อหา (Body)
+              </label>
+              <span className="text-[10px] text-zinc-500 font-mono">OPTIONAL</span>
+            </div>
             <textarea
               id="content"
               rows={6}
-              required
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="เขียนรายละเอียด ข้อคิดเห็น ข้อมูลข่าว หรือคำถามที่ต้องการแลกเปลี่ยน..."
+              placeholder="เขียนรายละเอียด ข้อคิดเห็น ข้อมูลข่าว หรือคำถาม (ไม่บังคับ)..."
               className="w-full bg-white/[0.02] border border-white/[0.08] focus:border-red-500 rounded-lg p-3 text-xs sm:text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-red-500 leading-relaxed transition-colors font-sans"
             />
           </div>

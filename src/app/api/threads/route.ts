@@ -56,19 +56,14 @@ export async function POST(req: NextRequest) {
     }
 
     // Input Validation
-    if (!title || !title.trim() || title.length < 5 || title.length > 200) {
+    if (!title || !title.trim() || title.length > 200) {
       return NextResponse.json(
-        { error: 'หัวข้อกระทู้ต้องมีความยาวระหว่าง 5 ถึง 200 ตัวอักษร' },
+        { error: 'กรุณาระบุหัวข้อกระทู้ (ความยาวไม่เกิน 200 ตัวอักษร)' },
         { status: 400 }
       );
     }
 
-    if (!content || !content.trim() || content.length < 10) {
-      return NextResponse.json(
-        { error: 'เนื้อหากระทู้ต้องมีความยาวอย่างน้อย 10 ตัวอักษร' },
-        { status: 400 }
-      );
-    }
+    const cleanContent = typeof content === 'string' ? content.trim() : '';
 
     // Process z/ category slug
     const rawCategory = (category || 'general').trim().replace(/^[zr]\//i, '').toLowerCase();
@@ -127,7 +122,7 @@ export async function POST(req: NextRequest) {
     const newThread = createThread({
       id,
       title: title.trim(),
-      content: content.trim(),
+      content: cleanContent,
       category: cleanCategory,
       flair: flair ? flair.trim() : null,
       source_url: source_url ? source_url.trim() : null,
