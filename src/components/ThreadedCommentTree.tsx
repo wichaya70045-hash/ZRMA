@@ -79,7 +79,7 @@ function SingleCommentNode({
   };
 
   return (
-    <div className={`relative ${depth > 0 ? 'ml-3 sm:ml-5 pl-2 sm:pl-3' : ''}`}>
+    <div className={`relative w-full max-w-full overflow-hidden ${depth > 0 ? (depth > 2 ? 'ml-1.5 sm:ml-4 pl-1.5 sm:pl-3' : 'ml-2 sm:ml-4 pl-2 sm:pl-3') : ''}`}>
       {/* Reddit-style Vertical Threadline */}
       {depth > 0 && (
         <div
@@ -89,7 +89,7 @@ function SingleCommentNode({
         />
       )}
 
-      <div className="bg-[#101217] border border-white/[0.06] rounded-xl p-3 my-2 text-xs text-zinc-200">
+      <div className="bg-[#101217] border border-white/[0.06] rounded-xl p-3 my-2 text-xs text-zinc-200 w-full max-w-full overflow-hidden">
         
         {/* Comment Header */}
         <div className="flex items-center justify-between gap-2 mb-1.5">
@@ -165,7 +165,7 @@ function SingleCommentNode({
             )}
 
             {/* Action Bar (Reddit Style: Vote, Reply, Report) */}
-            <div className="flex items-center gap-3 pt-2 mt-1 border-t border-white/[0.04] text-xs">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-2 mt-1 border-t border-white/[0.04] text-xs">
               
               {/* Up/Down Vote pill */}
               <div className="flex items-center bg-black/40 border border-white/[0.06] rounded p-0.5">
@@ -338,7 +338,7 @@ export default function ThreadedCommentTree({
   }
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-1 w-full max-w-full overflow-hidden">
       {comments.map((root) => (
         <SingleCommentNode
           key={root.id}

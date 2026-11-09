@@ -303,7 +303,7 @@ export default function LiveChatBox({
 
   return (
     <div
-      className={`rounded-2xl flex flex-col h-full overflow-hidden shadow-xl border transition-colors ${
+      className={`rounded-2xl flex flex-col h-full w-full max-w-full overflow-hidden shadow-xl border transition-colors ${
         isGhost
           ? 'bg-[#0d0f14] border-orange-500/50 shadow-orange-950/20'
           : 'bg-[#101217] border-white/[0.08]'
@@ -311,20 +311,20 @@ export default function LiveChatBox({
     >
       {/* Ghost Room Warning Banner */}
       {isGhost && (
-        <div className="bg-red-950/40 border-b border-red-500/30 px-3.5 py-2 flex items-center justify-between gap-2 text-xs">
-          <div className="flex items-center gap-2">
+        <div className="bg-red-950/40 border-b border-red-500/30 px-3 py-2 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div className="flex items-center gap-2 shrink-0">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
             </span>
             <div className="flex items-center gap-1.5 font-mono text-[11px] text-red-300">
-              <Ghost size={13} className="text-red-400" />
+              <Ghost size={13} className="text-red-400 shrink-0" />
               <strong className="text-red-300 uppercase tracking-wide">ห้องหายไปเมื่อไม่มีคน:</strong>
               <span className="text-zinc-400 hidden sm:inline">ข้อความจะสลายตัวทันทีเมื่อทุกคนออก</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 ml-auto shrink-0">
             <div className="flex items-center gap-1 font-mono text-[11px] text-yellow-400 bg-yellow-400/10 px-2 py-0.5 rounded border border-yellow-400/25">
               <Users size={11} />
               <span>{ghostPresenceCount} คนในห้อง</span>

@@ -261,7 +261,7 @@ export default function NewThreadPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-5">
+    <div className="max-w-2xl w-full mx-auto space-y-5 overflow-hidden">
       <div>
         <Link
           href="/"
@@ -272,7 +272,7 @@ export default function NewThreadPage() {
         </Link>
       </div>
 
-      <div className="bg-[#101217] border border-white/[0.08] rounded-xl p-5 sm:p-6 text-zinc-200 shadow-xl">
+      <div className="bg-[#101217] border border-white/[0.08] rounded-xl p-4 sm:p-6 text-zinc-200 shadow-xl w-full max-w-full overflow-hidden">
         
         {/* Header with Ephemeral Identity & Custom Name */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-white/[0.06]">
@@ -287,9 +287,9 @@ export default function NewThreadPage() {
           </div>
 
           {/* Editable Display Name Box */}
-          <div className="flex items-center gap-2 bg-black/40 border border-white/[0.08] px-3 py-1.5 rounded-lg self-start sm:self-auto">
+          <div className="flex items-center gap-2 bg-black/40 border border-white/[0.08] px-3 py-1.5 rounded-lg self-start sm:self-auto max-w-full overflow-hidden">
             {identity && <IdentityAvatar iconKey={identity.avatarIcon} theme="red" size="xs" />}
-            <div>
+            <div className="min-w-0">
               <span className="text-[10px] text-zinc-500 uppercase block font-mono">ชื่อที่จะแสดง (u/):</span>
               <input
                 type="text"
@@ -297,13 +297,13 @@ export default function NewThreadPage() {
                 onChange={(e) => handleAliasChange(e.target.value)}
                 placeholder="u/ชื่อที่คุณต้องการ"
                 maxLength={40}
-                className="bg-transparent text-xs font-semibold text-zinc-200 focus:outline-none focus:text-yellow-400 font-mono w-36"
+                className="bg-transparent text-xs font-semibold text-zinc-200 focus:outline-none focus:text-yellow-400 font-mono w-28 sm:w-36"
               />
             </div>
             <button
               type="button"
               onClick={handleRerollIdentity}
-              className="p-1 text-zinc-500 hover:text-yellow-400 rounded hover:bg-white/[0.06] transition-colors ml-1 active:scale-95"
+              className="p-1 text-zinc-500 hover:text-yellow-400 rounded hover:bg-white/[0.06] transition-colors ml-1 active:scale-95 shrink-0"
               title="สุ่มชื่อใหม่ (Random Reroll)"
             >
               <Dices size={14} />
@@ -639,7 +639,7 @@ export default function NewThreadPage() {
                 <span>สุ่มรหัสใหม่</span>
               </button>
             </div>
-            <div className="flex items-center gap-2 pt-0.5">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 pt-0.5 w-full">
               <input
                 type="text"
                 required
@@ -647,7 +647,7 @@ export default function NewThreadPage() {
                 value={editPasscode}
                 onChange={(e) => setEditPasscode(e.target.value)}
                 placeholder="ตั้งรหัสลับ 4-6 หลัก หรือตัวอักษร..."
-                className="w-48 bg-white/[0.02] border border-white/[0.08] focus:border-yellow-400 rounded-md px-3 py-1.5 text-xs text-yellow-400 font-mono font-bold focus:outline-none"
+                className="w-full sm:w-56 bg-white/[0.02] border border-white/[0.08] focus:border-yellow-400 rounded-md px-3 py-1.5 text-xs text-yellow-400 font-mono font-bold focus:outline-none shrink-0"
               />
               <span className="text-[11px] text-zinc-500">
                 (ระบบจะจำในเครื่องนี้อัตโนมัติ ไม่ต้องกรอกซ้ำเวลาแก้ไขหรือลบ)

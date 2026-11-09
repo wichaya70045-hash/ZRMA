@@ -117,7 +117,7 @@ export default function HomePage() {
   });
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 w-full max-w-full overflow-hidden">
       
       {/* Mobile Segmented Switcher */}
       <div className="flex lg:hidden bg-black/40 p-1 rounded-lg border border-white/[0.06] text-xs">
@@ -145,11 +145,11 @@ export default function HomePage() {
       </div>
 
       {/* Main Grid: Feed (Left 8 cols) & Community Sidebar (Right 4 cols) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start w-full max-w-full">
         
         {/* Left Column: Feed and Controls */}
         <section
-          className={`lg:col-span-8 space-y-3.5 ${
+          className={`lg:col-span-8 space-y-3.5 min-w-0 w-full ${
             activeTabMobile === 'chat' ? 'hidden lg:block' : 'block'
           }`}
         >

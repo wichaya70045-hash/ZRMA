@@ -56,7 +56,7 @@ export default function ChatPage() {
   const isGhostActive = activeChannel !== 'global';
 
   return (
-    <div className="max-w-6xl mx-auto space-y-4">
+    <div className="max-w-6xl w-full mx-auto space-y-4 overflow-hidden">
       
       {/* Top Header & Navigation */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-white/[0.06]">
@@ -93,7 +93,7 @@ export default function ChatPage() {
       </div>
 
       {/* Mobile Channel Switcher Pill Bar */}
-      <div className="flex lg:hidden items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+      <div className="flex lg:hidden items-center gap-1.5 overflow-x-auto pb-1 text-xs max-w-full scrollbar-none">
         <button
           onClick={() => {
             setActiveChannel('global');
@@ -131,7 +131,7 @@ export default function ChatPage() {
       </div>
 
       {/* Main Channel Layout: Dual Pane on Desktop */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start w-full max-w-full">
         
         {/* Left Pane: Channels Directory */}
         <aside

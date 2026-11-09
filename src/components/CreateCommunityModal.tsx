@@ -91,8 +91,8 @@ export default function CreateCommunityModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="bg-[#101217] border border-white/[0.1] rounded-2xl w-full max-w-md p-5 sm:p-6 text-zinc-200 shadow-2xl relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+      <div className="bg-[#101217] border border-white/[0.1] rounded-2xl w-full max-w-md max-w-full p-4 sm:p-6 text-zinc-200 shadow-2xl relative my-auto">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-zinc-500 hover:text-zinc-200 p-1 rounded-md hover:bg-white/[0.04] transition-colors"

@@ -26,11 +26,22 @@
   --radius-lg: 14px;
 }
 
+html {
+  overflow-x: hidden;
+  max-width: 100%;
+  width: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
+  overflow-x: hidden;
+  max-width: 100%;
+  width: 100%;
   color: var(--text-primary);
   background-color: var(--bg-canvas);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Thai", sans-serif;
   min-height: 100vh;
+  min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

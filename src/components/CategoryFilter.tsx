@@ -76,10 +76,10 @@ export default function CategoryFilter({
   };
 
   return (
-    <div className="bg-[#101217] border border-white/[0.07] rounded-xl overflow-hidden shadow-sm">
+    <div className="bg-[#101217] border border-white/[0.07] rounded-xl overflow-hidden shadow-sm w-full max-w-full">
       
       {/* 1. Subreddit Horizontal Navigation Pills */}
-      <div className="px-3 pt-3 pb-2.5 flex items-center gap-1.5 overflow-x-auto scrollbar-none font-mono text-xs">
+      <div className="px-3 pt-3 pb-2.5 flex items-center gap-1.5 overflow-x-auto scrollbar-none font-mono text-xs max-w-full">
         {/* z/all */}
         <button
           onClick={() => onSelectCategory('all')}
@@ -142,13 +142,13 @@ export default function CategoryFilter({
       </div>
 
       {/* 2. Unified Controls Bar: Sort + Search + View Layout */}
-      <div className="px-3 py-2 border-t border-white/[0.06] bg-black/20 flex flex-wrap items-center justify-between gap-2.5 text-xs">
+      <div className="px-3 py-2 border-t border-white/[0.06] bg-black/20 flex flex-wrap items-center justify-between gap-2.5 text-xs w-full">
         
         {/* Left: Reddit Sorting Tabs */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 overflow-x-auto max-w-full pb-0.5 sm:pb-0 scrollbar-none">
           <button
             onClick={() => onSelectSort('hot')}
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold transition-colors ${
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold transition-colors shrink-0 ${
               selectedSort === 'hot'
                 ? 'bg-orange-500/15 text-orange-400 border border-orange-500/30'
                 : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.03]'
@@ -160,7 +160,7 @@ export default function CategoryFilter({
 
           <button
             onClick={() => onSelectSort('new')}
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold transition-colors ${
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold transition-colors shrink-0 ${
               selectedSort === 'new'
                 ? 'bg-yellow-400 text-zinc-950 font-bold'
                 : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.03]'
@@ -172,7 +172,7 @@ export default function CategoryFilter({
 
           <button
             onClick={() => onSelectSort('top')}
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold transition-colors ${
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold transition-colors shrink-0 ${
               selectedSort === 'top'
                 ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/30'
                 : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.03]'
@@ -184,7 +184,7 @@ export default function CategoryFilter({
 
           <button
             onClick={() => onSelectSort('rising')}
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold transition-colors ${
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold transition-colors shrink-0 ${
               selectedSort === 'rising'
                 ? 'bg-red-500/15 text-red-400 border border-red-500/30'
                 : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.03]'
@@ -197,7 +197,7 @@ export default function CategoryFilter({
 
         {/* Center/Right: Integrated Minimal Search Input */}
         {onSearchChange && (
-          <div className="relative flex-1 max-w-xs min-w-[140px]">
+          <div className="relative flex-1 min-w-[120px] sm:min-w-[140px] max-w-xs order-last sm:order-none w-full sm:w-auto">
             <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-500" />
             <input
               type="text"
@@ -218,7 +218,7 @@ export default function CategoryFilter({
         )}
 
         {/* Right: Layout Switcher & Post Count */}
-        <div className="flex items-center gap-2 ml-auto shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           {typeof threadCount === 'number' && (
             <span className="text-[11px] font-mono text-zinc-500 hidden sm:inline">
               {threadCount} โพสต์

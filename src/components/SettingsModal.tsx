@@ -59,8 +59,8 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-150">
-      <div className="bg-[#101217] border border-white/[0.1] rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-zinc-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-150 overflow-y-auto">
+      <div className="bg-[#101217] border border-white/[0.1] rounded-2xl max-w-2xl w-full max-w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-zinc-200 my-auto">
         
         {/* Modal Header */}
         <div className="px-5 py-4 border-b border-white/[0.08] flex items-center justify-between bg-black/30">

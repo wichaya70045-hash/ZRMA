@@ -49,7 +49,7 @@ export default function PinnedBreakingBanner({ pinnedThread }: PinnedBreakingBan
   return (
     <aside
       aria-label="Pinned Breaking News"
-      className="rounded-xl border border-red-500/40 border-l-4 border-l-red-500 bg-[#101217] p-4 sm:p-4.5 shadow-sm transition-all"
+      className="w-full max-w-full overflow-hidden rounded-xl border border-red-500/40 border-l-4 border-l-red-500 bg-[#101217] p-3.5 sm:p-4.5 shadow-sm transition-all"
     >
       {/* Top Header Wire */}
       <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 mb-3 border-b border-white/[0.06]">
@@ -121,7 +121,7 @@ export default function PinnedBreakingBanner({ pinnedThread }: PinnedBreakingBan
           </div>
 
           {/* Comments and Read Button */}
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-2 shrink-0">
             <Link
               href={`/thread/${pinnedThread.id}`}
               className="btn-primary !py-1 !px-2.5 text-xs font-semibold"

@@ -25,15 +25,15 @@ export default function Navbar() {
   return (
     <>
       <header className="sticky top-0 z-40 w-full border-b border-white/[0.08] bg-[#090a0d]/95 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between gap-3 sm:gap-6">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 h-14 flex items-center justify-between gap-2 sm:gap-6">
           
           {/* Brand Identity: ZRMA Community */}
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <Link
               href="/"
-              className="flex items-center gap-2.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 rounded-md"
+              className="flex items-center gap-2 sm:gap-2.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 rounded-md"
             >
-              <div className="w-8 h-8 rounded-lg bg-red-950/50 border border-red-500/40 flex items-center justify-center text-red-500 group-hover:border-red-500/70 group-hover:bg-red-950/70 transition-colors shadow-sm">
+              <div className="w-8 h-8 rounded-lg bg-red-950/50 border border-red-500/40 flex items-center justify-center text-red-500 group-hover:border-red-500/70 group-hover:bg-red-950/70 transition-colors shadow-sm shrink-0">
                 <Shield size={16} strokeWidth={2.4} />
               </div>
               <div className="flex flex-col">
@@ -50,7 +50,7 @@ export default function Navbar() {
           </div>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             <button
               onClick={() => setShowPrivacyModal(true)}
               className="p-1.5 text-zinc-400 hover:text-yellow-400 hover:bg-white/[0.04] rounded-md border border-transparent hover:border-white/[0.06] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400"
@@ -74,19 +74,20 @@ export default function Navbar() {
 
             <Link
               href="/chat"
-              className="btn-secondary !py-1.5 !px-3 text-xs"
+              className="btn-secondary !py-1.5 !px-2.5 sm:!px-3 text-xs shrink-0"
               title="ห้องสนทนาสดส่วนกลาง"
             >
-              <Radio size={13} className="text-yellow-400" />
+              <Radio size={13} className="text-yellow-400 shrink-0" />
               <span className="hidden sm:inline">ห้องแชทสด</span>
             </Link>
 
             <Link
               href="/new"
-              className="btn-primary !py-1.5 !px-3 text-xs"
+              className="btn-primary !py-1.5 !px-2.5 sm:!px-3 text-xs shrink-0"
             >
-              <Plus size={14} strokeWidth={2.5} />
-              <span>สร้างโพสต์</span>
+              <Plus size={14} strokeWidth={2.5} className="shrink-0" />
+              <span className="hidden sm:inline">สร้างโพสต์</span>
+              <span className="sm:hidden">โพสต์</span>
             </Link>
           </div>
         </div>

@@ -75,8 +75,8 @@ export default function CreateGhostRoomModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="bg-[#101217] border-2 border-red-500/40 rounded-2xl w-full max-w-md p-5 sm:p-6 text-zinc-200 shadow-2xl relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150 overflow-y-auto">
+      <div className="bg-[#101217] border-2 border-red-500/40 rounded-2xl w-full max-w-md max-w-full p-4 sm:p-6 text-zinc-200 shadow-2xl relative my-auto">
         
         {/* Close Button */}
         <button

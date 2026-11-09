@@ -163,7 +163,7 @@ export default function ThreadCard({
   if (activeLayout === 'compact') {
     return (
       <article
-        className={`rounded-lg px-3 py-2.5 transition-all relative group shadow-sm flex items-center gap-2.5 sm:gap-3.5 ${
+        className={`w-full max-w-full overflow-hidden rounded-lg px-2.5 sm:px-3 py-2.5 transition-all relative group shadow-sm flex items-center gap-2 sm:gap-3.5 ${
           thread.is_pinned === 1
             ? 'border border-red-500/40 border-l-4 border-l-red-500 bg-[#101217]'
             : 'bg-[#101217] border border-white/[0.06] hover:border-white/[0.15]'
@@ -224,7 +224,7 @@ export default function ThreadCard({
         )}
 
         {/* Text Details & Metadata */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 overflow-hidden">
           <div className="flex items-center gap-1.5 flex-wrap">
             {thread.is_pinned === 1 && (
               <span className="text-[9px] font-mono font-bold text-red-400 bg-red-950/60 px-1 py-0.2 rounded border border-red-500/30 flex items-center gap-1">
@@ -241,7 +241,7 @@ export default function ThreadCard({
             <span className="text-zinc-600 text-[10px]">•</span>
             <Link
               href={`/thread/${thread.id}`}
-              className={`font-semibold text-zinc-100 hover:text-white truncate max-w-lg focus-visible:underline ${
+              className={`font-semibold text-zinc-100 hover:text-white truncate max-w-full focus-visible:underline ${
                 settings.fontSize === 'comfortable' ? 'text-sm' : 'text-xs'
               }`}
             >
@@ -265,7 +265,7 @@ export default function ThreadCard({
             )}
           </div>
 
-          <div className="flex items-center gap-2 text-[10px] text-zinc-500 font-mono mt-0.5">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-zinc-500 font-mono mt-0.5">
             <span>u/{cleanAlias}</span>
             <span>•</span>
             <span>{getTimeAgo()}</span>
@@ -341,7 +341,7 @@ export default function ThreadCard({
 
   return (
     <article
-      className={`rounded-xl p-3.5 sm:p-4 transition-all relative group shadow-sm ${
+      className={`w-full max-w-full overflow-hidden rounded-xl p-3 sm:p-4 transition-all relative group shadow-sm ${
         thread.is_pinned === 1
           ? 'border border-red-500/40 border-l-4 border-l-red-500 bg-[#101217]'
           : 'bg-[#101217] border border-white/[0.07] hover:border-white/[0.18]'
@@ -382,7 +382,7 @@ export default function ThreadCard({
         </div>
       )}
 
-      <div className={`flex gap-3 sm:gap-3.5 ${isHidden && !forceReveal ? 'opacity-30 blur-[1px]' : ''}`}>
+      <div className={`flex gap-2.5 sm:gap-3.5 min-w-0 ${isHidden && !forceReveal ? 'opacity-30 blur-[1px]' : ''}`}>
         
         {/* Reddit Left-Hand Vote Column */}
         <div className="flex flex-col items-center bg-black/40 border border-white/[0.06] rounded-lg p-1 self-start shrink-0">
@@ -428,7 +428,7 @@ export default function ThreadCard({
         </div>
 
         {/* Post Content Body */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 overflow-hidden">
           
           {/* Reddit-style Header Line: z/community • u/author • time ago */}
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1.5 text-xs">
@@ -583,12 +583,12 @@ export default function ThreadCard({
           )}
 
           {/* Reddit Action Bar: Comments, Share, Save, Report */}
-          <div className="flex items-center gap-3 sm:gap-4 pt-2 border-t border-white/[0.04] text-xs">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3.5 pt-2 border-t border-white/[0.04] text-xs">
             <Link
               href={`/thread/${thread.id}`}
-              className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-yellow-400 transition-colors p-1 rounded hover:bg-white/[0.03]"
+              className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-yellow-400 transition-colors p-1 rounded hover:bg-white/[0.03] shrink-0"
             >
-              <MessageSquare size={14} />
+              <MessageSquare size={14} className="shrink-0" />
               <span className="font-mono text-[11px] tabular-nums font-semibold">
                 {thread.comment_count || 0} ความคิดเห็น
               </span>
@@ -596,19 +596,19 @@ export default function ThreadCard({
 
             <button
               onClick={handleShare}
-              className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-yellow-400 transition-colors p-1 rounded hover:bg-white/[0.03]"
+              className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-yellow-400 transition-colors p-1 rounded hover:bg-white/[0.03] shrink-0"
             >
-              {copiedLink ? <Check size={14} className="text-yellow-400" /> : <Share2 size={14} />}
+              {copiedLink ? <Check size={14} className="text-yellow-400 shrink-0" /> : <Share2 size={14} className="shrink-0" />}
               <span className="text-[11px]">{copiedLink ? 'คัดลอกแล้ว' : 'แชร์'}</span>
             </button>
 
             <button
               onClick={handleToggleSave}
-              className={`inline-flex items-center gap-1.5 transition-colors p-1 rounded hover:bg-white/[0.03] ${
+              className={`inline-flex items-center gap-1.5 transition-colors p-1 rounded hover:bg-white/[0.03] shrink-0 ${
                 isSaved ? 'text-yellow-400 font-semibold' : 'text-zinc-400 hover:text-yellow-400'
               }`}
             >
-              <Bookmark size={14} />
+              <Bookmark size={14} className="shrink-0" />
               <span className="text-[11px]">{isSaved ? 'บันทึกแล้ว' : 'บันทึก'}</span>
             </button>
 
@@ -617,26 +617,26 @@ export default function ThreadCard({
                 <button
                   type="button"
                   onClick={() => setShowEditModal(true)}
-                  className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-yellow-400 transition-colors p-1 rounded hover:bg-white/[0.03]"
+                  className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-yellow-400 transition-colors p-1 rounded hover:bg-white/[0.03] shrink-0"
                   title="แก้ไขโพสต์นี้"
                 >
-                  <Edit3 size={13} />
+                  <Edit3 size={13} className="shrink-0" />
                   <span className="text-[11px]">แก้ไข</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setShowDeleteModal(true)}
-                  className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-red-400 transition-colors p-1 rounded hover:bg-white/[0.03]"
+                  className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-red-400 transition-colors p-1 rounded hover:bg-white/[0.03] shrink-0"
                   title="ลบโพสต์นี้"
                 >
-                  <Trash2 size={13} />
+                  <Trash2 size={13} className="shrink-0" />
                   <span className="text-[11px]">ลบ</span>
                 </button>
               </>
             )}
 
-            <div className="ml-auto flex items-center gap-2">
+            <div className="ml-auto flex items-center gap-2 shrink-0">
               {forceReveal && isHidden && (
                 <button
                   onClick={() => setForceReveal(false)}

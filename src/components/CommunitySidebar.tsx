@@ -83,7 +83,7 @@ export default function CommunitySidebar({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 w-full max-w-full overflow-hidden">
       {/* About Community Card (Reddit Style) */}
       <div className="bg-[#101217] border border-white/[0.08] rounded-xl overflow-hidden shadow-lg">
         {/* Banner Top */}

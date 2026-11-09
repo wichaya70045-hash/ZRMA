@@ -74,8 +74,8 @@ export default function DeleteThreadModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="bg-[#101217] border border-red-500/30 rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl relative text-zinc-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150 overflow-y-auto">
+      <div className="bg-[#101217] border border-red-500/30 rounded-2xl max-w-md w-full max-w-full p-4 sm:p-6 shadow-2xl relative text-zinc-200 my-auto">
         
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-white/[0.08] mb-4">

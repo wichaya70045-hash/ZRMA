@@ -65,8 +65,8 @@ export default function ReportModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="bg-[#101216] border border-white/[0.1] rounded-xl max-w-md w-full p-5 shadow-2xl relative text-zinc-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-150 overflow-y-auto">
+      <div className="bg-[#101216] border border-white/[0.1] rounded-xl max-w-md w-full max-w-full p-4 sm:p-5 shadow-2xl relative text-zinc-200 my-auto">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-1.5 text-zinc-400 hover:text-white rounded-md hover:bg-white/[0.06] transition-colors"

@@ -412,22 +412,22 @@ export default function ThreadDetailPage({
     (thread.media_url && /\.(jpg|jpeg|png|webp|gif)$/i.test(thread.media_url));
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 w-full max-w-full overflow-hidden">
       {/* Top Breadcrumb & Switcher */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 w-full">
         <Link
           href={`/?category=${cleanCategory}`}
-          className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-yellow-400 transition-colors font-mono"
+          className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-yellow-400 transition-colors font-mono shrink-0"
         >
           <ArrowLeft size={13} />
           <span>กลับไปที่ {subredditName}</span>
         </Link>
 
         {/* View Switcher: Comments vs Live Chat */}
-        <div className="inline-flex items-center bg-black/40 border border-white/[0.06] p-0.5 rounded-lg text-xs">
+        <div className="inline-flex items-center bg-black/40 border border-white/[0.06] p-0.5 rounded-lg text-xs self-start sm:self-auto overflow-x-auto max-w-full">
           <button
             onClick={() => setActiveView('comments')}
-            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md transition-colors ${
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md transition-colors shrink-0 ${
               activeView === 'comments'
                 ? 'bg-red-600 text-white font-medium shadow-sm'
                 : 'text-zinc-400 hover:text-zinc-200'
@@ -439,7 +439,7 @@ export default function ThreadDetailPage({
 
           <button
             onClick={() => setActiveView('livechat')}
-            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md transition-colors ${
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md transition-colors shrink-0 ${
               activeView === 'livechat'
                 ? 'bg-yellow-400 text-zinc-950 font-bold shadow-sm'
                 : 'text-zinc-400 hover:text-zinc-200'
@@ -455,10 +455,10 @@ export default function ThreadDetailPage({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         
         {/* Left Column: Post Card & Threaded Comments */}
-        <div className="lg:col-span-8 space-y-4">
+        <div className="lg:col-span-8 space-y-4 min-w-0">
           
           {/* Main Post Card (Reddit Style) */}
-          <article className="bg-[#101217] border border-white/[0.08] rounded-xl p-4 sm:p-5 text-zinc-200 shadow-xl">
+          <article className="w-full max-w-full overflow-hidden bg-[#101217] border border-white/[0.08] rounded-xl p-3.5 sm:p-5 text-zinc-200 shadow-xl">
             {isThreadHidden && (
               <div className="bg-red-950/20 border border-red-900/40 rounded-lg p-2.5 mb-4 text-xs text-red-300 flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -474,7 +474,7 @@ export default function ThreadDetailPage({
               </div>
             )}
 
-            <div className={`flex gap-3 sm:gap-4 ${isThreadHidden ? 'opacity-30 blur-sm pointer-events-none' : ''}`}>
+            <div className={`flex gap-2.5 sm:gap-4 min-w-0 ${isThreadHidden ? 'opacity-30 blur-sm pointer-events-none' : ''}`}>
               
               {/* Reddit Upvote / Downvote column */}
               <div className="flex flex-col items-center bg-black/40 border border-white/[0.06] rounded-lg p-1 self-start shrink-0">
@@ -516,7 +516,7 @@ export default function ThreadDetailPage({
               </div>
 
               {/* Post Content */}
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 overflow-hidden">
                 
                 {/* Header metadata */}
                 <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2 text-xs">
@@ -676,15 +676,15 @@ export default function ThreadDetailPage({
                 </div>
 
                 {/* Reddit Action Bar */}
-                <div className="flex items-center gap-3 pt-3 text-xs">
-                  <div className="inline-flex items-center gap-1.5 text-zinc-400 font-mono text-[11px]">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-3 text-xs w-full">
+                  <div className="inline-flex items-center gap-1.5 text-zinc-400 font-mono text-[11px] shrink-0">
                     <MessageSquare size={13} />
                     <span>{comments.length} ความคิดเห็น</span>
                   </div>
 
                   <button
                     onClick={handleShare}
-                    className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-yellow-400 transition-colors p-1 rounded hover:bg-white/[0.03]"
+                    className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-yellow-400 transition-colors p-1 rounded hover:bg-white/[0.03] shrink-0"
                   >
                     {copiedLink ? <Check size={13} className="text-yellow-400" /> : <Share2 size={13} />}
                     <span>{copiedLink ? 'คัดลอกแล้ว' : 'แชร์'}</span>
@@ -692,7 +692,7 @@ export default function ThreadDetailPage({
 
                   <button
                     onClick={() => setIsSaved(!isSaved)}
-                    className={`inline-flex items-center gap-1.5 transition-colors p-1 rounded hover:bg-white/[0.03] ${
+                    className={`inline-flex items-center gap-1.5 transition-colors p-1 rounded hover:bg-white/[0.03] shrink-0 ${
                       isSaved ? 'text-yellow-400 font-semibold' : 'text-zinc-400 hover:text-yellow-400'
                     }`}
                   >
@@ -705,7 +705,7 @@ export default function ThreadDetailPage({
                       <button
                         type="button"
                         onClick={() => setShowEditModal(true)}
-                        className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-yellow-400 transition-colors p-1 rounded hover:bg-white/[0.03]"
+                        className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-yellow-400 transition-colors p-1 rounded hover:bg-white/[0.03] shrink-0"
                         title="แก้ไขโพสต์นี้"
                       >
                         <Edit3 size={13} />
@@ -715,7 +715,7 @@ export default function ThreadDetailPage({
                       <button
                         type="button"
                         onClick={() => setShowDeleteModal(true)}
-                        className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-red-400 transition-colors p-1 rounded hover:bg-white/[0.03]"
+                        className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-red-400 transition-colors p-1 rounded hover:bg-white/[0.03] shrink-0"
                         title="ลบโพสต์นี้"
                       >
                         <Trash2 size={13} />
@@ -732,7 +732,7 @@ export default function ThreadDetailPage({
                         title: thread.title,
                       })
                     }
-                    className="flex items-center gap-1 text-[11px] text-zinc-500 hover:text-red-400 transition-colors ml-auto"
+                    className="flex items-center gap-1 text-[11px] text-zinc-500 hover:text-red-400 transition-colors ml-auto shrink-0"
                   >
                     <Flag size={12} />
                     <span className="font-mono tabular-nums">
