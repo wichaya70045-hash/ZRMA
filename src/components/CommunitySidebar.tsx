@@ -22,6 +22,7 @@ import {
   MessageSquare,
   Atom,
   TrendingUp,
+  Ghost,
 } from 'lucide-react';
 import { Community } from '@/types';
 import CreateCommunityModal from './CreateCommunityModal';
@@ -142,6 +143,14 @@ export default function CommunitySidebar({
               <Plus size={13} className="text-yellow-400" />
               <span>+ สร้างห้อง r/ ชุมชนใหม่</span>
             </button>
+
+            <Link
+              href="/chat"
+              className="w-full inline-flex items-center justify-center gap-1.5 p-2 rounded-lg bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 text-orange-400 text-xs font-semibold transition-colors"
+            >
+              <Ghost size={13} />
+              <span>ห้องหายไปเมื่อไม่มีคน (Ghost)</span>
+            </Link>
           </div>
         </div>
       </div>

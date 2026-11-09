@@ -7,6 +7,7 @@ import ThreadCard from '@/components/ThreadCard';
 import CategoryFilter from '@/components/CategoryFilter';
 import CommunitySidebar from '@/components/CommunitySidebar';
 import LiveChatBox from '@/components/LiveChatBox';
+import PinnedBreakingBanner from '@/components/PinnedBreakingBanner';
 import {
   Search,
   Plus,
@@ -189,6 +190,13 @@ export default function HomePage() {
             selectedSort={selectedSort}
             onSelectSort={(sort) => setSelectedSort(sort as RedditSort)}
           />
+
+          {/* Pinned Breaking News Wire Banner */}
+          {(selectedCategory === 'all' || selectedCategory === 'breaking') && (
+            <PinnedBreakingBanner
+              pinnedThread={filteredThreads.find((t) => t.is_pinned === 1 && t.category === 'breaking') || null}
+            />
+          )}
 
           {/* Thread List */}
           {isLoading ? (

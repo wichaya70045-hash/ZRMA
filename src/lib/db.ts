@@ -1,7 +1,7 @@
 import { DatabaseSync } from 'node:sqlite';
 import path from 'path';
 import fs from 'fs';
-import { Thread, Comment, CommentNode, ChatMessage, Category, RedditSort, Community, MediaType } from '@/types';
+import { Thread, Comment, CommentNode, ChatMessage, Category, RedditSort, Community, MediaType, GhostRoom } from '@/types';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 if (!fs.existsSync(DATA_DIR)) {
@@ -108,13 +108,29 @@ export function getDatabase(): DatabaseSync {
         reason TEXT NOT NULL,
         created_at TEXT NOT NULL
       );
+
+      CREATE TABLE IF NOT EXISTS ghost_rooms (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL UNIQUE,
+        title TEXT NOT NULL,
+        topic TEXT,
+        creator_alias TEXT NOT NULL,
+        active_users INTEGER DEFAULT 1,
+        last_active_at TEXT NOT NULL,
+        is_destroyed INTEGER DEFAULT 0,
+        created_at TEXT NOT NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_ghost_rooms ON ghost_rooms(is_destroyed, last_active_at DESC);
     `);
 
     // Migrations for columns in existing databases
     try { db.exec('ALTER TABLE threads ADD COLUMN flair TEXT;'); } catch {}
     try { db.exec('ALTER TABLE threads ADD COLUMN media_url TEXT;'); } catch {}
     try { db.exec('ALTER TABLE threads ADD COLUMN media_type TEXT;'); } catch {}
+    try { db.exec('ALTER TABLE threads ADD COLUMN is_pinned INTEGER DEFAULT 0;'); } catch {}
     try { db.exec('ALTER TABLE comments ADD COLUMN media_url TEXT;'); } catch {}
+    try { db.exec("UPDATE threads SET is_pinned = 1 WHERE category = 'breaking' AND id = 'seed-thread-1';"); } catch {}
 
     // Seed default communities and sample threads if empty
     try {
@@ -383,17 +399,17 @@ export function getThreads(category?: string, sort: RedditSort = 'hot'): Thread[
   }
 
   if (sort === 'hot') {
-    query += ` ORDER BY ((t.upvotes - t.downvotes) * 1000 + unixepoch(t.created_at) / 100) DESC, t.created_at DESC`;
+    query += ` ORDER BY t.is_pinned DESC, ((t.upvotes - t.downvotes) * 1000 + unixepoch(t.created_at) / 100) DESC, t.created_at DESC`;
   } else if (sort === 'new') {
-    query += ` ORDER BY t.created_at DESC`;
+    query += ` ORDER BY t.is_pinned DESC, t.created_at DESC`;
   } else if (sort === 'top') {
-    query += ` ORDER BY score DESC, t.created_at DESC`;
+    query += ` ORDER BY t.is_pinned DESC, score DESC, t.created_at DESC`;
   } else if (sort === 'rising') {
-    query += ` ORDER BY comment_count DESC, score DESC, t.created_at DESC`;
+    query += ` ORDER BY t.is_pinned DESC, comment_count DESC, score DESC, t.created_at DESC`;
   } else if (sort === 'breaking') {
-    query += ` AND t.category = 'breaking' ORDER BY t.created_at DESC`;
+    query += ` AND t.category = 'breaking' ORDER BY t.is_pinned DESC, t.created_at DESC`;
   } else {
-    query += ` ORDER BY t.created_at DESC`;
+    query += ` ORDER BY t.is_pinned DESC, t.created_at DESC`;
   }
 
   query += ` LIMIT 50`;
@@ -416,6 +432,7 @@ export function getThreads(category?: string, sort: RedditSort = 'hot'): Thread[
     comment_count: Number(r.comment_count),
     report_count: Number(r.report_count),
     is_hidden: Number(r.is_hidden),
+    is_pinned: Number(r.is_pinned || 0),
     expires_at: r.expires_at,
     created_at: r.created_at,
   }));
@@ -452,6 +469,7 @@ export function getThreadById(id: string): Thread | null {
     comment_count: Number(row.comment_count),
     report_count: Number(row.report_count),
     is_hidden: Number(row.is_hidden),
+    is_pinned: Number(row.is_pinned || 0),
     expires_at: row.expires_at,
     created_at: row.created_at,
   };
@@ -468,6 +486,7 @@ export function createThread(data: {
   media_type?: MediaType | null;
   author_alias: string;
   author_avatar: string;
+  is_pinned?: number;
   expires_hours: number;
 }): Thread {
   const database = getDatabase();
@@ -487,8 +506,8 @@ export function createThread(data: {
   }
 
   database.prepare(`
-    INSERT INTO threads (id, title, content, category, flair, source_url, media_url, media_type, author_alias, author_avatar, expires_at, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO threads (id, title, content, category, flair, source_url, media_url, media_type, author_alias, author_avatar, is_pinned, expires_at, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     data.id,
     data.title,
@@ -500,6 +519,7 @@ export function createThread(data: {
     data.media_type || null,
     data.author_alias,
     data.author_avatar,
+    data.is_pinned ? 1 : 0,
     expiresAt,
     createdAt
   );
@@ -723,6 +743,130 @@ export function reportContent(data: {
   }
 
   return { newReportCount, isHidden };
+}
+
+// ----------------------------------------------------
+// GHOST ROOMS ("ห้องหายไปเมื่อไม่มีคน")
+// ----------------------------------------------------
+
+export function createGhostRoom(data: {
+  id: string;
+  name: string;
+  title: string;
+  topic?: string | null;
+  creator_alias: string;
+}): GhostRoom {
+  const database = getDatabase();
+  const now = new Date().toISOString();
+  const cleanName = data.name.trim().toLowerCase().replace(/[^a-z0-9_\-]/g, '') || `ghost-${Math.floor(Math.random() * 9000 + 1000)}`;
+
+  database.prepare(`
+    INSERT INTO ghost_rooms (id, name, title, topic, creator_alias, active_users, last_active_at, is_destroyed, created_at)
+    VALUES (?, ?, ?, ?, ?, 1, ?, 0, ?)
+    ON CONFLICT(name) DO UPDATE SET
+      is_destroyed = 0,
+      active_users = active_users + 1,
+      last_active_at = excluded.last_active_at
+  `).run(
+    data.id,
+    cleanName,
+    data.title.trim(),
+    data.topic ? data.topic.trim() : null,
+    data.creator_alias,
+    now,
+    now
+  );
+
+  return getGhostRoom(cleanName)!;
+}
+
+export function getGhostRooms(): GhostRoom[] {
+  purgeInactiveGhostRooms();
+  const database = getDatabase();
+  const rows = database.prepare(`
+    SELECT * FROM ghost_rooms 
+    WHERE is_destroyed = 0 
+    ORDER BY active_users DESC, last_active_at DESC
+  `).all() as any[];
+
+  return rows.map((r) => ({
+    id: r.id,
+    name: r.name,
+    title: r.title,
+    topic: r.topic || null,
+    creator_alias: r.creator_alias,
+    active_users: Number(r.active_users || 0),
+    last_active_at: r.last_active_at,
+    is_destroyed: Number(r.is_destroyed || 0),
+    created_at: r.created_at,
+  }));
+}
+
+export function getGhostRoom(idOrName: string): GhostRoom | null {
+  const database = getDatabase();
+  const row = database.prepare(`
+    SELECT * FROM ghost_rooms 
+    WHERE id = ? OR name = ?
+  `).get(idOrName, idOrName) as any;
+
+  if (!row) return null;
+  return {
+    id: row.id,
+    name: row.name,
+    title: row.title,
+    topic: row.topic || null,
+    creator_alias: row.creator_alias,
+    active_users: Number(row.active_users || 0),
+    last_active_at: row.last_active_at,
+    is_destroyed: Number(row.is_destroyed || 0),
+    created_at: row.created_at,
+  };
+}
+
+export function updateGhostRoomPresence(roomIdOrName: string, activeCount: number): boolean {
+  const database = getDatabase();
+  const now = new Date().toISOString();
+  if (activeCount <= 0) {
+    destroyGhostRoom(roomIdOrName);
+    return false;
+  }
+
+  database.prepare(`
+    UPDATE ghost_rooms 
+    SET active_users = ?, last_active_at = ?
+    WHERE id = ? OR name = ?
+  `).run(activeCount, now, roomIdOrName, roomIdOrName);
+  return true;
+}
+
+export function destroyGhostRoom(roomIdOrName: string): boolean {
+  const database = getDatabase();
+  const room = database.prepare(`SELECT id, name FROM ghost_rooms WHERE id = ? OR name = ?`).get(roomIdOrName, roomIdOrName) as any;
+  if (!room) return false;
+
+  // Vaporize all chat messages associated with this ghost room
+  database.prepare(`DELETE FROM chat_messages WHERE room_id = ? OR room_id = ?`).run(room.id, `ghost_${room.name}`);
+  
+  // Mark room as destroyed and set active users to 0
+  database.prepare(`UPDATE ghost_rooms SET is_destroyed = 1, active_users = 0 WHERE id = ?`).run(room.id);
+  return true;
+}
+
+export function purgeInactiveGhostRooms() {
+  try {
+    const database = getDatabase();
+    const cutoff = new Date(Date.now() - 90 * 1000).toISOString(); // 90 seconds of total inactivity
+    const inactive = database.prepare(`
+      SELECT id, name FROM ghost_rooms 
+      WHERE is_destroyed = 0 AND (active_users <= 0 OR last_active_at < ?)
+    `).all(cutoff) as any[];
+
+    for (const r of inactive) {
+      destroyGhostRoom(r.id);
+    }
+  } catch {
+    // ignore
+  }
 }
 
 export { buildCommentTree } from './commentTree';

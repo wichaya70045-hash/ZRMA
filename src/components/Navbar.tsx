@@ -156,6 +156,16 @@ export default function Navbar() {
                   กระทู้จะถูกลบถาวรเมื่อครบอายุที่กำหนด (24 ชม. - 7 วัน) และห้องแชทสดจำกัดเพียง 100 ข้อความล่าสุดเท่านั้น
                 </p>
               </div>
+
+              <div className="p-3 bg-orange-950/20 rounded-lg border border-orange-500/30 space-y-1">
+                <div className="flex items-center gap-2 font-medium text-orange-300">
+                  <span className="text-xs">👻</span>
+                  <span>ห้องหายไปเมื่อไม่มีคน (Ghost Vanishing Lounges)</span>
+                </div>
+                <p className="text-zinc-400 text-[11px] pl-5 leading-relaxed">
+                  ห้องแชทชั่วคราวที่จะลบทำลายตัวเองและข้อความทั้งหมดทันที 100% เมื่อทุกคนออกจากห้อง
+                </p>
+              </div>
             </div>
 
             <div className="mt-5 flex justify-end">

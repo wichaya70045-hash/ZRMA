@@ -21,6 +21,7 @@ export interface Thread {
   comment_count: number;
   report_count: number;
   is_hidden: number; // 0 or 1
+  is_pinned?: number; // 0 or 1 for pinned breaking news
   expires_at: string;
   created_at: string;
 }
@@ -71,5 +72,17 @@ export interface Community {
   description: string;
   icon: string;
   post_count: number;
+  created_at: string;
+}
+
+export interface GhostRoom {
+  id: string;
+  name: string; // unique slug e.g. 'ghost-alpha-492'
+  title: string;
+  topic?: string | null;
+  creator_alias: string;
+  active_users: number;
+  last_active_at: string;
+  is_destroyed: number;
   created_at: string;
 }

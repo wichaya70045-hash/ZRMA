@@ -79,6 +79,8 @@ export async function POST(req: NextRequest) {
 
     const validatedMediaType = (media_type === 'image' || media_type === 'video') ? media_type : null;
 
+    const isPinned = (body.is_pinned === 1 || body.is_pinned === true || body.pin_breaking === true) ? 1 : 0;
+
     const id = crypto.randomUUID();
     const newThread = createThread({
       id,
@@ -91,6 +93,7 @@ export async function POST(req: NextRequest) {
       media_type: validatedMediaType,
       author_alias: author_alias ? author_alias.trim() : 'u/ผู้ไม่ประสงค์ออกนาม #????',
       author_avatar: author_avatar || 'terminal',
+      is_pinned: isPinned,
       expires_hours: hours,
     });
 

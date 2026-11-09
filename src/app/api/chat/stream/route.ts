@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
-import { subscribeToRoom } from '@/lib/sse';
+import { subscribeToRoom, getActiveListenersCount, broadcastToRoom } from '@/lib/sse';
+import { updateGhostRoomPresence, destroyGhostRoom } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,6 +25,14 @@ export async function GET(req: NextRequest) {
     }
   });
 
+  // If Ghost Room, notify connected count
+  if (room.startsWith('ghost_')) {
+    const ghostName = room.replace(/^ghost_/, '');
+    const currentCount = getActiveListenersCount(roomChannel);
+    updateGhostRoomPresence(ghostName, currentCount);
+    broadcastToRoom(roomChannel, 'presence_update', { active_users: currentCount });
+  }
+
   // Keep-alive heartbeat every 15 seconds
   const pingInterval = setInterval(() => {
     try {
@@ -37,6 +46,19 @@ export async function GET(req: NextRequest) {
   req.signal.addEventListener('abort', () => {
     clearInterval(pingInterval);
     unsubscribe();
+    
+    // If ghost room, check if 0 users remain -> self-destruct!
+    if (room.startsWith('ghost_')) {
+      const ghostName = room.replace(/^ghost_/, '');
+      const remaining = getActiveListenersCount(roomChannel);
+      if (remaining <= 0) {
+        destroyGhostRoom(ghostName);
+      } else {
+        updateGhostRoomPresence(ghostName, remaining);
+        broadcastToRoom(roomChannel, 'presence_update', { active_users: remaining });
+      }
+    }
+
     try {
       writer.close();
     } catch {

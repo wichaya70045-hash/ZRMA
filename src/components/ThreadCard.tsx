@@ -117,7 +117,30 @@ export default function ThreadCard({ thread, onVoteChange }: ThreadCardProps) {
     (thread.media_url && /\.(jpg|jpeg|png|webp|gif)$/i.test(thread.media_url));
 
   return (
-    <article className="bg-[#101217] border border-white/[0.07] hover:border-red-500/35 rounded-xl p-3.5 sm:p-4 transition-all relative group shadow-sm hover:shadow-red-950/20">
+    <article
+      className={`rounded-xl p-3.5 sm:p-4 transition-all relative group shadow-sm ${
+        thread.is_pinned === 1
+          ? 'border-2 border-red-500/60 bg-gradient-to-r from-red-950/30 via-[#101217] to-[#101217] shadow-red-950/30'
+          : 'bg-[#101217] border border-white/[0.07] hover:border-red-500/35 hover:shadow-red-950/20'
+      }`}
+    >
+      {/* Pinned Breaking News Header Ribbon */}
+      {thread.is_pinned === 1 && (
+        <div className="flex items-center gap-2 mb-3 pb-2 border-b border-red-500/25 text-xs">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+          </span>
+          <span className="text-[11px] font-mono font-bold text-red-400 uppercase tracking-wider flex items-center gap-1">
+            <span>📌 ข่าวด่วนปักหมุด (PINNED BREAKING NEWS)</span>
+          </span>
+          {thread.source_url && (
+            <span className="ml-auto text-[10px] font-mono text-yellow-400 bg-yellow-400/10 px-2 py-0.5 rounded border border-yellow-400/20 flex items-center gap-1">
+              <span>แหล่งข่าวอ้างอิง</span>
+            </span>
+          )}
+        </div>
+      )}
       {/* Hidden Banner */}
       {isHidden && !forceReveal && (
         <div className="bg-red-950/25 border border-red-900/40 rounded-lg p-2.5 mb-3 text-xs text-red-300 flex items-center justify-between">

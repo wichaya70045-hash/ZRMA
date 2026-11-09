@@ -60,6 +60,7 @@ export default function NewThreadPage() {
   const [category, setCategory] = useState<string>('general');
   const [customCategory, setCustomCategory] = useState('');
   const [flair, setFlair] = useState('');
+  const [isPinned, setIsPinned] = useState(false);
   const [sourceUrl, setSourceUrl] = useState('');
   const [expiresHours, setExpiresHours] = useState<number>(72);
   const [captchaAnswer, setCaptchaAnswer] = useState('');
@@ -223,6 +224,7 @@ export default function NewThreadPage() {
           media_type: mediaType || null,
           author_alias: customAuthorAlias.trim() || identity?.alias || 'u/นิรนาม #????',
           author_avatar: identity?.avatarIcon || 'terminal',
+          is_pinned: isPinned ? 1 : 0,
           expires_hours: expiresHours,
           captcha_token: captchaData.token,
           captcha_answer: captchaAnswer.trim(),
@@ -362,6 +364,35 @@ export default function NewThreadPage() {
                 />
               </div>
             </div>
+
+            {/* Pinned Breaking Wire Toggle */}
+            {(category === 'breaking' || customCategory.toLowerCase() === 'breaking') && (
+              <div className="p-3 bg-red-950/40 border border-red-500/50 rounded-xl flex items-center justify-between gap-3 animate-in fade-in duration-200">
+                <div className="flex items-center gap-2.5">
+                  <span className="relative flex h-2.5 w-2.5 shrink-0">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                  </span>
+                  <div>
+                    <div className="text-xs font-bold text-red-300 flex items-center gap-1">
+                      <span>📌 ปักหมุดข่าวด่วนพิเศษ (Pin Breaking Live Wire)</span>
+                    </div>
+                    <div className="text-[10px] text-zinc-400">
+                      จะถูกปักหมุดบนสุดของ r/breaking พร้อมระบุแหล่งที่มาและเวลาอัปเดตแบบเรียลไทม์
+                    </div>
+                  </div>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={isPinned}
+                    onChange={(e) => setIsPinned(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-9 h-5 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-600"></div>
+                </label>
+              </div>
+            )}
           </div>
 
           {/* Title */}
