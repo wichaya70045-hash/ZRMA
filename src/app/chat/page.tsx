@@ -98,14 +98,14 @@ export default function GlobalChatPage() {
 
       {/* Main Container */}
       {activeTab === 'global' ? (
-        <div className="h-[75vh] min-h-[500px]">
+        <div className="h-[calc(100dvh-150px)] sm:h-[75vh] sm:min-h-[520px]">
           <LiveChatBox
             roomId="global"
             title="ห้องสนทนาสดส่วนกลาง (z/lounge)"
           />
         </div>
       ) : currentGhostRoom ? (
-        <div className="h-[75vh] min-h-[500px] space-y-2">
+        <div className="h-[calc(100dvh-150px)] sm:h-[75vh] sm:min-h-[520px] space-y-2">
           <div className="flex items-center justify-between px-1">
             <button
               onClick={() => setCurrentGhostRoom(null)}
@@ -115,7 +115,7 @@ export default function GlobalChatPage() {
               <span>ดูรายชื่อห้องหายไปเมื่อไม่มีคนทั้งหมด</span>
             </button>
           </div>
-          <div className="h-[calc(75vh-28px)] min-h-[470px]">
+          <div className="h-[calc(100%-32px)]">
             <LiveChatBox
               roomId={`ghost_${currentGhostRoom.name}`}
               title={`ห้องระเหย: ${currentGhostRoom.title}`}

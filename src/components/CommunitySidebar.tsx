@@ -214,28 +214,6 @@ export default function CommunitySidebar({
         </div>
       </div>
 
-      {/* Community Rules Widget */}
-      <div className="bg-[#101217] border border-white/[0.08] rounded-xl p-3.5 space-y-2.5 text-xs">
-        <h3 className="text-xs font-mono font-bold uppercase text-zinc-400 tracking-wider pb-1.5 border-b border-white/[0.06]">
-          กฎระเบียบ ZRMA Community
-        </h3>
-        
-        <ol className="space-y-2 text-[11px] text-zinc-400 leading-relaxed list-decimal list-inside">
-          <li>
-            <strong className="text-zinc-200">เคารพความเป็นส่วนตัว:</strong> ห้ามสืบหาหรือเปิดเผยตัวตนจริงของผู้อื่น
-          </li>
-          <li>
-            <strong className="text-zinc-200">ห้ามสแปม:</strong> ห้ามโพสต์โปรโมตซ้ำซากหรือข้อความหลอกลวง
-          </li>
-          <li>
-            <strong className="text-zinc-200">ระบบตัดสินโดยชุมชน:</strong> หากถูกรายงานครบ 5 ครั้ง ข้อความจะถูกซ่อนอัตโนมัติ
-          </li>
-          <li>
-            <strong className="text-zinc-200">ทำลายตัวเอง:</strong> ข้อมูลทั้งหมดจะถูกลบถาวรเมื่อครบอายุ (TTL)
-          </li>
-        </ol>
-      </div>
-
       <CreateCommunityModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

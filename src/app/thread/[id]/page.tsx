@@ -703,7 +703,7 @@ export default function ThreadDetailPage({
 
           {/* Conditional View: Live Chat vs Comments */}
           {activeView === 'livechat' ? (
-            <div className="space-y-3">
+            <div className="h-[calc(100dvh-180px)] sm:h-[580px]">
               <LiveChatBox roomId={`thread_${thread.id}`} title={`แชทสด: ${thread.title.substring(0, 30)}...`} />
             </div>
           ) : (

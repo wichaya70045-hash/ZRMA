@@ -308,14 +308,21 @@ export default function HomePage() {
             activeTabMobile === 'threads' ? 'hidden lg:block' : 'block'
           }`}
         >
+          {/* On Mobile: Prioritize Live Chat when Chat tab is selected */}
+          <div className="lg:hidden">
+            <LiveChatBox roomId="global" title="z/lounge ห้องแชทสด" />
+          </div>
+
           {/* Reddit Community Info Widget */}
           <CommunitySidebar
             currentCategory={selectedCategory}
             onSelectCategory={(cat) => setSelectedCategory(cat)}
           />
 
-          {/* Live Lounge Chat Widget */}
-          <LiveChatBox roomId="global" title="z/lounge ห้องแชทสด" />
+          {/* On Desktop: Live Lounge Chat Widget */}
+          <div className="hidden lg:block">
+            <LiveChatBox roomId="global" title="z/lounge ห้องแชทสด" />
+          </div>
         </aside>
 
       </div>

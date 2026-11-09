@@ -40,6 +40,12 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* Mobile Smooth Scrolling and Touch UX */
+.overflow-y-auto {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
 /* Minimal hairline scrollbar with warm amber/orange subtle tint */
 ::-webkit-scrollbar {
   width: 5px;

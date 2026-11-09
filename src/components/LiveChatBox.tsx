@@ -231,9 +231,9 @@ export default function LiveChatBox({
 
   return (
     <div
-      className={`rounded-xl flex flex-col h-full overflow-hidden shadow-lg border transition-colors ${
+      className={`rounded-2xl flex flex-col h-full overflow-hidden shadow-xl border transition-colors ${
         isGhost
-          ? 'bg-[#0e0f14] border-red-500/50 shadow-red-950/20'
+          ? 'bg-[#0d0f14] border-orange-500/50 shadow-orange-950/20'
           : 'bg-[#101217] border-white/[0.08]'
       }`}
     >
@@ -272,28 +272,30 @@ export default function LiveChatBox({
         </div>
       )}
 
-      {/* Terminal Header */}
-      <div className="px-3.5 py-2.5 bg-black/50 border-b border-white/[0.06] flex items-center justify-between gap-2">
+      {/* Modern Terminal Header */}
+      <div className="px-3.5 py-2.5 sm:px-4 sm:py-3 bg-black/60 backdrop-blur-sm border-b border-white/[0.08] flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <div
-            className={`w-2 h-2 rounded-full animate-pulse shrink-0 ${
-              isGhost ? 'bg-orange-500' : 'bg-red-500'
-            }`}
+            className={`w-2 h-2 rounded-full shrink-0 ${
+              settings.reduceMotion ? '' : 'animate-pulse'
+            } ${isGhost ? 'bg-orange-500' : 'bg-green-500'}`}
           />
           <div className="min-w-0">
-            <h3 className="text-xs font-semibold text-zinc-100 flex items-center gap-1.5 truncate">
-              {isGhost && <Ghost size={12} className="text-orange-400 shrink-0" />}
+            <h3 className="text-xs sm:text-sm font-bold text-zinc-100 flex items-center gap-1.5 truncate">
+              {isGhost && <Ghost size={13} className="text-orange-400 shrink-0" />}
               <span>{title}</span>
             </h3>
-            <span className="text-[10px] font-mono text-zinc-500 tabular-nums">
-              {isGhost ? 'EPHEMERAL GHOST STREAM' : 'LIVE STREAM • FIFO 100'}
-            </span>
+            <div className="flex items-center gap-1.5 text-[10px] font-mono text-zinc-500 tabular-nums">
+              <span className="text-green-400 font-semibold">● LIVE</span>
+              <span>•</span>
+              <span>{messages.length} ข้อความ</span>
+            </div>
           </div>
         </div>
 
         {/* Identity with Editable Name & Dice Reroll */}
         {identity && (
-          <div className="flex items-center gap-1.5 bg-white/[0.03] border border-white/[0.06] px-2 py-1 rounded-md text-xs shrink-0">
+          <div className="flex items-center gap-1.5 bg-[#141721] border border-white/[0.08] px-2 py-1 rounded-xl text-xs shrink-0 shadow-sm">
             <IdentityAvatar iconKey={identity.avatarIcon} theme={isGhost ? 'orange' : 'yellow'} size="xs" />
             
             {isEditingAlias ? (
@@ -306,6 +308,7 @@ export default function LiveChatBox({
                   placeholder="ชื่อ..."
                   maxLength={30}
                   className="w-20 bg-black/60 border border-yellow-400 rounded px-1.5 py-0.5 text-[11px] text-yellow-400 font-mono focus:outline-none"
+                  autoFocus
                 />
                 <button
                   type="button"
@@ -320,15 +323,15 @@ export default function LiveChatBox({
               <div className="flex items-center gap-1">
                 <span
                   onClick={() => setIsEditingAlias(true)}
-                  className="text-zinc-300 text-[11px] font-mono truncate max-w-[100px] cursor-pointer hover:text-yellow-400"
-                  title="คลิกเพื่อตั้งชื่อเอง"
+                  className="text-zinc-200 text-[11px] font-mono font-medium truncate max-w-[85px] sm:max-w-[120px] cursor-pointer hover:text-yellow-400 transition-colors"
+                  title="คลิกเพื่อแก้ไขชื่อ"
                 >
                   {effectiveAlias}
                 </span>
                 <button
                   type="button"
                   onClick={() => setIsEditingAlias(true)}
-                  className="p-0.5 text-zinc-500 hover:text-yellow-400"
+                  className="p-0.5 text-zinc-500 hover:text-yellow-400 transition-colors"
                   title="แก้ไขชื่อตัวเอง"
                 >
                   <Edit2 size={10} />
@@ -338,8 +341,8 @@ export default function LiveChatBox({
 
             <button
               onClick={handleRerollIdentity}
-              className="p-1 text-zinc-500 hover:text-yellow-400 hover:bg-white/[0.06] rounded transition-colors active:scale-95 ml-0.5"
-              title="สุ่มชื่อและตัวตนใหม่"
+              className="p-1 text-zinc-400 hover:text-yellow-400 hover:bg-white/[0.06] rounded-lg transition-colors active:scale-95 ml-0.5"
+              title="สุ่มชื่อใหม่"
               aria-label="Reroll anonymous identity"
             >
               <Dices size={13} />
@@ -368,27 +371,31 @@ export default function LiveChatBox({
         </div>
       ) : (
         <>
-          {/* Message Feed */}
-          <div className="flex-1 overflow-y-auto p-3.5 space-y-2.5 min-h-[360px] max-h-[500px]">
+          {/* Message Feed: Spacious, eye-friendly layout for mobile */}
+          <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 min-h-[380px] max-h-[calc(100dvh-260px)] sm:max-h-[520px] scroll-smooth">
             {isLoading ? (
               <div className="flex items-center justify-center h-full text-xs font-mono text-zinc-500">
                 CONNECTING STREAM...
               </div>
             ) : messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center p-6 space-y-1.5 text-zinc-500">
+              <div className="flex flex-col items-center justify-center h-full text-center p-6 space-y-2 text-zinc-500">
                 {isGhost ? (
                   <>
-                    <Ghost size={28} className="text-red-400 mb-1 animate-pulse" />
-                    <p className="text-xs font-medium text-zinc-300">ห้องสนทนาชั่วคราวเริ่มต้นแล้ว</p>
-                    <p className="text-[11px] text-zinc-500 max-w-xs">
+                    <Ghost size={32} className="text-orange-400 mb-1 animate-pulse" />
+                    <p className="text-sm font-semibold text-zinc-200">ห้องสนทนาชั่วคราวเริ่มต้นแล้ว</p>
+                    <p className="text-xs text-zinc-400 max-w-xs leading-relaxed">
                       พิมพ์ข้อความเพื่อเริ่มคุย ข้อมูลทั้งหมดจะถูกลบทำลายทันทีเมื่อทุกคนออกจากห้อง
                     </p>
                   </>
                 ) : (
                   <>
-                    <Shield size={24} className="text-zinc-600 mb-1" />
-                    <p className="text-xs font-medium text-zinc-400">ยังไม่มีข้อความในห้องนี้</p>
-                    <p className="text-[11px] text-zinc-600">ข้อความทั้งหมดไม่ถูกบันทึก IP และจำกัด 100 ล่าสุด</p>
+                    <div className="w-12 h-12 rounded-full bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mx-auto text-zinc-400">
+                      <Radio size={20} className="text-yellow-400" />
+                    </div>
+                    <p className="text-sm font-semibold text-zinc-300">ยังไม่มีข้อความในห้องนี้</p>
+                    <p className="text-xs text-zinc-500 max-w-xs leading-relaxed">
+                      เริ่มบทสนทนาแบบนิรนาม 100% ไม่เก็บประวัติส่วนบุคคลใดๆ
+                    </p>
                   </>
                 )}
               </div>
@@ -400,7 +407,7 @@ export default function LiveChatBox({
                 return (
                   <div
                     key={msg.id}
-                    className={`group flex items-start gap-2 ${isSelf ? 'flex-row-reverse' : ''}`}
+                    className={`group flex items-start gap-2.5 ${isSelf ? 'flex-row-reverse' : ''}`}
                   >
                     <IdentityAvatar
                       iconKey={msg.author_avatar}
@@ -409,59 +416,61 @@ export default function LiveChatBox({
                     />
 
                     <div
-                      className={`max-w-[80%] rounded-lg px-3 py-2 text-xs relative transition-colors ${
+                      className={`max-w-[88%] sm:max-w-[80%] rounded-2xl px-3.5 py-2.5 text-xs relative transition-all shadow-sm ${
                         isMsgHidden
                           ? 'bg-red-950/20 border border-red-900/40 text-red-300'
                           : isSelf
-                          ? 'bg-red-950/50 text-zinc-100 border border-red-500/30 shadow-sm'
-                          : 'bg-white/[0.03] text-zinc-200 border border-white/[0.06]'
+                          ? 'bg-gradient-to-br from-red-950/80 via-red-900/60 to-red-950/70 text-white border border-red-500/40 rounded-tr-xs'
+                          : 'bg-[#131620] text-zinc-100 border border-white/[0.08] rounded-tl-xs hover:border-white/[0.14]'
                       }`}
                     >
-                      {/* Alias & Timestamp */}
+                      {/* Alias & Timestamp Header */}
                       <div
-                        className={`flex items-center gap-1.5 text-[10px] mb-1 font-mono ${
-                          isSelf ? 'text-red-300' : 'text-zinc-500'
+                        className={`flex items-center justify-between gap-2 text-[10.5px] mb-1 font-mono ${
+                          isSelf ? 'text-red-300' : 'text-zinc-400'
                         }`}
                       >
-                        <span className="font-semibold text-zinc-300 truncate max-w-[120px]">
-                          {msg.author_alias}
+                        <span className="font-semibold truncate max-w-[130px] sm:max-w-[160px] text-zinc-200">
+                          {isSelf ? `u/${msg.author_alias} (คุณ)` : `u/${msg.author_alias}`}
                         </span>
-                        <span>•</span>
-                        <span className="tabular-nums">
-                          {new Date(msg.created_at).toLocaleTimeString('th-TH', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </span>
+
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className="tabular-nums text-zinc-500">
+                            {new Date(msg.created_at).toLocaleTimeString('th-TH', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </span>
+
+                          {/* Mobile-friendly Report Button (No hover required on touch) */}
+                          {!isSelf && (
+                            <button
+                              type="button"
+                              onClick={() => setReportTarget(msg)}
+                              className="text-zinc-500 hover:text-red-400 p-0.5 rounded transition-colors ml-0.5"
+                              title="รายงานข้อความนี้"
+                              aria-label="Report message"
+                            >
+                              <Flag size={10} />
+                            </button>
+                          )}
+                        </div>
                       </div>
 
-                      {/* Content */}
+                      {/* Message Content: Clean typography, comfortable line spacing for Thai text */}
                       {isMsgHidden ? (
-                        <div className="flex items-center justify-between gap-2 text-[11px] text-red-300">
+                        <div className="flex items-center justify-between gap-2 text-[11px] text-red-300 pt-0.5">
                           <span>[ข้อความถูกซ่อนเนื่องจากถูกรายงาน 5 ครั้ง]</span>
                           <button
                             onClick={() => toggleRevealHidden(msg.id)}
-                            className="p-0.5 hover:bg-white/[0.06] rounded"
+                            className="p-1 hover:bg-white/[0.06] rounded text-zinc-200 transition-colors"
                           >
                             <Eye size={12} />
                           </button>
                         </div>
                       ) : (
-                        <div className="break-words leading-relaxed whitespace-pre-wrap">
+                        <div className="break-words leading-relaxed whitespace-pre-wrap text-[13.5px] sm:text-xs text-zinc-100 font-sans">
                           {msg.content}
-                        </div>
-                      )}
-
-                      {/* Report Button on Hover */}
-                      {!isSelf && (
-                        <div className="absolute top-1 -right-6 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            onClick={() => setReportTarget(msg)}
-                            className="p-1 text-zinc-500 hover:text-red-400 rounded transition-colors"
-                            title="รายงานข้อความนี้"
-                          >
-                            <Flag size={11} />
-                          </button>
                         </div>
                       )}
                     </div>
@@ -472,44 +481,59 @@ export default function LiveChatBox({
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input Form with Red/Orange Submit and Orange Cooldown */}
+          {/* Input Form: Mobile Ergonomic Touch Targets */}
           <form
             onSubmit={handleSendMessage}
-            className="p-2.5 bg-black/50 border-t border-white/[0.06] flex items-center gap-2"
+            className="p-2 sm:p-2.5 bg-[#0d0f14]/95 backdrop-blur-md border-t border-white/[0.08] flex items-center gap-2 sticky bottom-0 z-10"
           >
-            <input
-              type="text"
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  if (settings.enterToSend) {
-                    e.preventDefault();
-                    handleSendMessage();
+            {/* Quick 1-tap Identity Reroll on Mobile */}
+            <button
+              type="button"
+              onClick={handleRerollIdentity}
+              className="p-2 text-zinc-400 hover:text-yellow-400 hover:bg-white/[0.06] rounded-xl border border-white/[0.08] transition-colors shrink-0 active:scale-95"
+              title="สุ่มชื่อและตัวตนใหม่ทันที"
+              aria-label="Reroll identity"
+            >
+              <Dices size={16} />
+            </button>
+
+            <div className="relative flex-1">
+              <input
+                type="text"
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    if (settings.enterToSend) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
                   }
+                }}
+                placeholder={
+                  cooldown > 0
+                    ? `หน่วงเวลา: รออีก ${cooldown}s...`
+                    : isGhost
+                    ? 'พิมพ์ในห้องระเหย (ทำลายเมื่อทุกคนออก)...'
+                    : 'พิมพ์ข้อความแบบนิรนาม...'
                 }
-              }}
-              placeholder={
-                cooldown > 0
-                  ? `หน่วงเวลาป้องกันสแปม: รออีก ${cooldown}s...`
-                  : isGhost
-                  ? 'พิมพ์ข้อความในห้องระเหย (ทำลายเมื่อทุกคนออก)...'
-                  : 'พิมพ์ข้อความแบบนิรนาม...'
-              }
-              disabled={cooldown > 0 || isSending}
-              maxLength={500}
-              className="flex-1 bg-white/[0.03] border border-white/[0.08] focus:border-red-500 rounded-md px-3 py-1.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-red-500 disabled:opacity-50 transition-colors font-sans"
-            />
+                disabled={cooldown > 0 || isSending}
+                maxLength={500}
+                className="w-full bg-[#141721] border border-white/[0.1] focus:border-red-500 rounded-xl px-3.5 py-2 text-sm sm:text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-red-500 disabled:opacity-50 transition-colors font-sans"
+              />
+            </div>
 
             <button
               type="submit"
               disabled={!inputText.trim() || cooldown > 0 || isSending}
-              className={`btn-primary !py-1.5 !px-3 text-xs shrink-0 ${
-                isGhost ? '!bg-orange-600 hover:!bg-orange-500' : ''
+              className={`h-9 px-3.5 sm:px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shrink-0 shadow-md active:scale-95 ${
+                isGhost
+                  ? 'bg-orange-500 hover:bg-orange-400 text-zinc-950 font-bold disabled:opacity-40'
+                  : 'bg-red-600 hover:bg-red-500 text-white disabled:opacity-40'
               }`}
             >
-              <Send size={12} />
-              <span>ส่ง</span>
+              <Send size={13} />
+              <span className="hidden sm:inline">ส่ง</span>
             </button>
           </form>
         </>
