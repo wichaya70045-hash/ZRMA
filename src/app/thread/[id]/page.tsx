@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Thread, Comment, CommentNode, CaptchaChallenge } from '@/types';
 import { getScopedIdentity, rerollScopedIdentity, setCustomScopedIdentity, AnonymousIdentity } from '@/lib/privacy';
 import { buildCommentTree } from '@/lib/commentTree';
+import { useSettings } from '@/lib/settings';
 import IdentityAvatar from '@/components/IdentityAvatar';
 import ReportModal from '@/components/ReportModal';
 import LiveChatBox from '@/components/LiveChatBox';
@@ -30,6 +31,8 @@ import {
   Film,
   Image as ImageIcon,
   Edit2,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 
 export default function ThreadDetailPage({
@@ -39,12 +42,14 @@ export default function ThreadDetailPage({
 }) {
   const resolvedParams = use(params);
   const threadId = resolvedParams.id;
+  const { settings } = useSettings();
 
   const [thread, setThread] = useState<Thread | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentTree, setCommentTree] = useState<CommentNode[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
+  const [isMediaRevealed, setIsMediaRevealed] = useState(!settings.blurMedia);
 
   const [activeView, setActiveView] = useState<'comments' | 'livechat'>('comments');
 
@@ -286,6 +291,11 @@ export default function ThreadDetailPage({
         setCommentContent('');
         setCooldown(5);
         fetchCaptcha();
+        if (settings.strictZeroTrace) {
+          const fresh = rerollScopedIdentity(`thread_${threadId}`);
+          setIdentity(fresh);
+          setCustomAlias(fresh.alias);
+        }
       } else {
         alert(data.error || 'เกิดข้อผิดพลาดในการตอบกลับ');
         fetchCaptcha();
@@ -323,6 +333,11 @@ export default function ThreadDetailPage({
       const data = await res.json();
       if (res.ok && data.comment) {
         fetchCaptcha();
+        if (settings.strictZeroTrace) {
+          const fresh = rerollScopedIdentity(`thread_${threadId}`);
+          setIdentity(fresh);
+          setCustomAlias(fresh.alias);
+        }
         return true;
       } else {
         alert(data.error || 'เกิดข้อผิดพลาดในการตอบกลับ');
@@ -550,34 +565,72 @@ export default function ThreadDetailPage({
 
                 {/* Media Attachment Player / Preview */}
                 {thread.media_url && (
-                  <div className="mb-4 rounded-xl overflow-hidden border border-white/[0.08] bg-black/60">
-                    {isVideo ? (
+                  <div className="mb-4 rounded-xl overflow-hidden border border-white/[0.08] bg-black/60 relative">
+                    {settings.blurMedia && !isMediaRevealed ? (
+                      <div className="relative group/blur">
+                        <div className="filter blur-xl scale-110 pointer-events-none select-none max-h-[400px] overflow-hidden opacity-40">
+                          {isVideo ? (
+                            <video src={thread.media_url} className="w-full max-h-[400px] object-cover" />
+                          ) : (
+                            <img src={thread.media_url} alt="" className="w-full max-h-[400px] object-cover" />
+                          )}
+                        </div>
+                        <div className="absolute inset-0 bg-black/60 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center">
+                          <button
+                            type="button"
+                            onClick={() => setIsMediaRevealed(true)}
+                            className="px-4 py-2 rounded-xl bg-yellow-400 text-zinc-950 hover:bg-yellow-300 font-bold text-xs flex items-center gap-2 transition-all shadow-lg active:scale-95"
+                          >
+                            <Eye size={15} />
+                            <span>แตะเพื่อแสดงสื่อ (Auto-Blur Active)</span>
+                          </button>
+                          <p className="text-[11px] text-zinc-400 mt-2">
+                            ตั้งค่าโหมดเบลอสื่อเริ่มต้นไว้ เพื่อความปลอดภัยในการเปิดอ่านในที่สาธารณะ
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
                       <div className="relative">
-                        <video
-                          src={thread.media_url}
-                          controls
-                          playsInline
-                          preload="metadata"
-                          className="w-full max-h-[500px] object-contain bg-black"
-                        />
-                        <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] font-mono text-yellow-400 flex items-center gap-1 pointer-events-none">
-                          <Film size={11} />
-                          <span>ATTACHED VIDEO</span>
-                        </div>
+                        {isVideo ? (
+                          <div className="relative">
+                            <video
+                              src={thread.media_url}
+                              controls
+                              playsInline
+                              preload="metadata"
+                              className="w-full max-h-[500px] object-contain bg-black"
+                            />
+                            <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] font-mono text-yellow-400 flex items-center gap-1 pointer-events-none">
+                              <Film size={11} />
+                              <span>ATTACHED VIDEO</span>
+                            </div>
+                          </div>
+                        ) : isImage ? (
+                          <div className="relative group/img cursor-pointer" onClick={() => window.open(thread.media_url!, '_blank')}>
+                            <img
+                              src={thread.media_url}
+                              alt={thread.title}
+                              className="w-full max-h-[500px] object-contain bg-black hover:opacity-95 transition-opacity"
+                            />
+                            <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] font-mono text-zinc-300 flex items-center gap-1 pointer-events-none">
+                              <ImageIcon size={11} />
+                              <span>ATTACHED IMAGE (CLICK TO OPEN)</span>
+                            </div>
+                          </div>
+                        ) : null}
+
+                        {settings.blurMedia && (
+                          <button
+                            type="button"
+                            onClick={() => setIsMediaRevealed(false)}
+                            className="absolute top-2 right-2 bg-black/75 hover:bg-black text-zinc-300 hover:text-white px-2.5 py-1 rounded text-[10px] font-mono border border-white/[0.1] flex items-center gap-1 transition-colors"
+                          >
+                            <EyeOff size={11} />
+                            <span>เบลอกลับ</span>
+                          </button>
+                        )}
                       </div>
-                    ) : isImage ? (
-                      <div className="relative group/img cursor-pointer" onClick={() => window.open(thread.media_url!, '_blank')}>
-                        <img
-                          src={thread.media_url}
-                          alt={thread.title}
-                          className="w-full max-h-[500px] object-contain bg-black hover:opacity-95 transition-opacity"
-                        />
-                        <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] font-mono text-zinc-300 flex items-center gap-1 pointer-events-none">
-                          <ImageIcon size={11} />
-                          <span>ATTACHED IMAGE (CLICK TO OPEN)</span>
-                        </div>
-                      </div>
-                    ) : null}
+                    )}
                   </div>
                 )}
 
@@ -597,7 +650,9 @@ export default function ThreadDetailPage({
                 )}
 
                 {/* Body Content */}
-                <div className="text-zinc-300 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap pb-4 border-b border-white/[0.06]">
+                <div className={`text-zinc-300 leading-relaxed whitespace-pre-wrap pb-4 border-b border-white/[0.06] ${
+                  settings.fontSize === 'comfortable' ? 'text-sm sm:text-base leading-relaxed' : 'text-xs sm:text-sm leading-relaxed'
+                }`}>
                   {thread.content}
                 </div>
 

@@ -14,10 +14,15 @@ import {
   Search,
   MessageSquare,
   Users,
+  Settings as SettingsIcon,
 } from 'lucide-react';
+import SettingsModal from './SettingsModal';
+import { useSettings } from '@/lib/settings';
 
 export default function Navbar() {
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const { settings } = useSettings();
 
   return (
     <>
@@ -64,7 +69,7 @@ export default function Navbar() {
           </div>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <button
               onClick={() => setShowPrivacyModal(true)}
               className="p-1.5 text-zinc-400 hover:text-yellow-400 hover:bg-white/[0.04] rounded-md border border-transparent hover:border-white/[0.06] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400"
@@ -72,6 +77,18 @@ export default function Navbar() {
               aria-label="Privacy architecture details"
             >
               <Info size={16} strokeWidth={1.75} />
+            </button>
+
+            <button
+              onClick={() => setShowSettingsModal(true)}
+              className="p-1.5 text-zinc-400 hover:text-yellow-400 hover:bg-white/[0.04] rounded-md border border-transparent hover:border-white/[0.06] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 relative"
+              title="ตั้งค่าระบบ (Preferences)"
+              aria-label="Settings and preferences"
+            >
+              <SettingsIcon size={16} strokeWidth={1.75} />
+              {settings.strictZeroTrace && (
+                <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+              )}
             </button>
 
             <Link
@@ -93,6 +110,12 @@ export default function Navbar() {
           </div>
         </div>
       </header>
+
+      {/* Settings Modal */}
+      <SettingsModal
+        isOpen={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
+      />
 
       {/* Privacy Architecture Modal */}
       {showPrivacyModal && (

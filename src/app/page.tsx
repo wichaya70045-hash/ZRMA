@@ -8,6 +8,7 @@ import CategoryFilter from '@/components/CategoryFilter';
 import CommunitySidebar from '@/components/CommunitySidebar';
 import LiveChatBox from '@/components/LiveChatBox';
 import PinnedBreakingBanner from '@/components/PinnedBreakingBanner';
+import { useSettings } from '@/lib/settings';
 import {
   Search,
   Plus,
@@ -20,13 +21,17 @@ import {
   TrendingUp,
   Award,
   Sparkles,
+  LayoutGrid,
+  LayoutList,
+  Sliders,
 } from 'lucide-react';
 
 export default function HomePage() {
+  const { settings, updateSetting } = useSettings();
   const [threads, setThreads] = useState<Thread[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedSort, setSelectedSort] = useState<RedditSort>('hot');
+  const [selectedSort, setSelectedSort] = useState<RedditSort>(settings.defaultSort || 'hot');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTabMobile, setActiveTabMobile] = useState<'threads' | 'chat'>('threads');
 
@@ -34,11 +39,17 @@ export default function HomePage() {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const cat = params.get('category');
+      const sort = params.get('sort');
       if (cat) {
         setSelectedCategory(cat.replace(/^[zr]\//i, ''));
       }
+      if (sort && ['hot', 'breaking', 'new', 'top'].includes(sort)) {
+        setSelectedSort(sort as RedditSort);
+      } else if (!sort && settings.defaultSort) {
+        setSelectedSort(settings.defaultSort);
+      }
     }
-  }, []);
+  }, [settings.defaultSort]);
 
   const fetchThreads = async () => {
     setIsLoading(true);
@@ -198,6 +209,48 @@ export default function HomePage() {
             />
           )}
 
+          {/* Feed Toolbar: Results Count & View Layout Toggle */}
+          <div className="flex items-center justify-between px-1 py-1 text-xs text-zinc-400">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-[11px] text-zinc-500">
+                พบ {filteredThreads.length} โพสต์ใน z/{selectedCategory}
+              </span>
+              {settings.strictZeroTrace && (
+                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-red-950/60 text-red-400 border border-red-500/30 flex items-center gap-1">
+                  <Shield size={10} />
+                  <span>Strict Anon</span>
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-1 bg-black/40 p-0.5 rounded-lg border border-white/[0.06]">
+              <button
+                type="button"
+                onClick={() => updateSetting('feedLayout', 'card')}
+                className={`p-1 rounded transition-colors ${
+                  settings.feedLayout === 'card'
+                    ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/30 shadow-sm'
+                    : 'text-zinc-500 hover:text-zinc-300'
+                }`}
+                title="มุมมองการ์ดเต็ม (Card View)"
+              >
+                <LayoutGrid size={13} />
+              </button>
+              <button
+                type="button"
+                onClick={() => updateSetting('feedLayout', 'compact')}
+                className={`p-1 rounded transition-colors ${
+                  settings.feedLayout === 'compact'
+                    ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/30 shadow-sm'
+                    : 'text-zinc-500 hover:text-zinc-300'
+                }`}
+                title="มุมมองกะทัดรัด (Compact View)"
+              >
+                <LayoutList size={13} />
+              </button>
+            </div>
+          </div>
+
           {/* Thread List */}
           {isLoading ? (
             <div className="space-y-3">
@@ -232,11 +285,12 @@ export default function HomePage() {
               </div>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className={settings.feedLayout === 'compact' ? 'space-y-1.5' : 'space-y-3'}>
               {filteredThreads.map((thread) => (
                 <ThreadCard
                   key={thread.id}
                   thread={thread}
+                  layout={settings.feedLayout}
                   onVoteChange={(id, newScore) => {
                     setThreads((prev) =>
                       prev.map((t) => (t.id === id ? { ...t, score: newScore } : t))

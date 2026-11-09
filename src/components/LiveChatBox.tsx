@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChatMessage } from '@/types';
 import { getScopedIdentity, rerollScopedIdentity, setCustomScopedIdentity, AnonymousIdentity } from '@/lib/privacy';
+import { useSettings } from '@/lib/settings';
 import {
   Send,
   Dices,
@@ -18,6 +19,7 @@ import {
   LogOut,
   AlertTriangle,
   Users,
+  Volume2,
 } from 'lucide-react';
 import IdentityAvatar from './IdentityAvatar';
 import ReportModal from './ReportModal';
@@ -37,6 +39,7 @@ export default function LiveChatBox({
   isGhostRoom = false,
   onLeaveGhostRoom,
 }: LiveChatBoxProps) {
+  const { settings, playChatChime } = useSettings();
   const isGhost = isGhostRoom || roomId.startsWith('ghost_');
   const ghostName = roomId.replace(/^ghost_/, '');
 
@@ -94,6 +97,11 @@ export default function LiveChatBox({
           }
           return updated;
         });
+
+        // Play chime if message came from another user
+        if (newMsg.author_alias !== identity?.alias) {
+          playChatChime();
+        }
       } catch (err) {
         console.error('Error parsing SSE message:', err);
       }
@@ -132,8 +140,12 @@ export default function LiveChatBox({
   }, [roomId]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    if (settings.autoScrollChat) {
+      messagesEndRef.current?.scrollIntoView({
+        behavior: settings.reduceMotion ? 'auto' : 'smooth',
+      });
+    }
+  }, [messages, settings.autoScrollChat, settings.reduceMotion]);
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -181,6 +193,9 @@ export default function LiveChatBox({
       if (res.ok) {
         setInputText('');
         setCooldown(3);
+        if (settings.strictZeroTrace) {
+          handleRerollIdentity();
+        }
       } else {
         alert(data.error || 'ไม่สามารถส่งข้อความได้');
       }
@@ -466,6 +481,14 @@ export default function LiveChatBox({
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  if (settings.enterToSend) {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                }
+              }}
               placeholder={
                 cooldown > 0
                   ? `หน่วงเวลาป้องกันสแปม: รออีก ${cooldown}s...`

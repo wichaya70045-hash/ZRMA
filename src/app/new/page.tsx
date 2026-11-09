@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Community, CaptchaChallenge, MediaType } from '@/types';
 import { getScopedIdentity, rerollScopedIdentity, setCustomScopedIdentity, AnonymousIdentity } from '@/lib/privacy';
+import { useSettings } from '@/lib/settings';
 import IdentityAvatar from '@/components/IdentityAvatar';
 import CreateCommunityModal from '@/components/CreateCommunityModal';
 import {
@@ -54,6 +55,7 @@ const ICON_MAP: Record<string, any> = {
 
 export default function NewThreadPage() {
   const router = useRouter();
+  const { settings } = useSettings();
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -233,6 +235,9 @@ export default function NewThreadPage() {
 
       const data = await res.json();
       if (res.ok && data.thread) {
+        if (settings.strictZeroTrace) {
+          rerollScopedIdentity('new_thread');
+        }
         router.push(`/thread/${data.thread.id}`);
       } else {
         setErrorMsg(data.error || 'เกิดข้อผิดพลาดในการสร้างกระทู้');
