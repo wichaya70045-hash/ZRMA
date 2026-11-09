@@ -82,6 +82,7 @@ export async function POST(req: NextRequest) {
     const isPinned = (body.is_pinned === 1 || body.is_pinned === true || body.pin_breaking === true) ? 1 : 0;
 
     const id = crypto.randomUUID();
+    const token = body.edit_token?.trim() || crypto.randomBytes(16).toString('hex');
     const newThread = createThread({
       id,
       title: title.trim(),
@@ -95,12 +96,13 @@ export async function POST(req: NextRequest) {
       author_avatar: author_avatar || 'terminal',
       is_pinned: isPinned,
       expires_hours: hours,
+      edit_token: token,
     });
 
     // Broadcast new thread event
     broadcastToRoom('global', 'new_thread', newThread);
 
-    return NextResponse.json({ thread: newThread }, { status: 201 });
+    return NextResponse.json({ thread: newThread, edit_token: token }, { status: 201 });
   } catch (err: any) {
     console.error('Error creating thread:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

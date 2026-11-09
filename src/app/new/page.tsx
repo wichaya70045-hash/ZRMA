@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Community, CaptchaChallenge, MediaType } from '@/types';
-import { getScopedIdentity, rerollScopedIdentity, setCustomScopedIdentity, AnonymousIdentity } from '@/lib/privacy';
+import { getScopedIdentity, rerollScopedIdentity, setCustomScopedIdentity, saveAuthoredThread, AnonymousIdentity } from '@/lib/privacy';
 import { useSettings } from '@/lib/settings';
 import IdentityAvatar from '@/components/IdentityAvatar';
 import CreateCommunityModal from '@/components/CreateCommunityModal';
@@ -32,6 +32,8 @@ import {
   MessageSquare,
   Atom,
   TrendingUp,
+  Lock,
+  Key,
 } from 'lucide-react';
 
 const EXPIRY_OPTIONS = [
@@ -67,6 +69,7 @@ export default function NewThreadPage() {
   const [expiresHours, setExpiresHours] = useState<number>(72);
   const [captchaAnswer, setCaptchaAnswer] = useState('');
   const [captchaData, setCaptchaData] = useState<CaptchaChallenge | null>(null);
+  const [editPasscode, setEditPasscode] = useState('');
 
   // Author Display Name
   const [identity, setIdentity] = useState<AnonymousIdentity | null>(null);
@@ -92,6 +95,8 @@ export default function NewThreadPage() {
     const id = getScopedIdentity('create_thread_session');
     setIdentity(id);
     setCustomAuthorAlias(id.alias);
+    const randomPin = Math.floor(100000 + Math.random() * 900000).toString();
+    setEditPasscode(randomPin);
   }, []);
 
   const fetchCommunities = async () => {
@@ -228,6 +233,7 @@ export default function NewThreadPage() {
           author_avatar: identity?.avatarIcon || 'terminal',
           is_pinned: isPinned ? 1 : 0,
           expires_hours: expiresHours,
+          edit_token: editPasscode.trim(),
           captcha_token: captchaData.token,
           captcha_answer: captchaAnswer.trim(),
         }),
@@ -235,6 +241,9 @@ export default function NewThreadPage() {
 
       const data = await res.json();
       if (res.ok && data.thread) {
+        if (data.edit_token) {
+          saveAuthoredThread(data.thread.id, data.edit_token);
+        }
         if (settings.strictZeroTrace) {
           rerollScopedIdentity('new_thread');
         }
@@ -587,7 +596,7 @@ export default function NewThreadPage() {
 
           {/* Auto-Destruction TTL (Touch of Orange) */}
           <div className="space-y-2">
-            <label className="text-xs font-mono uppercase text-zinc-400 flex items-center gap-1">
+            <label className="text-xs font-mono text-zinc-400 flex items-center gap-1">
               <Clock size={12} className="text-orange-400" />
               <span>6. ระยะเวลาทำลายข้อมูลอัตโนมัติ (TTL)</span>
             </label>
@@ -610,6 +619,39 @@ export default function NewThreadPage() {
                   </button>
                 );
               })}
+            </div>
+          </div>
+
+          {/* Edit/Delete Secret Passcode (Zero-Log Authentication) */}
+          <div className="p-3 bg-black/40 border border-white/[0.06] rounded-lg space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <Key size={14} className="text-yellow-400" />
+                <span className="text-xs font-medium text-zinc-200">7. รหัสลับสำหรับแก้ไขหรือลบโพสต์ (Edit Passcode)</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditPasscode(Math.floor(100000 + Math.random() * 900000).toString())}
+                className="text-[11px] text-zinc-500 hover:text-yellow-400 flex items-center gap-1"
+                title="สุ่มรหัส PIN ใหม่"
+              >
+                <Dices size={11} />
+                <span>สุ่มรหัสใหม่</span>
+              </button>
+            </div>
+            <div className="flex items-center gap-2 pt-0.5">
+              <input
+                type="text"
+                required
+                maxLength={30}
+                value={editPasscode}
+                onChange={(e) => setEditPasscode(e.target.value)}
+                placeholder="ตั้งรหัสลับ 4-6 หลัก หรือตัวอักษร..."
+                className="w-48 bg-white/[0.02] border border-white/[0.08] focus:border-yellow-400 rounded-md px-3 py-1.5 text-xs text-yellow-400 font-mono font-bold focus:outline-none"
+              />
+              <span className="text-[11px] text-zinc-500">
+                (ระบบจะจำในเครื่องนี้อัตโนมัติ ไม่ต้องกรอกซ้ำเวลาแก้ไขหรือลบ)
+              </span>
             </div>
           </div>
 

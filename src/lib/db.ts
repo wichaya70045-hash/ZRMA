@@ -133,6 +133,12 @@ export function getDatabase(): DatabaseSync {
     try { db.exec("UPDATE threads SET is_pinned = 1 WHERE category = 'breaking' AND id = 'seed-thread-1';"); } catch {}
     try { db.exec("UPDATE communities SET title = REPLACE(title, 'r/', 'z/'), description = REPLACE(description, 'r/', 'z/');"); } catch {}
     try { db.exec("UPDATE threads SET title = REPLACE(title, 'r/', 'z/'), content = REPLACE(content, 'r/', 'z/');"); } catch {}
+    try { db.exec('ALTER TABLE threads ADD COLUMN is_edited INTEGER DEFAULT 0;'); } catch {}
+    try { db.exec('ALTER TABLE threads ADD COLUMN edited_at TEXT;'); } catch {}
+    try { db.exec('ALTER TABLE threads ADD COLUMN edit_token TEXT;'); } catch {}
+    try { db.exec('ALTER TABLE chat_messages ADD COLUMN is_edited INTEGER DEFAULT 0;'); } catch {}
+    try { db.exec('ALTER TABLE chat_messages ADD COLUMN edited_at TEXT;'); } catch {}
+    try { db.exec('ALTER TABLE chat_messages ADD COLUMN edit_token TEXT;'); } catch {}
 
     // Seed default communities and sample threads if empty
     try {
@@ -435,6 +441,8 @@ export function getThreads(category?: string, sort: RedditSort = 'hot'): Thread[
     report_count: Number(r.report_count),
     is_hidden: Number(r.is_hidden),
     is_pinned: Number(r.is_pinned || 0),
+    is_edited: Number(r.is_edited || 0),
+    edited_at: r.edited_at || null,
     expires_at: r.expires_at,
     created_at: r.created_at,
   }));
@@ -472,6 +480,8 @@ export function getThreadById(id: string): Thread | null {
     report_count: Number(row.report_count),
     is_hidden: Number(row.is_hidden),
     is_pinned: Number(row.is_pinned || 0),
+    is_edited: Number(row.is_edited || 0),
+    edited_at: row.edited_at || null,
     expires_at: row.expires_at,
     created_at: row.created_at,
   };
@@ -490,6 +500,7 @@ export function createThread(data: {
   author_avatar: string;
   is_pinned?: number;
   expires_hours: number;
+  edit_token?: string | null;
 }): Thread {
   const database = getDatabase();
   const now = new Date();
@@ -508,8 +519,8 @@ export function createThread(data: {
   }
 
   database.prepare(`
-    INSERT INTO threads (id, title, content, category, flair, source_url, media_url, media_type, author_alias, author_avatar, is_pinned, expires_at, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO threads (id, title, content, category, flair, source_url, media_url, media_type, author_alias, author_avatar, is_pinned, edit_token, is_edited, expires_at, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
   `).run(
     data.id,
     data.title,
@@ -522,11 +533,75 @@ export function createThread(data: {
     data.author_alias,
     data.author_avatar,
     data.is_pinned ? 1 : 0,
+    data.edit_token || null,
     expiresAt,
     createdAt
   );
 
   return getThreadById(data.id)!;
+}
+
+export function updateThread(id: string, data: {
+  title: string;
+  content: string;
+  category?: string;
+  flair?: string | null;
+  source_url?: string | null;
+  edit_token?: string | null;
+}): { success: boolean; thread?: Thread; error?: string } {
+  const database = getDatabase();
+  const existing = database.prepare(`SELECT * FROM threads WHERE id = ?`).get(id) as any;
+  if (!existing) {
+    return { success: false, error: 'ไม่พบกระทู้นี้ หรือกระทู้อาจหมดอายุแล้ว' };
+  }
+
+  // Check edit token
+  if (existing.edit_token && data.edit_token && existing.edit_token !== data.edit_token) {
+    return { success: false, error: 'รหัสยืนยันการแก้ไข (Edit Passcode) ไม่ถูกต้อง' };
+  }
+
+  const now = new Date().toISOString();
+  const cleanCat = (data.category || existing.category).toLowerCase().trim().replace(/^[zr]\//i, '');
+
+  database.prepare(`
+    UPDATE threads
+    SET title = ?,
+        content = ?,
+        category = ?,
+        flair = ?,
+        source_url = ?,
+        is_edited = 1,
+        edited_at = ?
+    WHERE id = ?
+  `).run(
+    data.title.trim(),
+    data.content.trim(),
+    cleanCat,
+    data.flair !== undefined ? (data.flair?.trim() || null) : existing.flair,
+    data.source_url !== undefined ? (data.source_url?.trim() || null) : existing.source_url,
+    now,
+    id
+  );
+
+  const updated = getThreadById(id);
+  return { success: true, thread: updated || undefined };
+}
+
+export function deleteThread(id: string, edit_token?: string | null): { success: boolean; error?: string } {
+  const database = getDatabase();
+  const existing = database.prepare(`SELECT * FROM threads WHERE id = ?`).get(id) as any;
+  if (!existing) {
+    return { success: false, error: 'ไม่พบกระทู้นี้ หรือกระทู้อาจหมดอายุแล้ว' };
+  }
+
+  if (existing.edit_token && edit_token && existing.edit_token !== edit_token) {
+    return { success: false, error: 'รหัสยืนยันการลบ (Delete Passcode) ไม่ถูกต้อง' };
+  }
+
+  database.prepare(`DELETE FROM comments WHERE thread_id = ?`).run(id);
+  database.prepare(`DELETE FROM threads WHERE id = ?`).run(id);
+
+  return { success: true };
 }
 
 export function voteThread(id: string, type: 'up' | 'down'): { upvotes: number; downvotes: number; score: number } | null {
@@ -661,6 +736,8 @@ export function getChatMessages(roomId: string = 'global'): ChatMessage[] {
     author_avatar: r.author_avatar,
     report_count: Number(r.report_count),
     is_hidden: Number(r.is_hidden),
+    is_edited: Number(r.is_edited || 0),
+    edited_at: r.edited_at || null,
     created_at: r.created_at,
   }));
 }
@@ -671,19 +748,21 @@ export function sendChatMessage(data: {
   content: string;
   author_alias: string;
   author_avatar: string;
+  edit_token?: string | null;
 }): ChatMessage {
   const database = getDatabase();
   const createdAt = new Date().toISOString();
 
   database.prepare(`
-    INSERT INTO chat_messages (id, room_id, content, author_alias, author_avatar, created_at)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO chat_messages (id, room_id, content, author_alias, author_avatar, edit_token, is_edited, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, 0, ?)
   `).run(
     data.id,
     data.room_id || 'global',
     data.content,
     data.author_alias,
     data.author_avatar,
+    data.edit_token || null,
     createdAt
   );
 
@@ -697,8 +776,72 @@ export function sendChatMessage(data: {
     author_avatar: data.author_avatar,
     report_count: 0,
     is_hidden: 0,
+    is_edited: 0,
+    edited_at: null,
     created_at: createdAt,
   };
+}
+
+export function updateChatMessage(id: string, data: {
+  content: string;
+  author_alias?: string;
+  edit_token?: string;
+}): { success: boolean; message?: ChatMessage; error?: string } {
+  const database = getDatabase();
+  const existing = database.prepare(`SELECT * FROM chat_messages WHERE id = ?`).get(id) as any;
+  if (!existing) {
+    return { success: false, error: 'ไม่พบข้อความแชทนี้' };
+  }
+
+  // Validate ownership
+  if (existing.edit_token && data.edit_token && existing.edit_token !== data.edit_token) {
+    return { success: false, error: 'คุณไม่มีสิทธิ์แก้ไขข้อความนี้' };
+  } else if (!existing.edit_token && data.author_alias && existing.author_alias !== data.author_alias) {
+    return { success: false, error: 'คุณสามารถแก้ไขได้เฉพาะข้อความของตัวเองเท่านั้น' };
+  }
+
+  const now = new Date().toISOString();
+  database.prepare(`
+    UPDATE chat_messages
+    SET content = ?,
+        is_edited = 1,
+        edited_at = ?
+    WHERE id = ?
+  `).run(data.content.trim(), now, id);
+
+  const updated = database.prepare(`SELECT * FROM chat_messages WHERE id = ?`).get(id) as any;
+  return {
+    success: true,
+    message: {
+      id: updated.id,
+      room_id: updated.room_id,
+      content: updated.content,
+      author_alias: updated.author_alias,
+      author_avatar: updated.author_avatar,
+      report_count: Number(updated.report_count),
+      is_hidden: Number(updated.is_hidden),
+      is_edited: Number(updated.is_edited || 0),
+      edited_at: updated.edited_at || null,
+      created_at: updated.created_at,
+    },
+  };
+}
+
+export function deleteChatMessage(id: string, author_alias?: string, edit_token?: string): { success: boolean; error?: string } {
+  const database = getDatabase();
+  const existing = database.prepare(`SELECT * FROM chat_messages WHERE id = ?`).get(id) as any;
+  if (!existing) {
+    return { success: false, error: 'ไม่พบข้อความแชทนี้' };
+  }
+
+  if (existing.edit_token && edit_token && existing.edit_token !== edit_token) {
+    return { success: false, error: 'คุณไม่มีสิทธิ์ลบข้อความนี้' };
+  } else if (!existing.edit_token && author_alias && existing.author_alias !== author_alias) {
+    return { success: false, error: 'คุณสามารถลบได้เฉพาะข้อความของตัวเองเท่านั้น' };
+  }
+
+  database.prepare(`DELETE FROM chat_messages WHERE id = ?`).run(id);
+  return { success: true };
 }
 
 export function reportContent(data: {

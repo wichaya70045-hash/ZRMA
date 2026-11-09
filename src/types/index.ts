@@ -22,6 +22,8 @@ export interface Thread {
   report_count: number;
   is_hidden: number; // 0 or 1
   is_pinned?: number; // 0 or 1 for pinned breaking news
+  is_edited?: number; // 0 or 1
+  edited_at?: string | null;
   expires_at: string;
   created_at: string;
 }
@@ -41,6 +43,8 @@ export interface Comment {
   score: number;
   report_count: number;
   is_hidden: number;
+  is_edited?: number; // 0 or 1
+  edited_at?: string | null;
   created_at: string;
 }
 
@@ -56,6 +60,8 @@ export interface ChatMessage {
   author_avatar: string;
   report_count: number;
   is_hidden: number;
+  is_edited?: number; // 0 or 1
+  edited_at?: string | null;
   created_at: string;
 }
 

@@ -2,7 +2,14 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { ChatMessage } from '@/types';
-import { getScopedIdentity, rerollScopedIdentity, setCustomScopedIdentity, AnonymousIdentity } from '@/lib/privacy';
+import {
+  getScopedIdentity,
+  rerollScopedIdentity,
+  setCustomScopedIdentity,
+  saveAuthoredChatMessage,
+  getAuthoredChatMessageToken,
+  AnonymousIdentity,
+} from '@/lib/privacy';
 import { useSettings } from '@/lib/settings';
 import {
   Send,
@@ -53,6 +60,11 @@ export default function LiveChatBox({
   const [cooldown, setCooldown] = useState(0);
   const [reportTarget, setReportTarget] = useState<ChatMessage | null>(null);
   const [revealedIds, setRevealedIds] = useState<Record<string, boolean>>({});
+
+  // Message Editing State
+  const [editingMsgId, setEditingMsgId] = useState<string | null>(null);
+  const [editingMsgText, setEditingMsgText] = useState('');
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   // Ghost Room Presence & Destruction
   const [ghostPresenceCount, setGhostPresenceCount] = useState<number>(1);
@@ -134,6 +146,26 @@ export default function LiveChatBox({
       }
     });
 
+    eventSource.addEventListener('chat_edited', (event) => {
+      try {
+        const editedMsg: ChatMessage = JSON.parse(event.data);
+        setMessages((prev) =>
+          prev.map((m) => (m.id === editedMsg.id ? { ...m, ...editedMsg } : m))
+        );
+      } catch (err) {
+        console.error('Error parsing chat_edited event:', err);
+      }
+    });
+
+    eventSource.addEventListener('chat_deleted', (event) => {
+      try {
+        const { id } = JSON.parse(event.data);
+        setMessages((prev) => prev.filter((m) => m.id !== id));
+      } catch (err) {
+        console.error('Error parsing chat_deleted event:', err);
+      }
+    });
+
     return () => {
       eventSource.close();
     };
@@ -191,6 +223,9 @@ export default function LiveChatBox({
 
       const data = await res.json();
       if (res.ok) {
+        if (data.message && data.edit_token) {
+          saveAuthoredChatMessage(data.message.id, data.edit_token);
+        }
         setInputText('');
         setCooldown(3);
         if (settings.strictZeroTrace) {
@@ -203,6 +238,43 @@ export default function LiveChatBox({
       alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const handleSaveEditMessage = async (msgId: string) => {
+    if (!editingMsgText.trim() || isSavingEdit) return;
+    setIsSavingEdit(true);
+
+    const token = getAuthoredChatMessageToken(msgId) || undefined;
+    const effectiveAlias = customAlias.trim() || identity?.alias;
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: msgId,
+          room_id: roomId,
+          content: editingMsgText.trim(),
+          author_alias: effectiveAlias,
+          edit_token: token,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.message) {
+        setMessages((prev) =>
+          prev.map((m) => (m.id === msgId ? { ...m, ...data.message } : m))
+        );
+        setEditingMsgId(null);
+        setEditingMsgText('');
+      } else {
+        alert(data.error || 'ไม่สามารถแก้ไขข้อความได้');
+      }
+    } catch {
+      alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
+    } finally {
+      setIsSavingEdit(false);
     }
   };
 
@@ -442,6 +514,26 @@ export default function LiveChatBox({
                             })}
                           </span>
 
+                          {msg.is_edited === 1 && (
+                            <span className="text-[9.5px] text-zinc-500 font-mono italic">
+                              (แก้ไขแล้ว)
+                            </span>
+                          )}
+
+                          {isSelf && editingMsgId !== msg.id && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingMsgId(msg.id);
+                                setEditingMsgText(msg.content);
+                              }}
+                              className="text-zinc-500 hover:text-yellow-400 p-0.5 rounded transition-colors ml-0.5"
+                              title="แก้ไขข้อความ"
+                            >
+                              <Edit2 size={10} />
+                            </button>
+                          )}
+
                           {/* Mobile-friendly Report Button (No hover required on touch) */}
                           {!isSelf && (
                             <button
@@ -467,6 +559,38 @@ export default function LiveChatBox({
                           >
                             <Eye size={12} />
                           </button>
+                        </div>
+                      ) : editingMsgId === msg.id ? (
+                        <div className="pt-1 space-y-1.5">
+                          <input
+                            type="text"
+                            value={editingMsgText}
+                            onChange={(e) => setEditingMsgText(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleSaveEditMessage(msg.id);
+                              if (e.key === 'Escape') setEditingMsgId(null);
+                            }}
+                            maxLength={500}
+                            className="w-full bg-black/60 border border-yellow-400 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none font-sans"
+                            autoFocus
+                          />
+                          <div className="flex items-center gap-1.5 justify-end">
+                            <button
+                              type="button"
+                              onClick={() => setEditingMsgId(null)}
+                              className="text-[10px] text-zinc-400 hover:text-white px-2 py-0.5 rounded border border-white/[0.1] hover:bg-white/[0.04]"
+                            >
+                              ยกเลิก
+                            </button>
+                            <button
+                              type="button"
+                              disabled={isSavingEdit || !editingMsgText.trim()}
+                              onClick={() => handleSaveEditMessage(msg.id)}
+                              className="text-[10px] bg-yellow-400 hover:bg-yellow-300 text-zinc-950 font-bold px-2.5 py-0.5 rounded transition-colors disabled:opacity-50"
+                            >
+                              {isSavingEdit ? 'กำลังบันทึก...' : 'บันทึก'}
+                            </button>
+                          </div>
                         </div>
                       ) : (
                         <div className="break-words leading-relaxed whitespace-pre-wrap text-[13.5px] sm:text-xs text-zinc-100 font-sans">

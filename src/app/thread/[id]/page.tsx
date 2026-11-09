@@ -2,12 +2,15 @@
 
 import React, { useState, useEffect, use } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Thread, Comment, CommentNode, CaptchaChallenge } from '@/types';
-import { getScopedIdentity, rerollScopedIdentity, setCustomScopedIdentity, AnonymousIdentity } from '@/lib/privacy';
+import { getScopedIdentity, rerollScopedIdentity, setCustomScopedIdentity, isThreadAuthor, AnonymousIdentity } from '@/lib/privacy';
 import { buildCommentTree } from '@/lib/commentTree';
 import { useSettings } from '@/lib/settings';
 import IdentityAvatar from '@/components/IdentityAvatar';
 import ReportModal from '@/components/ReportModal';
+import EditThreadModal from '@/components/EditThreadModal';
+import DeleteThreadModal from '@/components/DeleteThreadModal';
 import LiveChatBox from '@/components/LiveChatBox';
 import CommunitySidebar from '@/components/CommunitySidebar';
 import ThreadedCommentTree from '@/components/ThreadedCommentTree';
@@ -31,6 +34,8 @@ import {
   Film,
   Image as ImageIcon,
   Edit2,
+  Edit3,
+  Trash2,
   Eye,
   EyeOff,
 } from 'lucide-react';
@@ -40,11 +45,15 @@ export default function ThreadDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const router = useRouter();
   const resolvedParams = use(params);
   const threadId = resolvedParams.id;
   const { settings } = useSettings();
 
   const [thread, setThread] = useState<Thread | null>(null);
+  const [isAuthor, setIsAuthor] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentTree, setCommentTree] = useState<CommentNode[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -86,6 +95,7 @@ export default function ThreadDetailPage({
     const id = getScopedIdentity(`thread_${threadId}`);
     setIdentity(id);
     setCustomAlias(id.alias);
+    setIsAuthor(isThreadAuthor(threadId));
   }, [threadId]);
 
   const fetchCaptcha = async () => {
@@ -536,6 +546,15 @@ export default function ThreadDetailPage({
                     })}
                   </span>
 
+                  {thread.is_edited === 1 && (
+                    <>
+                      <span className="text-zinc-600">•</span>
+                      <span className="font-mono text-zinc-500 text-[11px] italic">
+                        (แก้ไขแล้ว)
+                      </span>
+                    </>
+                  )}
+
                   {thread.flair && (
                     <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold border text-yellow-400 bg-yellow-500/10 border-yellow-500/25 ml-1">
                       {thread.flair}
@@ -680,6 +699,30 @@ export default function ThreadDetailPage({
                     <Bookmark size={13} />
                     <span>{isSaved ? 'บันทึกแล้ว' : 'บันทึก'}</span>
                   </button>
+
+                  {isAuthor && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setShowEditModal(true)}
+                        className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-yellow-400 transition-colors p-1 rounded hover:bg-white/[0.03]"
+                        title="แก้ไขโพสต์นี้"
+                      >
+                        <Edit3 size={13} />
+                        <span>แก้ไข</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setShowDeleteModal(true)}
+                        className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-red-400 transition-colors p-1 rounded hover:bg-white/[0.03]"
+                        title="ลบโพสต์นี้"
+                      >
+                        <Trash2 size={13} />
+                        <span>ลบ</span>
+                      </button>
+                    </>
+                  )}
 
                   <button
                     onClick={() =>
@@ -872,6 +915,26 @@ export default function ThreadDetailPage({
             }
           }}
         />
+      )}
+
+      {thread && (
+        <>
+          <EditThreadModal
+            isOpen={showEditModal}
+            onClose={() => setShowEditModal(false)}
+            thread={thread}
+            onThreadUpdated={(updated) => setThread(updated)}
+          />
+
+          <DeleteThreadModal
+            isOpen={showDeleteModal}
+            onClose={() => setShowDeleteModal(false)}
+            thread={thread}
+            onThreadDeleted={() => {
+              router.push('/');
+            }}
+          />
+        </>
       )}
     </div>
   );

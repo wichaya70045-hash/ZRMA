@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Thread } from '@/types';
 import {
@@ -19,20 +19,44 @@ import {
   Film,
   Image as ImageIcon,
   Pin,
+  Edit3,
+  Trash2,
 } from 'lucide-react';
 import IdentityAvatar from './IdentityAvatar';
 import ReportModal from './ReportModal';
+import EditThreadModal from './EditThreadModal';
+import DeleteThreadModal from './DeleteThreadModal';
+import { isThreadAuthor } from '@/lib/privacy';
 import { useSettings } from '@/lib/settings';
 
 interface ThreadCardProps {
   thread: Thread;
   layout?: 'card' | 'compact';
   onVoteChange?: (id: string, score: number) => void;
+  onThreadDeleted?: (id: string) => void;
+  onThreadUpdated?: (thread: Thread) => void;
 }
 
-export default function ThreadCard({ thread, layout, onVoteChange }: ThreadCardProps) {
+export default function ThreadCard({
+  thread: initialThread,
+  layout,
+  onVoteChange,
+  onThreadDeleted,
+  onThreadUpdated,
+}: ThreadCardProps) {
   const { settings } = useSettings();
   const activeLayout = layout || settings.feedLayout;
+
+  const [thread, setThread] = useState<Thread>(initialThread);
+  const [isDeleted, setIsDeleted] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isAuthor, setIsAuthor] = useState(false);
+
+  useEffect(() => {
+    setThread(initialThread);
+    setIsAuthor(isThreadAuthor(initialThread.id));
+  }, [initialThread]);
 
   const [score, setScore] = useState(thread.score);
   const [userVote, setUserVote] = useState<'up' | 'down' | null>(null);
@@ -114,6 +138,18 @@ export default function ThreadCard({ thread, layout, onVoteChange }: ThreadCardP
   const cleanCategory = (thread.category || 'general').replace(/^[zr]\//i, '');
   const subredditName = `z/${cleanCategory}`;
   const cleanAlias = (thread.author_alias || 'ผู้ไม่ประสงค์ออกนาม').replace(/^u\//, '');
+
+  const handleThreadUpdated = (updated: Thread) => {
+    setThread(updated);
+    if (onThreadUpdated) onThreadUpdated(updated);
+  };
+
+  const handleThreadDeleted = (id: string) => {
+    setIsDeleted(true);
+    if (onThreadDeleted) onThreadDeleted(id);
+  };
+
+  if (isDeleted) return null;
 
   const isVideo =
     thread.media_type === 'video' ||
@@ -233,6 +269,12 @@ export default function ThreadCard({ thread, layout, onVoteChange }: ThreadCardP
             <span>u/{cleanAlias}</span>
             <span>•</span>
             <span>{getTimeAgo()}</span>
+            {thread.is_edited === 1 && (
+              <>
+                <span>•</span>
+                <span className="text-[10px] text-zinc-500 italic font-mono">(แก้ไขแล้ว)</span>
+              </>
+            )}
             <span>•</span>
             <Link href={`/thread/${thread.id}`} className="hover:text-yellow-400 flex items-center gap-1">
               <MessageSquare size={10} />
@@ -374,6 +416,15 @@ export default function ThreadCard({ thread, layout, onVoteChange }: ThreadCardP
             <span className="font-mono text-zinc-500 text-[11px] tabular-nums">
               {getTimeAgo()}
             </span>
+
+            {thread.is_edited === 1 && (
+              <>
+                <span className="text-zinc-600">•</span>
+                <span className="text-[10px] text-zinc-500 italic font-mono">
+                  (แก้ไขแล้ว)
+                </span>
+              </>
+            )}
 
             {/* Flair tag if provided */}
             {thread.flair && (
@@ -526,6 +577,30 @@ export default function ThreadCard({ thread, layout, onVoteChange }: ThreadCardP
               <span className="text-[11px]">{isSaved ? 'บันทึกแล้ว' : 'บันทึก'}</span>
             </button>
 
+            {isAuthor && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(true)}
+                  className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-yellow-400 transition-colors p-1 rounded hover:bg-white/[0.03]"
+                  title="แก้ไขโพสต์นี้"
+                >
+                  <Edit3 size={13} />
+                  <span className="text-[11px]">แก้ไข</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteModal(true)}
+                  className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-red-400 transition-colors p-1 rounded hover:bg-white/[0.03]"
+                  title="ลบโพสต์นี้"
+                >
+                  <Trash2 size={13} />
+                  <span className="text-[11px]">ลบ</span>
+                </button>
+              </>
+            )}
+
             <div className="ml-auto flex items-center gap-2">
               {forceReveal && isHidden && (
                 <button
@@ -562,6 +637,20 @@ export default function ThreadCard({ thread, layout, onVoteChange }: ThreadCardP
           setReportCount(newCount);
           if (hidden) setIsHidden(true);
         }}
+      />
+
+      <EditThreadModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        thread={thread}
+        onThreadUpdated={handleThreadUpdated}
+      />
+
+      <DeleteThreadModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        thread={thread}
+        onThreadDeleted={handleThreadDeleted}
       />
     </article>
   );

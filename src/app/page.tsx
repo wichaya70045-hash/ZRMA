@@ -218,6 +218,14 @@ export default function HomePage() {
                       prev.map((t) => (t.id === id ? { ...t, score: newScore } : t))
                     );
                   }}
+                  onThreadDeleted={(id) => {
+                    setThreads((prev) => prev.filter((t) => t.id !== id));
+                  }}
+                  onThreadUpdated={(updated) => {
+                    setThreads((prev) =>
+                      prev.map((t) => (t.id === updated.id ? updated : t))
+                    );
+                  }}
                 />
               ))}
             </div>

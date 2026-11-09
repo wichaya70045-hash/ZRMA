@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getThreadById } from '@/lib/db';
+import { getThreadById, updateThread, deleteThread } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,6 +21,78 @@ export async function GET(
     return NextResponse.json({ thread });
   } catch (err: any) {
     console.error('Error fetching thread:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const body = await req.json();
+    const { title, content, category, flair, source_url, edit_token } = body;
+
+    if (!title || !title.trim() || title.length < 5 || title.length > 200) {
+      return NextResponse.json(
+        { error: 'หัวข้อกระทู้ต้องมีความยาวระหว่าง 5 ถึง 200 ตัวอักษร' },
+        { status: 400 }
+      );
+    }
+
+    if (!content || !content.trim() || content.length < 10) {
+      return NextResponse.json(
+        { error: 'เนื้อหากระทู้ต้องมีความยาวอย่างน้อย 10 ตัวอักษร' },
+        { status: 400 }
+      );
+    }
+
+    const result = updateThread(id, {
+      title: title.trim(),
+      content: content.trim(),
+      category: category ? category.trim() : undefined,
+      flair: flair !== undefined ? (flair?.trim() || null) : undefined,
+      source_url: source_url !== undefined ? (source_url?.trim() || null) : undefined,
+      edit_token: edit_token ? String(edit_token).trim() : null,
+    });
+
+    if (!result.success) {
+      return NextResponse.json({ error: result.error || 'ไม่สามารถแก้ไขกระทู้ได้' }, { status: 403 });
+    }
+
+    return NextResponse.json({ success: true, thread: result.thread });
+  } catch (err: any) {
+    console.error('Error updating thread:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    let edit_token: string | null = null;
+
+    try {
+      const body = await req.json();
+      edit_token = body.edit_token || null;
+    } catch {
+      const { searchParams } = new URL(req.url);
+      edit_token = searchParams.get('token');
+    }
+
+    const result = deleteThread(id, edit_token ? String(edit_token).trim() : null);
+
+    if (!result.success) {
+      return NextResponse.json({ error: result.error || 'ไม่สามารถลบกระทู้ได้' }, { status: 403 });
+    }
+
+    return NextResponse.json({ success: true, message: 'ลบกระทู้เรียบร้อยแล้ว' });
+  } catch (err: any) {
+    console.error('Error deleting thread:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

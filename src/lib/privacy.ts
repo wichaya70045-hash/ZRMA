@@ -136,3 +136,70 @@ export function rerollScopedIdentity(scopeKey: string): AnonymousIdentity {
   }
   return newIdentity;
 }
+
+// ----------------------------------------------------
+// Thread Ownership & Edit Token Management (Browser-only, Zero-Log)
+// ----------------------------------------------------
+
+export function saveAuthoredThread(threadId: string, editToken: string): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const raw = localStorage.getItem('zrma_authored_threads') || '{}';
+    const parsed = JSON.parse(raw);
+    parsed[threadId] = editToken;
+    localStorage.setItem('zrma_authored_threads', JSON.stringify(parsed));
+  } catch {}
+}
+
+export function getAuthoredThreadToken(threadId: string): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem('zrma_authored_threads');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed[threadId] || null;
+  } catch {
+    return null;
+  }
+}
+
+export function isThreadAuthor(threadId: string): boolean {
+  return !!getAuthoredThreadToken(threadId);
+}
+
+export function removeAuthoredThread(threadId: string): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const raw = localStorage.getItem('zrma_authored_threads');
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    delete parsed[threadId];
+    localStorage.setItem('zrma_authored_threads', JSON.stringify(parsed));
+  } catch {}
+}
+
+// ----------------------------------------------------
+// Chat Message Ownership & Edit Token Management (Session-scoped, Zero-Log)
+// ----------------------------------------------------
+
+export function saveAuthoredChatMessage(msgId: string, editToken: string): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const raw = sessionStorage.getItem('zrma_authored_chat_msgs') || '{}';
+    const parsed = JSON.parse(raw);
+    parsed[msgId] = editToken;
+    sessionStorage.setItem('zrma_authored_chat_msgs', JSON.stringify(parsed));
+  } catch {}
+}
+
+export function getAuthoredChatMessageToken(msgId: string): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = sessionStorage.getItem('zrma_authored_chat_msgs');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed[msgId] || null;
+  } catch {
+    return null;
+  }
+}
