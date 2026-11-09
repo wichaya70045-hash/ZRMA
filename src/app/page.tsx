@@ -43,7 +43,7 @@ export default function HomePage() {
       if (cat) {
         setSelectedCategory(cat.replace(/^[zr]\//i, ''));
       }
-      if (sort && ['hot', 'breaking', 'new', 'top'].includes(sort)) {
+      if (sort && ['hot', 'breaking', 'new', 'top', 'rising'].includes(sort)) {
         setSelectedSort(sort as RedditSort);
       } else if (!sort && settings.defaultSort) {
         setSelectedSort(settings.defaultSort);

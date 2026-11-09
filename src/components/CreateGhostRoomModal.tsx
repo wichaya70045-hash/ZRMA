@@ -93,9 +93,9 @@ export default function CreateGhostRoomModal({
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
             </span>
-            <span className="text-[10px] font-mono text-orange-400 uppercase font-bold tracking-wider flex items-center gap-1">
+            <span className="text-[10px] font-mono text-orange-400 font-semibold tracking-wider flex items-center gap-1">
               <Ghost size={12} />
-              <span>GHOST VANISHING ROOM</span>
+              <span>ห้องหายไปเมื่อไม่มีคน</span>
             </span>
           </div>
           <h2 className="text-base sm:text-lg font-bold text-zinc-100">
@@ -123,7 +123,7 @@ export default function CreateGhostRoomModal({
 
         <form onSubmit={handleSubmit} className="space-y-3.5">
           <div>
-            <label className="block text-xs font-mono uppercase text-zinc-400 mb-1">
+            <label className="block text-xs font-mono text-zinc-400 mb-1">
               ชื่อห้องสนทนา (Room Title)
             </label>
             <input
@@ -138,7 +138,7 @@ export default function CreateGhostRoomModal({
           </div>
 
           <div>
-            <label className="block text-xs font-mono uppercase text-zinc-400 mb-1">
+            <label className="block text-xs font-mono text-zinc-400 mb-1">
               รหัสห้อง / Slug (ไม่บังคับ)
             </label>
             <div className="flex items-center bg-black/50 border border-white/[0.08] focus-within:border-yellow-400 rounded-lg px-3 py-2 text-xs">
@@ -155,7 +155,7 @@ export default function CreateGhostRoomModal({
           </div>
 
           <div>
-            <label className="block text-xs font-mono uppercase text-zinc-400 mb-1">
+            <label className="block text-xs font-mono text-zinc-400 mb-1">
               หัวข้อคุยโดยย่อ / Topic (ไม่บังคับ)
             </label>
             <input

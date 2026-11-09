@@ -280,6 +280,27 @@ export default function ThreadCard({
               <MessageSquare size={10} />
               <span>{thread.comment_count || 0} คอมเมนต์</span>
             </Link>
+            {isAuthor && (
+              <>
+                <span>•</span>
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(true)}
+                  className="hover:text-yellow-400 text-zinc-500 transition-colors p-0.5"
+                  title="แก้ไขโพสต์"
+                >
+                  <Edit3 size={11} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteModal(true)}
+                  className="hover:text-red-400 text-zinc-500 transition-colors p-0.5"
+                  title="ลบโพสต์"
+                >
+                  <Trash2 size={11} />
+                </button>
+              </>
+            )}
             <span className="ml-auto text-orange-400 flex items-center gap-1">
               <Clock size={10} />
               <span>{getRemainingTime()}</span>
@@ -297,6 +318,20 @@ export default function ThreadCard({
             setReportCount(newCount);
             if (hidden) setIsHidden(true);
           }}
+        />
+
+        <EditThreadModal
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          thread={thread}
+          onThreadUpdated={handleThreadUpdated}
+        />
+
+        <DeleteThreadModal
+          isOpen={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          thread={thread}
+          onThreadDeleted={handleThreadDeleted}
         />
       </article>
     );
