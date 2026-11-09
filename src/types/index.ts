@@ -1,14 +1,18 @@
-export type Category = 'breaking' | 'tech' | 'society' | 'finance' | 'general' | 'science';
+export type Category = string; // Dynamic r/community slug, e.g. 'tech', 'breaking', 'gaming', 'memes', etc.
 
 export type RedditSort = 'hot' | 'new' | 'top' | 'rising' | 'breaking';
+
+export type MediaType = 'image' | 'video';
 
 export interface Thread {
   id: string;
   title: string;
   content: string;
-  category: Category;
+  category: string; // r/{category}
   flair?: string | null;
   source_url?: string | null;
+  media_url?: string | null;
+  media_type?: MediaType | null;
   author_alias: string;
   author_avatar: string;
   upvotes: number;
@@ -28,6 +32,7 @@ export interface Comment {
   quote_text?: string | null;
   quote_author?: string | null;
   content: string;
+  media_url?: string | null;
   author_alias: string;
   author_avatar: string;
   upvotes: number;
@@ -44,7 +49,7 @@ export interface CommentNode extends Comment {
 
 export interface ChatMessage {
   id: string;
-  room_id: string; // 'global' or threadId
+  room_id: string;
   content: string;
   author_alias: string;
   author_avatar: string;
@@ -60,11 +65,11 @@ export interface CaptchaChallenge {
   question: string;
 }
 
-export interface SubredditCommunity {
-  id: Category;
-  slug: string; // e.g. 'r/technology'
-  name: string;
+export interface Community {
+  name: string; // e.g. 'tech', 'breaking', 'crypto' (slug without r/)
+  title: string; // e.g. 'r/tech - ข่าวเทคโนโลยี & ซอฟต์แวร์'
   description: string;
   icon: string;
-  memberCount: number;
+  post_count: number;
+  created_at: string;
 }

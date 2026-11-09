@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { ChatMessage } from '@/types';
-import { getScopedIdentity, rerollScopedIdentity, AnonymousIdentity } from '@/lib/privacy';
+import { getScopedIdentity, rerollScopedIdentity, setCustomScopedIdentity, AnonymousIdentity } from '@/lib/privacy';
 import {
   Send,
   Dices,
@@ -12,6 +12,8 @@ import {
   EyeOff,
   Shield,
   Clock,
+  Edit2,
+  Check,
 } from 'lucide-react';
 import IdentityAvatar from './IdentityAvatar';
 import ReportModal from './ReportModal';
@@ -30,6 +32,8 @@ export default function LiveChatBox({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
   const [identity, setIdentity] = useState<AnonymousIdentity | null>(null);
+  const [customAlias, setCustomAlias] = useState('');
+  const [isEditingAlias, setIsEditingAlias] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [cooldown, setCooldown] = useState(0);
@@ -41,6 +45,7 @@ export default function LiveChatBox({
   useEffect(() => {
     const id = getScopedIdentity(`chat_${roomId}`);
     setIdentity(id);
+    setCustomAlias(id.alias);
   }, [roomId]);
 
   const fetchMessages = async () => {
@@ -109,6 +114,15 @@ export default function LiveChatBox({
   const handleRerollIdentity = () => {
     const newId = rerollScopedIdentity(`chat_${roomId}`);
     setIdentity(newId);
+    setCustomAlias(newId.alias);
+  };
+
+  const handleSaveAlias = () => {
+    if (!customAlias.trim()) return;
+    const finalAlias = customAlias.trim();
+    setCustomScopedIdentity(`chat_${roomId}`, finalAlias);
+    setIdentity((prev) => (prev ? { ...prev, alias: finalAlias } : null));
+    setIsEditingAlias(false);
   };
 
   const handleSendMessage = async (e?: React.FormEvent) => {
@@ -117,6 +131,7 @@ export default function LiveChatBox({
 
     setIsSending(true);
     const content = inputText.trim();
+    const effectiveAlias = customAlias.trim() || identity.alias;
 
     try {
       const res = await fetch('/api/chat', {
@@ -125,7 +140,7 @@ export default function LiveChatBox({
         body: JSON.stringify({
           room_id: roomId,
           content,
-          author_alias: identity.alias,
+          author_alias: effectiveAlias,
           author_avatar: identity.avatarIcon,
         }),
       });
@@ -148,14 +163,16 @@ export default function LiveChatBox({
     setRevealedIds((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
+  const effectiveAlias = customAlias.trim() || identity?.alias || '';
+
   return (
     <div className="bg-[#101217] border border-white/[0.08] rounded-xl flex flex-col h-full overflow-hidden shadow-lg">
       {/* Terminal Header (Red & Yellow Indicators) */}
-      <div className="px-3.5 py-2.5 bg-black/50 border-b border-white/[0.06] flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-          <div>
-            <h3 className="text-xs font-semibold text-zinc-100 flex items-center gap-1.5">
+      <div className="px-3.5 py-2.5 bg-black/50 border-b border-white/[0.06] flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0"></div>
+          <div className="min-w-0">
+            <h3 className="text-xs font-semibold text-zinc-100 flex items-center gap-1.5 truncate">
               <span>{title}</span>
             </h3>
             <span className="text-[10px] font-mono text-zinc-500 tabular-nums">
@@ -164,16 +181,54 @@ export default function LiveChatBox({
           </div>
         </div>
 
-        {/* Identity with Yellow/Orange Reroll */}
+        {/* Identity with Editable Name & Dice Reroll */}
         {identity && (
-          <div className="flex items-center gap-1.5 bg-white/[0.03] border border-white/[0.06] px-2 py-1 rounded-md text-xs">
+          <div className="flex items-center gap-1.5 bg-white/[0.03] border border-white/[0.06] px-2 py-1 rounded-md text-xs shrink-0">
             <IdentityAvatar iconKey={identity.avatarIcon} theme="yellow" size="xs" />
-            <span className="text-zinc-300 text-[11px] font-mono truncate max-w-[110px] hidden sm:inline">
-              {identity.alias}
-            </span>
+            
+            {isEditingAlias ? (
+              <div className="flex items-center gap-1">
+                <input
+                  type="text"
+                  value={customAlias}
+                  onChange={(e) => setCustomAlias(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSaveAlias()}
+                  placeholder="ชื่อ..."
+                  maxLength={30}
+                  className="w-20 bg-black/60 border border-yellow-400 rounded px-1.5 py-0.5 text-[11px] text-yellow-400 font-mono focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={handleSaveAlias}
+                  className="p-0.5 text-yellow-400 hover:text-white"
+                  title="บันทึกชื่อ"
+                >
+                  <Check size={12} />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1">
+                <span
+                  onClick={() => setIsEditingAlias(true)}
+                  className="text-zinc-300 text-[11px] font-mono truncate max-w-[100px] cursor-pointer hover:text-yellow-400"
+                  title="คลิกเพื่อตั้งชื่อเอง"
+                >
+                  {effectiveAlias}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setIsEditingAlias(true)}
+                  className="p-0.5 text-zinc-500 hover:text-yellow-400"
+                  title="แก้ไขชื่อตัวเอง"
+                >
+                  <Edit2 size={10} />
+                </button>
+              </div>
+            )}
+
             <button
               onClick={handleRerollIdentity}
-              className="p-1 text-zinc-500 hover:text-yellow-400 hover:bg-white/[0.06] rounded transition-colors active:scale-95"
+              className="p-1 text-zinc-500 hover:text-yellow-400 hover:bg-white/[0.06] rounded transition-colors active:scale-95 ml-0.5"
               title="สุ่มชื่อและตัวตนใหม่"
               aria-label="Reroll anonymous identity"
             >
@@ -197,7 +252,7 @@ export default function LiveChatBox({
           </div>
         ) : (
           messages.map((msg) => {
-            const isSelf = identity?.alias === msg.author_alias;
+            const isSelf = effectiveAlias === msg.author_alias;
             const isMsgHidden = msg.is_hidden === 1 && !revealedIds[msg.id];
 
             return (

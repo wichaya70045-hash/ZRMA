@@ -37,3 +37,7 @@ next-env.d.ts
 /data/*.sqlite
 /data/*.sqlite-wal
 /data/*.sqlite-shm
+
+# uploaded user media
+/public/uploads/*
+!/public/uploads/.gitkeep

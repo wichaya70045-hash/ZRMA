@@ -97,7 +97,7 @@ function SingleCommentNode({
             <IdentityAvatar iconKey={node.author_avatar} theme={isOP ? 'red' : 'zinc'} size="xs" />
             
             <span className={`font-semibold ${isOP ? 'text-red-400 font-bold' : 'text-zinc-200'}`}>
-              u/{node.author_alias}
+              u/{node.author_alias.replace(/^u\//, '')}
             </span>
 
             {/* Reddit OP (Original Poster) Badge */}
@@ -151,6 +151,18 @@ function SingleCommentNode({
             <div className="text-zinc-300 leading-relaxed whitespace-pre-wrap py-1 text-xs sm:text-sm">
               {node.content}
             </div>
+
+            {/* Media Attachment if present in comment */}
+            {node.media_url && (
+              <div className="my-2 rounded-lg overflow-hidden border border-white/[0.08] max-w-sm">
+                <img
+                  src={node.media_url}
+                  alt="Comment attachment"
+                  className="max-h-64 w-auto object-cover cursor-pointer hover:opacity-95"
+                  onClick={() => window.open(node.media_url!, '_blank')}
+                />
+              </div>
+            )}
 
             {/* Action Bar (Reddit Style: Vote, Reply, Report) */}
             <div className="flex items-center gap-3 pt-2 mt-1 border-t border-white/[0.04] text-xs">

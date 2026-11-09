@@ -29,6 +29,16 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTabMobile, setActiveTabMobile] = useState<'threads' | 'chat'>('threads');
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const cat = params.get('category');
+      if (cat) {
+        setSelectedCategory(cat.replace(/^r\//, ''));
+      }
+    }
+  }, []);
+
   const fetchThreads = async () => {
     setIsLoading(true);
     try {

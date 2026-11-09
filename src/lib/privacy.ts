@@ -1,6 +1,6 @@
 // Privacy & Anonymity Engine
 // Zero logs, zero tracking, ephemeral sessionStorage-scoped identities
-// Palette: Black, Red, Yellow, with Orange accents
+// Allows randomized aliases or user-customized nicknames per session
 
 export interface AnonymousIdentity {
   alias: string;
@@ -70,12 +70,12 @@ export function getScopedIdentity(scopeKey: string): AnonymousIdentity {
     return generateRandomIdentity();
   }
 
-  const storageKey = `zrma_v3_anon_${scopeKey}`;
+  const storageKey = `zrma_v4_anon_${scopeKey}`;
   const existing = sessionStorage.getItem(storageKey);
   if (existing) {
     try {
       const parsed = JSON.parse(existing);
-      if (parsed.alias && (parsed.avatarIcon || parsed.avatar)) {
+      if (parsed.alias) {
         return {
           alias: parsed.alias,
           avatarIcon: parsed.avatarIcon || 'shield',
@@ -96,11 +96,38 @@ export function getScopedIdentity(scopeKey: string): AnonymousIdentity {
   return newIdentity;
 }
 
+export function setCustomScopedIdentity(
+  scopeKey: string,
+  customAlias: string,
+  avatarIcon?: string
+): AnonymousIdentity {
+  if (typeof window === 'undefined') {
+    return generateRandomIdentity();
+  }
+
+  const storageKey = `zrma_v4_anon_${scopeKey}`;
+  const cleanAlias = customAlias.trim();
+  const existing = getScopedIdentity(scopeKey);
+
+  const updated: AnonymousIdentity = {
+    alias: cleanAlias || existing.alias,
+    avatarIcon: avatarIcon || existing.avatarIcon || 'shield',
+    color: existing.color || 'red',
+  };
+
+  try {
+    sessionStorage.setItem(storageKey, JSON.stringify(updated));
+  } catch {
+    // ignore
+  }
+  return updated;
+}
+
 export function rerollScopedIdentity(scopeKey: string): AnonymousIdentity {
   if (typeof window === 'undefined') {
     return generateRandomIdentity();
   }
-  const storageKey = `zrma_v3_anon_${scopeKey}`;
+  const storageKey = `zrma_v4_anon_${scopeKey}`;
   const newIdentity = generateRandomIdentity();
   try {
     sessionStorage.setItem(storageKey, JSON.stringify(newIdentity));

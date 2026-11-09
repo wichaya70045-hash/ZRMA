@@ -3,7 +3,7 @@
 import React, { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import { Thread, Comment, CommentNode, CaptchaChallenge } from '@/types';
-import { getScopedIdentity, rerollScopedIdentity, AnonymousIdentity } from '@/lib/privacy';
+import { getScopedIdentity, rerollScopedIdentity, setCustomScopedIdentity, AnonymousIdentity } from '@/lib/privacy';
 import { buildCommentTree } from '@/lib/commentTree';
 import IdentityAvatar from '@/components/IdentityAvatar';
 import ReportModal from '@/components/ReportModal';
@@ -27,6 +27,9 @@ import {
   Check,
   Bookmark,
   Sparkles,
+  Film,
+  Image as ImageIcon,
+  Edit2,
 } from 'lucide-react';
 
 export default function ThreadDetailPage({
@@ -51,6 +54,8 @@ export default function ThreadDetailPage({
   const [commentVotes, setCommentVotes] = useState<Record<string, { score: number; voted: 'up' | 'down' | null }>>({});
 
   const [identity, setIdentity] = useState<AnonymousIdentity | null>(null);
+  const [customAlias, setCustomAlias] = useState('');
+  const [isEditingAlias, setIsEditingAlias] = useState(false);
 
   // Root comment input form
   const [commentContent, setCommentContent] = useState('');
@@ -75,6 +80,7 @@ export default function ThreadDetailPage({
   useEffect(() => {
     const id = getScopedIdentity(`thread_${threadId}`);
     setIdentity(id);
+    setCustomAlias(id.alias);
   }, [threadId]);
 
   const fetchCaptcha = async () => {
@@ -185,6 +191,15 @@ export default function ThreadDetailPage({
   const handleRerollIdentity = () => {
     const newId = rerollScopedIdentity(`thread_${threadId}`);
     setIdentity(newId);
+    setCustomAlias(newId.alias);
+  };
+
+  const handleSaveCustomAlias = () => {
+    if (!customAlias.trim()) return;
+    const finalAlias = customAlias.trim();
+    setCustomScopedIdentity(`thread_${threadId}`, finalAlias);
+    setIdentity((prev) => prev ? { ...prev, alias: finalAlias } : null);
+    setIsEditingAlias(false);
   };
 
   const handleThreadVote = async (type: 'up' | 'down') => {
@@ -259,7 +274,7 @@ export default function ThreadDetailPage({
         body: JSON.stringify({
           content: commentContent.trim(),
           parent_id: null,
-          author_alias: identity.alias,
+          author_alias: customAlias.trim() || identity.alias,
           author_avatar: identity.avatarIcon,
           captcha_token: captchaData.token,
           captcha_answer: captchaAnswer.trim(),
@@ -298,7 +313,7 @@ export default function ThreadDetailPage({
         body: JSON.stringify({
           content,
           parent_id: parentId,
-          author_alias: identity.alias,
+          author_alias: customAlias.trim() || identity.alias,
           author_avatar: identity.avatarIcon,
           captcha_token: captchaData.token,
           captcha_answer: ans,
@@ -332,7 +347,7 @@ export default function ThreadDetailPage({
   if (isLoading) {
     return (
       <div className="max-w-4xl mx-auto py-12 text-center text-zinc-500 font-mono text-xs">
-        LOADING REDDIT THREAD...
+        LOADING ZRMA REDDIT THREAD...
       </div>
     );
   }
@@ -359,15 +374,25 @@ export default function ThreadDetailPage({
   }
 
   const isThreadHidden = thread.is_hidden === 1 && !revealedIds[thread.id];
-  const subredditName = `r/${thread.category}`;
+  const cleanCategory = (thread.category || 'general').replace(/^r\//, '');
+  const subredditName = `r/${cleanCategory}`;
+  const cleanAuthorAlias = (thread.author_alias || 'ผู้ไม่ประสงค์ออกนาม').replace(/^u\//, '');
+
+  const isVideo =
+    thread.media_type === 'video' ||
+    (thread.media_url && /\.(mp4|webm|mov)$/i.test(thread.media_url));
+
+  const isImage =
+    thread.media_type === 'image' ||
+    (thread.media_url && /\.(jpg|jpeg|png|webp|gif)$/i.test(thread.media_url));
 
   return (
     <div className="space-y-4">
       {/* Top Breadcrumb & Switcher */}
       <div className="flex items-center justify-between">
         <Link
-          href="/"
-          className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-yellow-400 transition-colors"
+          href={`/?category=${cleanCategory}`}
+          className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-yellow-400 transition-colors font-mono"
         >
           <ArrowLeft size={13} />
           <span>กลับไปที่ {subredditName}</span>
@@ -470,15 +495,18 @@ export default function ThreadDetailPage({
                 
                 {/* Header metadata */}
                 <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2 text-xs">
-                  <span className="font-mono font-bold text-zinc-100">
+                  <Link
+                    href={`/?category=${cleanCategory}`}
+                    className="font-mono font-bold text-yellow-400 hover:underline"
+                  >
                     {subredditName}
-                  </span>
+                  </Link>
 
                   <span className="text-zinc-600">•</span>
 
                   <div className="flex items-center gap-1 text-zinc-400 font-mono text-[11px]">
                     <IdentityAvatar iconKey={thread.author_avatar} theme="red" size="xs" />
-                    <span>u/{thread.author_alias}</span>
+                    <span>u/{cleanAuthorAlias}</span>
                     <span className="px-1.5 py-0.2 rounded text-[10px] font-mono font-bold bg-red-600 text-white ml-0.5">
                       OP
                     </span>
@@ -492,6 +520,12 @@ export default function ThreadDetailPage({
                       timeStyle: 'short',
                     })}
                   </span>
+
+                  {thread.flair && (
+                    <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold border text-yellow-400 bg-yellow-500/10 border-yellow-500/25 ml-1">
+                      {thread.flair}
+                    </span>
+                  )}
 
                   {/* Expiration badge */}
                   <div className="flex items-center gap-1 font-mono text-[10px] text-orange-400 ml-auto bg-orange-500/10 px-2 py-0.5 rounded border border-orange-500/20 tabular-nums">
@@ -513,6 +547,39 @@ export default function ThreadDetailPage({
                 <h1 className="text-lg sm:text-xl font-bold text-zinc-100 leading-snug mb-3">
                   {thread.title}
                 </h1>
+
+                {/* Media Attachment Player / Preview */}
+                {thread.media_url && (
+                  <div className="mb-4 rounded-xl overflow-hidden border border-white/[0.08] bg-black/60">
+                    {isVideo ? (
+                      <div className="relative">
+                        <video
+                          src={thread.media_url}
+                          controls
+                          playsInline
+                          preload="metadata"
+                          className="w-full max-h-[500px] object-contain bg-black"
+                        />
+                        <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] font-mono text-yellow-400 flex items-center gap-1 pointer-events-none">
+                          <Film size={11} />
+                          <span>ATTACHED VIDEO</span>
+                        </div>
+                      </div>
+                    ) : isImage ? (
+                      <div className="relative group/img cursor-pointer" onClick={() => window.open(thread.media_url!, '_blank')}>
+                        <img
+                          src={thread.media_url}
+                          alt={thread.title}
+                          className="w-full max-h-[500px] object-contain bg-black hover:opacity-95 transition-opacity"
+                        />
+                        <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] font-mono text-zinc-300 flex items-center gap-1 pointer-events-none">
+                          <ImageIcon size={11} />
+                          <span>ATTACHED IMAGE (CLICK TO OPEN)</span>
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                )}
 
                 {/* Source Link */}
                 {thread.source_url && (
@@ -587,30 +654,64 @@ export default function ThreadDetailPage({
           ) : (
             <div className="space-y-4">
               
-              {/* Ephemeral Identity Notice */}
+              {/* Ephemeral Identity Notice with Custom Display Name Support */}
               {identity && (
-                <div className="bg-[#101217] border border-white/[0.06] rounded-xl p-3 flex items-center justify-between gap-3 text-xs">
+                <div className="bg-[#101217] border border-white/[0.06] rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                   <div className="flex items-center gap-2.5">
                     <IdentityAvatar iconKey={identity.avatarIcon} theme="red" size="sm" />
                     <div>
                       <div className="flex items-center gap-1.5">
                         <span className="text-zinc-400">คุณกำลังแสดงความเห็นในฐานะ:</span>
-                        <strong className="text-zinc-100 font-semibold">u/{identity.alias}</strong>
+                        {isEditingAlias ? (
+                          <div className="flex items-center gap-1.5">
+                            <input
+                              type="text"
+                              value={customAlias}
+                              onChange={(e) => setCustomAlias(e.target.value)}
+                              placeholder="u/ชื่อที่คุณต้องการ"
+                              maxLength={40}
+                              className="bg-black/50 border border-yellow-400 rounded px-2 py-0.5 text-xs text-yellow-400 font-mono font-semibold focus:outline-none"
+                            />
+                            <button
+                              type="button"
+                              onClick={handleSaveCustomAlias}
+                              className="px-2 py-0.5 bg-yellow-400 text-zinc-950 font-bold rounded text-[11px]"
+                            >
+                              บันทึก
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1">
+                            <strong className="text-zinc-100 font-semibold font-mono">
+                              u/{customAlias.replace(/^u\//, '')}
+                            </strong>
+                            <button
+                              type="button"
+                              onClick={() => setIsEditingAlias(true)}
+                              className="text-zinc-500 hover:text-yellow-400 p-0.5 rounded"
+                              title="เปลี่ยนชื่อแสดงตัวตน"
+                            >
+                              <Edit2 size={11} />
+                            </button>
+                          </div>
+                        )}
                       </div>
                       <p className="text-[10px] text-zinc-500">
-                        สุ่มชื่อเฉพาะสำหรับกระทู้นี้เท่านั้น เมื่อไปกระทู้อื่นคุณจะได้ชื่อใหม่
+                        สุ่มรหัสหรือตั้งชื่อเองเฉพาะสำหรับโพสต์นี้ ข้อมูลไร้ประวัติติดตามตัว
                       </p>
                     </div>
                   </div>
 
-                  <button
-                    onClick={handleRerollIdentity}
-                    className="btn-secondary !py-1 !px-2 text-xs shrink-0 hover:border-yellow-500/30"
-                    title="สุ่มชื่อใหม่เฉพาะกระทู้นี้"
-                  >
-                    <Dices size={13} className="text-yellow-400" />
-                    <span className="hidden sm:inline">สุ่มชื่อใหม่</span>
-                  </button>
+                  <div className="flex items-center gap-1 self-end sm:self-auto">
+                    <button
+                      onClick={handleRerollIdentity}
+                      className="btn-secondary !py-1 !px-2 text-xs shrink-0 hover:border-yellow-500/30"
+                      title="สุ่มชื่อใหม่เฉพาะกระทู้นี้"
+                    >
+                      <Dices size={13} className="text-yellow-400" />
+                      <span>สุ่มชื่อใหม่</span>
+                    </button>
+                  </div>
                 </div>
               )}
 
@@ -689,7 +790,7 @@ export default function ThreadDetailPage({
                   onSubmitNestedReply={handleNestedReply}
                   captchaData={captchaData}
                   onRefreshCaptcha={fetchCaptcha}
-                  currentIdentityAlias={identity?.alias}
+                  currentIdentityAlias={customAlias || identity?.alias}
                 />
               </div>
             </div>

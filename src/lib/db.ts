@@ -1,7 +1,7 @@
 import { DatabaseSync } from 'node:sqlite';
 import path from 'path';
 import fs from 'fs';
-import { Thread, Comment, CommentNode, ChatMessage, Category, RedditSort } from '@/types';
+import { Thread, Comment, CommentNode, ChatMessage, Category, RedditSort, Community, MediaType } from '@/types';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 if (!fs.existsSync(DATA_DIR)) {
@@ -34,6 +34,15 @@ export function getDatabase(): DatabaseSync {
 
   if (!global.__dbInitialized) {
     db.exec(`
+      CREATE TABLE IF NOT EXISTS communities (
+        name TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        description TEXT,
+        icon TEXT DEFAULT 'terminal',
+        post_count INTEGER DEFAULT 0,
+        created_at TEXT NOT NULL
+      );
+
       CREATE TABLE IF NOT EXISTS threads (
         id TEXT PRIMARY KEY,
         title TEXT NOT NULL,
@@ -41,6 +50,8 @@ export function getDatabase(): DatabaseSync {
         category TEXT NOT NULL,
         flair TEXT,
         source_url TEXT,
+        media_url TEXT,
+        media_type TEXT,
         author_alias TEXT NOT NULL,
         author_avatar TEXT NOT NULL,
         upvotes INTEGER DEFAULT 0,
@@ -62,6 +73,7 @@ export function getDatabase(): DatabaseSync {
         quote_text TEXT,
         quote_author TEXT,
         content TEXT NOT NULL,
+        media_url TEXT,
         author_alias TEXT NOT NULL,
         author_avatar TEXT NOT NULL,
         upvotes INTEGER DEFAULT 0,
@@ -98,14 +110,15 @@ export function getDatabase(): DatabaseSync {
       );
     `);
 
-    // Safely ensure flair column exists if table was created in an older build
-    try {
-      db.exec('ALTER TABLE threads ADD COLUMN flair TEXT;');
-    } catch {
-      // column already exists
-    }
+    // Migrations for columns in existing databases
+    try { db.exec('ALTER TABLE threads ADD COLUMN flair TEXT;'); } catch {}
+    try { db.exec('ALTER TABLE threads ADD COLUMN media_url TEXT;'); } catch {}
+    try { db.exec('ALTER TABLE threads ADD COLUMN media_type TEXT;'); } catch {}
+    try { db.exec('ALTER TABLE comments ADD COLUMN media_url TEXT;'); } catch {}
 
+    // Seed default communities and sample threads if empty
     try {
+      seedDefaultCommunities(db);
       const countRow = db.prepare(`SELECT COUNT(*) as count FROM threads`).get() as any;
       if (!countRow || countRow.count === 0) {
         seedInitialData(db);
@@ -121,6 +134,92 @@ export function getDatabase(): DatabaseSync {
   return db;
 }
 
+function seedDefaultCommunities(database: DatabaseSync) {
+  const defaults = [
+    { name: 'breaking', title: 'r/breaking', description: 'ข่าวด่วน เหตุการณ์สำคัญ และสถานการณ์สด', icon: 'radar' },
+    { name: 'tech', title: 'r/tech', description: 'เทคโนโลยี, AI, ซอฟต์แวร์, และความปลอดภัยไซเบอร์', icon: 'terminal' },
+    { name: 'finance', title: 'r/finance', description: 'เศรษฐกิจ, การลงทุน, หุ้น, และคริปโทเคอร์เรนซี', icon: 'cpu' },
+    { name: 'society', title: 'r/society', description: 'ประเด็นสังคม กฎหมาย และนโยบายสาธารณะ', icon: 'globe' },
+    { name: 'general', title: 'r/general', description: 'แลกเปลี่ยนความคิดเห็นทั่วไป เสวนาเรื่องรอบตัว', icon: 'shield' },
+    { name: 'gaming', title: 'r/gaming', description: 'วิดีโอเกม อีสปอร์ต คอนโซล และเกมพีซี', icon: 'key' },
+    { name: 'science', title: 'r/science', description: 'วิทยาศาสตร์ นวัตกรรม อวกาศ และธรรมชาติ', icon: 'binary' },
+    { name: 'memes', title: 'r/memes', description: 'มีม มุกตลก และเรื่องบันเทิงแบบนิรนาม', icon: 'eye-off' },
+  ];
+
+  const now = new Date().toISOString();
+  const insert = database.prepare(`
+    INSERT OR IGNORE INTO communities (name, title, description, icon, post_count, created_at)
+    VALUES (?, ?, ?, ?, 0, ?)
+  `);
+
+  for (const c of defaults) {
+    try {
+      insert.run(c.name, c.title, c.description, c.icon, now);
+    } catch {
+      // ignore
+    }
+  }
+}
+
+export function getCommunities(): Community[] {
+  const database = getDatabase();
+  const rows = database.prepare(`
+    SELECT 
+      c.name,
+      c.title,
+      c.description,
+      c.icon,
+      (SELECT COUNT(*) FROM threads t WHERE t.category = c.name) as post_count,
+      c.created_at
+    FROM communities c
+    ORDER BY post_count DESC, c.created_at ASC
+  `).all() as any[];
+
+  return rows.map((r) => ({
+    name: r.name,
+    title: r.title,
+    description: r.description || '',
+    icon: r.icon || 'terminal',
+    post_count: Number(r.post_count),
+    created_at: r.created_at,
+  }));
+}
+
+export function createOrUpdateCommunity(data: {
+  name: string;
+  title: string;
+  description?: string;
+  icon?: string;
+}): Community {
+  const database = getDatabase();
+  const now = new Date().toISOString();
+
+  database.prepare(`
+    INSERT INTO communities (name, title, description, icon, post_count, created_at)
+    VALUES (?, ?, ?, ?, 0, ?)
+    ON CONFLICT(name) DO UPDATE SET
+      title = excluded.title,
+      description = excluded.description,
+      icon = excluded.icon
+  `).run(
+    data.name.toLowerCase().trim(),
+    data.title.trim(),
+    data.description || '',
+    data.icon || 'terminal',
+    now
+  );
+
+  const row = database.prepare(`SELECT * FROM communities WHERE name = ?`).get(data.name.toLowerCase().trim()) as any;
+  return {
+    name: row.name,
+    title: row.title,
+    description: row.description || '',
+    icon: row.icon || 'terminal',
+    post_count: Number(row.post_count || 0),
+    created_at: row.created_at,
+  };
+}
+
 function seedInitialData(database: DatabaseSync) {
   try {
     const thread1Id = 'seed-thread-1';
@@ -133,8 +232,8 @@ function seedInitialData(database: DatabaseSync) {
     const nowIso = now.toISOString();
 
     const insertThread = database.prepare(`
-      INSERT OR IGNORE INTO threads (id, title, content, category, flair, source_url, author_alias, author_avatar, expires_at, created_at, upvotes)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT OR IGNORE INTO threads (id, title, content, category, flair, source_url, media_url, media_type, author_alias, author_avatar, expires_at, created_at, upvotes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     insertThread.run(
@@ -144,25 +243,29 @@ function seedInitialData(database: DatabaseSync) {
       'breaking',
       'ข่าวด่วน',
       'https://www.thaigov.go.th',
-      'เหยี่ยวราตรี #2041',
+      null,
+      null,
+      'u/เหยี่ยวราตรี #2041',
       'shield',
       d3,
       nowIso,
-      12
+      14
     );
 
     insertThread.run(
       thread2Id,
       '💻 ทำไมระบบ Zero-Log และ Ephemeral Sessions ถึงเป็นอนาคตของการสื่อสารบนโลกอินเทอร์เน็ต?',
-      'หลายปีที่ผ่านมา ข้อมูลส่วนบุคคลของผู้ใช้ทั่วโลกถูกนำไปขาย ยิงโฆษณา และตกเป็นเป้าหมายของมัลแวร์เรียกค่าไถ่\n\nการออกแบบระบบที่ไม่เก็บ Log เลยตั้งแต่ต้น (Zero-Log Architecture) ควบคู่กับชื่อสุ่มแบบชั่วคราว (Ephemeral Identity) ที่เปลี่ยนใหม่ทุกห้อง ทำให้ผู้ใช้สามารถพูดคุย แลกเปลี่ยนข้อมูลเชิงลึก และแสดงความคิดเห็นได้อย่างเสรีโดยไม่ต้องหวาดระแวงการถูก Digital Footprint เล่นงานย้อนหลัง\n\nทุกคนมีความเห็นอย่างไรกับการสื่อสารรูปแบบนี้?',
+      'หลายปีที่ผ่านมา ข้อมูลส่วนบุคคลของผู้ใช้ทั่วโลกถูกนำไปขาย ยิงโฆษณา และตกเป็นเป้าหมายของมัลแวร์เรียกค่าไถ่\n\nการออกแบบระบบที่ไม่เก็บ Log เลยตั้งแต่ต้น (Zero-Log Architecture) ควบคู่กับชื่อสุ่มหรือชื่อตั้งเองแบบชั่วคราว ที่เปลี่ยนใหม่ทุกห้อง ทำให้ผู้ใช้สามารถพูดคุย แลกเปลี่ยนข้อมูลเชิงลึก และแสดงความคิดเห็นได้อย่างเสรีโดยไม่ต้องหวาดระแวงการถูก Digital Footprint เล่นงานย้อนหลัง\n\nทุกคนมีความเห็นอย่างไรกับการสื่อสารรูปแบบนี้?',
       'tech',
       'บทวิเคราะห์',
       'https://eff.org',
-      'นักรหัสลับ #8812',
+      null,
+      null,
+      'u/นักรหัสลับ #8812',
       'terminal',
       d7,
       nowIso,
-      48
+      52
     );
 
     insertThread.run(
@@ -172,11 +275,13 @@ function seedInitialData(database: DatabaseSync) {
       'general',
       'เสวนา',
       null,
-      'ก้อนเมฆลอยละล่อง #4159',
+      null,
+      null,
+      'u/ก้อนเมฆลอยละล่อง #4159',
       'globe',
       d1,
       nowIso,
-      8
+      9
     );
 
     const insertComment = database.prepare(`
@@ -191,10 +296,10 @@ function seedInitialData(database: DatabaseSync) {
       null,
       null,
       'เห็นด้วยมากๆ ครับ ปกติไปโพสต์ในบอร์ดอื่นจะกังวลเรื่องคนตามส่องประวัติย้อนหลัง ระบบเปลี่ยนชื่อทุกกระทู้นี่ตอบโจทย์มาก!',
-      'แมวส้มหลงทาง #1240',
+      'u/แมวส้มหลงทาง #1240',
       'cpu',
       nowIso,
-      5
+      6
     );
 
     insertComment.run(
@@ -202,12 +307,12 @@ function seedInitialData(database: DatabaseSync) {
       thread2Id,
       'seed-c-1',
       'ระบบเปลี่ยนชื่อทุกกระทู้นี่ตอบโจทย์มาก!',
-      'แมวส้มหลงทาง #1240',
+      'u/แมวส้มหลงทาง #1240',
       'ใช่เลยครับ ทำให้เราโฟกัสกับ "เนื้อหาของสาร" มากกว่า "ใครเป็นคนพูด" บอร์ดแบบนี้หาได้ยากมากในยุคปัจจุบัน',
-      'สายลมแปรปรวน #9931',
+      'u/สายลมแปรปรวน #9931',
       'radar',
       nowIso,
-      3
+      4
     );
 
     const insertChat = database.prepare(`
@@ -219,7 +324,7 @@ function seedInitialData(database: DatabaseSync) {
       'seed-chat-1',
       'global',
       'ยินดีต้อนรับสู่ ZRMA Community Live Chat 🛡️ แลกเปลี่ยนแบบนิรนาม 100% ไม่มีการบันทึก IP ใดๆ',
-      'ระบบนิรนาม #0000',
+      'u/ระบบนิรนาม #0000',
       'shield',
       nowIso
     );
@@ -257,14 +362,6 @@ export function pruneChatRoom(roomId: string): void {
   }
 }
 
-/**
- * Thread operations with Reddit-grade sorting:
- * - 'hot': Score weighted by time decay
- * - 'new': Chronological (latest)
- * - 'top': Highest net upvotes
- * - 'rising': High comment & vote velocity
- * - 'breaking': Breaking news
- */
 export function getThreads(category?: string, sort: RedditSort = 'hot'): Thread[] {
   purgeExpiredData();
   const database = getDatabase();
@@ -280,13 +377,12 @@ export function getThreads(category?: string, sort: RedditSort = 'hot'): Thread[
   const params: any[] = [];
 
   if (category && category !== 'all') {
+    const cleanCat = category.replace(/^r\//, '');
     query += ` AND t.category = ?`;
-    params.push(category);
+    params.push(cleanCat);
   }
 
-  // Reddit Sorting Engine
   if (sort === 'hot') {
-    // Reddit-style decay formula: score weighted with timestamp in seconds
     query += ` ORDER BY ((t.upvotes - t.downvotes) * 1000 + unixepoch(t.created_at) / 100) DESC, t.created_at DESC`;
   } else if (sort === 'new') {
     query += ` ORDER BY t.created_at DESC`;
@@ -307,9 +403,11 @@ export function getThreads(category?: string, sort: RedditSort = 'hot'): Thread[
     id: r.id,
     title: r.title,
     content: r.content,
-    category: r.category as Category,
+    category: r.category,
     flair: r.flair || null,
     source_url: r.source_url,
+    media_url: r.media_url || null,
+    media_type: (r.media_type as MediaType) || null,
     author_alias: r.author_alias,
     author_avatar: r.author_avatar,
     upvotes: Number(r.upvotes),
@@ -341,9 +439,11 @@ export function getThreadById(id: string): Thread | null {
     id: row.id,
     title: row.title,
     content: row.content,
-    category: row.category as Category,
+    category: row.category,
     flair: row.flair || null,
     source_url: row.source_url,
+    media_url: row.media_url || null,
+    media_type: (row.media_type as MediaType) || null,
     author_alias: row.author_alias,
     author_avatar: row.author_avatar,
     upvotes: Number(row.upvotes),
@@ -361,9 +461,11 @@ export function createThread(data: {
   id: string;
   title: string;
   content: string;
-  category: Category;
+  category: string;
   flair?: string | null;
   source_url?: string | null;
+  media_url?: string | null;
+  media_type?: MediaType | null;
   author_alias: string;
   author_avatar: string;
   expires_hours: number;
@@ -372,17 +474,30 @@ export function createThread(data: {
   const now = new Date();
   const expiresAt = new Date(now.getTime() + data.expires_hours * 60 * 60 * 1000).toISOString();
   const createdAt = now.toISOString();
+  const cleanCat = data.category.toLowerCase().trim().replace(/^r\//, '');
+
+  // Auto-register community in communities table if new
+  try {
+    database.prepare(`
+      INSERT OR IGNORE INTO communities (name, title, description, icon, post_count, created_at)
+      VALUES (?, ?, ?, 'terminal', 0, ?)
+    `).run(cleanCat, `r/${cleanCat}`, `ชุมชนแลกเปลี่ยนข่าวสาร r/${cleanCat}`, createdAt);
+  } catch {
+    // ignore
+  }
 
   database.prepare(`
-    INSERT INTO threads (id, title, content, category, flair, source_url, author_alias, author_avatar, expires_at, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO threads (id, title, content, category, flair, source_url, media_url, media_type, author_alias, author_avatar, expires_at, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     data.id,
     data.title,
     data.content,
-    data.category,
+    cleanCat,
     data.flair || null,
     data.source_url || null,
+    data.media_url || null,
+    data.media_type || null,
     data.author_alias,
     data.author_avatar,
     expiresAt,
@@ -409,9 +524,6 @@ export function voteThread(id: string, type: 'up' | 'down'): { upvotes: number; 
   };
 }
 
-/**
- * Comments operations
- */
 export function getCommentsByThread(threadId: string): Comment[] {
   const database = getDatabase();
   const rows = database.prepare(`
@@ -430,6 +542,7 @@ export function getCommentsByThread(threadId: string): Comment[] {
     quote_text: r.quote_text,
     quote_author: r.quote_author,
     content: r.content,
+    media_url: r.media_url || null,
     author_alias: r.author_alias,
     author_avatar: r.author_avatar,
     upvotes: Number(r.upvotes),
@@ -441,8 +554,6 @@ export function getCommentsByThread(threadId: string): Comment[] {
   }));
 }
 
-export { buildCommentTree } from './commentTree';
-
 export function createComment(data: {
   id: string;
   thread_id: string;
@@ -450,6 +561,7 @@ export function createComment(data: {
   quote_text?: string | null;
   quote_author?: string | null;
   content: string;
+  media_url?: string | null;
   author_alias: string;
   author_avatar: string;
 }): Comment {
@@ -457,8 +569,8 @@ export function createComment(data: {
   const createdAt = new Date().toISOString();
 
   database.prepare(`
-    INSERT INTO comments (id, thread_id, parent_id, quote_text, quote_author, content, author_alias, author_avatar, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO comments (id, thread_id, parent_id, quote_text, quote_author, content, media_url, author_alias, author_avatar, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     data.id,
     data.thread_id,
@@ -466,6 +578,7 @@ export function createComment(data: {
     data.quote_text || null,
     data.quote_author || null,
     data.content,
+    data.media_url || null,
     data.author_alias,
     data.author_avatar,
     createdAt
@@ -479,6 +592,7 @@ export function createComment(data: {
     quote_text: row.quote_text,
     quote_author: row.quote_author,
     content: row.content,
+    media_url: row.media_url || null,
     author_alias: row.author_alias,
     author_avatar: row.author_avatar,
     upvotes: Number(row.upvotes),
@@ -507,9 +621,6 @@ export function voteComment(id: string, type: 'up' | 'down'): { upvotes: number;
   };
 }
 
-/**
- * Chat operations
- */
 export function getChatMessages(roomId: string = 'global'): ChatMessage[] {
   pruneChatRoom(roomId);
   const database = getDatabase();
@@ -568,9 +679,6 @@ export function sendChatMessage(data: {
   };
 }
 
-/**
- * Community Reports
- */
 export function reportContent(data: {
   id: string;
   target_type: 'thread' | 'comment' | 'chat';
@@ -616,3 +724,5 @@ export function reportContent(data: {
 
   return { newReportCount, isHidden };
 }
+
+export { buildCommentTree } from './commentTree';

@@ -36,7 +36,10 @@ export async function POST(req: NextRequest) {
       title,
       content,
       category,
+      flair,
       source_url,
+      media_url,
+      media_type,
       author_alias,
       author_avatar,
       expires_hours,
@@ -67,27 +70,27 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const validCategories: Category[] = ['breaking', 'tech', 'society', 'finance', 'general', 'science'];
-    if (!validCategories.includes(category)) {
-      return NextResponse.json(
-        { error: 'หมวดหมู่ไม่ถูกต้อง' },
-        { status: 400 }
-      );
-    }
+    // Process r/ category slug
+    const rawCategory = (category || 'general').trim().replace(/^r\//i, '').toLowerCase();
+    const cleanCategory = rawCategory.replace(/[^a-z0-9_\-]/g, '') || 'general';
 
     const validHours = [24, 72, 168]; // 24h, 3 days, 7 days
     const hours = validHours.includes(Number(expires_hours)) ? Number(expires_hours) : 72;
+
+    const validatedMediaType = (media_type === 'image' || media_type === 'video') ? media_type : null;
 
     const id = crypto.randomUUID();
     const newThread = createThread({
       id,
       title: title.trim(),
       content: content.trim(),
-      category,
-      flair: body.flair || null,
+      category: cleanCategory,
+      flair: flair ? flair.trim() : null,
       source_url: source_url ? source_url.trim() : null,
-      author_alias: author_alias || 'ผู้ไม่ประสงค์ออกนาม #????',
-      author_avatar: author_avatar || '🥷',
+      media_url: media_url ? media_url.trim() : null,
+      media_type: validatedMediaType,
+      author_alias: author_alias ? author_alias.trim() : 'u/ผู้ไม่ประสงค์ออกนาม #????',
+      author_avatar: author_avatar || 'terminal',
       expires_hours: hours,
     });
 

@@ -16,6 +16,8 @@ import {
   Share2,
   Bookmark,
   Check,
+  Film,
+  Image as ImageIcon,
 } from 'lucide-react';
 import IdentityAvatar from './IdentityAvatar';
 import ReportModal from './ReportModal';
@@ -102,41 +104,17 @@ export default function ThreadCard({ thread, onVoteChange }: ThreadCardProps) {
     setIsSaved(!isSaved);
   };
 
-  const getSubredditName = () => {
-    switch (thread.category) {
-      case 'breaking':
-        return 'r/breaking';
-      case 'tech':
-        return 'r/tech';
-      case 'society':
-        return 'r/society';
-      case 'finance':
-        return 'r/finance';
-      case 'science':
-        return 'r/science';
-      default:
-        return 'r/general';
-    }
-  };
+  const cleanCategory = (thread.category || 'general').replace(/^r\//, '');
+  const subredditName = `r/${cleanCategory}`;
+  const cleanAlias = (thread.author_alias || 'ผู้ไม่ประสงค์ออกนาม').replace(/^u\//, '');
 
-  const getCategoryMeta = () => {
-    switch (thread.category) {
-      case 'breaking':
-        return { label: 'ข่าวด่วน', color: 'text-red-400 bg-red-500/10 border-red-500/25' };
-      case 'tech':
-        return { label: 'เทคโนโลยี', color: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/25' };
-      case 'society':
-        return { label: 'สังคม', color: 'text-orange-400 bg-orange-500/10 border-orange-500/25' };
-      case 'finance':
-        return { label: 'เศรษฐกิจ', color: 'text-amber-400 bg-amber-500/10 border-amber-500/25' };
-      case 'science':
-        return { label: 'วิทยาศาสตร์', color: 'text-yellow-300 bg-yellow-400/10 border-yellow-400/25' };
-      default:
-        return { label: 'ทั่วไป', color: 'text-zinc-400 bg-zinc-800/40 border-zinc-700/50' };
-    }
-  };
+  const isVideo =
+    thread.media_type === 'video' ||
+    (thread.media_url && /\.(mp4|webm|mov)$/i.test(thread.media_url));
 
-  const cat = getCategoryMeta();
+  const isImage =
+    thread.media_type === 'image' ||
+    (thread.media_url && /\.(jpg|jpeg|png|webp|gif)$/i.test(thread.media_url));
 
   return (
     <article className="bg-[#101217] border border-white/[0.07] hover:border-red-500/35 rounded-xl p-3.5 sm:p-4 transition-all relative group shadow-sm hover:shadow-red-950/20">
@@ -207,15 +185,18 @@ export default function ThreadCard({ thread, onVoteChange }: ThreadCardProps) {
           
           {/* Reddit-style Header Line: r/community • u/author • time ago */}
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1.5 text-xs">
-            <span className="font-mono font-bold text-xs text-zinc-100 hover:underline cursor-pointer">
-              {getSubredditName()}
-            </span>
+            <Link
+              href={`/?category=${cleanCategory}`}
+              className="font-mono font-bold text-xs text-yellow-400 hover:underline"
+            >
+              {subredditName}
+            </Link>
 
             <span className="text-zinc-600">•</span>
 
             <div className="flex items-center gap-1 text-zinc-400 font-mono text-[11px]">
               <IdentityAvatar iconKey={thread.author_avatar} theme="red" size="xs" />
-              <span>u/{thread.author_alias}</span>
+              <span>u/{cleanAlias}</span>
             </div>
 
             <span className="text-zinc-600">•</span>
@@ -224,10 +205,12 @@ export default function ThreadCard({ thread, onVoteChange }: ThreadCardProps) {
               {getTimeAgo()}
             </span>
 
-            {/* Flair tag if breaking or specific */}
-            <span className={`px-1.5 py-0.2 rounded text-[10px] font-semibold border ${cat.color} ml-1`}>
-              {cat.label}
-            </span>
+            {/* Flair tag if provided */}
+            {thread.flair && (
+              <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold border text-yellow-400 bg-yellow-500/10 border-yellow-500/25 ml-1">
+                {thread.flair}
+              </span>
+            )}
 
             {/* Expiration badge (Touch of Orange) */}
             <div className="flex items-center gap-1 font-mono text-[10px] text-orange-400 ml-auto bg-orange-500/10 px-2 py-0.5 rounded border border-orange-500/20 tabular-nums">
@@ -247,6 +230,40 @@ export default function ThreadCard({ thread, onVoteChange }: ThreadCardProps) {
           <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed mb-2.5">
             {thread.content}
           </p>
+
+          {/* Media Preview: Image or Video */}
+          {thread.media_url && (
+            <div className="mb-3 rounded-lg overflow-hidden border border-white/[0.08] bg-black/40">
+              {isVideo ? (
+                <div className="relative group/video">
+                  <video
+                    src={thread.media_url}
+                    controls
+                    playsInline
+                    preload="metadata"
+                    className="w-full max-h-80 object-contain bg-black"
+                  />
+                  <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] font-mono text-yellow-400 flex items-center gap-1 pointer-events-none">
+                    <Film size={11} />
+                    <span>VIDEO</span>
+                  </div>
+                </div>
+              ) : isImage ? (
+                <div className="relative group/img cursor-pointer" onClick={() => window.open(thread.media_url!, '_blank')}>
+                  <img
+                    src={thread.media_url}
+                    alt={thread.title}
+                    loading="lazy"
+                    className="w-full max-h-80 object-cover hover:scale-[1.01] transition-transform duration-300"
+                  />
+                  <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] font-mono text-zinc-300 flex items-center gap-1 pointer-events-none">
+                    <ImageIcon size={11} />
+                    <span>IMAGE</span>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          )}
 
           {/* External Link Pill (Reddit Style) */}
           {thread.source_url && (

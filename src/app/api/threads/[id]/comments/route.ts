@@ -40,6 +40,7 @@ export async function POST(
       parent_id,
       quote_text,
       quote_author,
+      media_url,
       author_alias,
       author_avatar,
       captcha_token,
@@ -69,6 +70,7 @@ export async function POST(
       quote_text: quote_text || null,
       quote_author: quote_author || null,
       content: content.trim(),
+      media_url: media_url ? media_url.trim() : null,
       author_alias: author_alias || 'ผู้ไม่ประสงค์ออกนาม #????',
       author_avatar: author_avatar || '🥷',
     });
