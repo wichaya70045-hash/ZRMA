@@ -34,6 +34,8 @@ import {
   TrendingUp,
   Lock,
   Key,
+  BarChart2,
+  Trash2,
 } from 'lucide-react';
 
 const EXPIRY_OPTIONS = [
@@ -70,6 +72,29 @@ export default function NewThreadPage() {
   const [captchaAnswer, setCaptchaAnswer] = useState('');
   const [captchaData, setCaptchaData] = useState<CaptchaChallenge | null>(null);
   const [editPasscode, setEditPasscode] = useState('');
+
+  // Community Poll state
+  const [hasPoll, setHasPoll] = useState(false);
+  const [pollQuestion, setPollQuestion] = useState('');
+  const [pollOptions, setPollOptions] = useState<string[]>(['', '']);
+
+  const handleAddPollOption = () => {
+    if (pollOptions.length < 8) {
+      setPollOptions([...pollOptions, '']);
+    }
+  };
+
+  const handleRemovePollOption = (index: number) => {
+    if (pollOptions.length > 2) {
+      setPollOptions(pollOptions.filter((_, i) => i !== index));
+    }
+  };
+
+  const handlePollOptionChange = (index: number, value: string) => {
+    const updated = [...pollOptions];
+    updated[index] = value;
+    setPollOptions(updated);
+  };
 
   // Author Display Name
   const [identity, setIdentity] = useState<AnonymousIdentity | null>(null);
@@ -205,6 +230,14 @@ export default function NewThreadPage() {
       return;
     }
 
+    if (hasPoll) {
+      const validOptions = pollOptions.map((o) => o.trim()).filter(Boolean);
+      if (validOptions.length < 2) {
+        setErrorMsg('หากต้องการเปิดโพล ต้องระบุตัวเลือกอย่างน้อย 2 ตัวเลือก');
+        return;
+      }
+    }
+
     if (!captchaAnswer.trim() || !captchaData?.token) {
       setErrorMsg('กรุณากรอกคำตอบคำถามยืนยันความปลอดภัย');
       return;
@@ -229,6 +262,9 @@ export default function NewThreadPage() {
           source_url: sourceUrl.trim() || null,
           media_url: mediaUrl || null,
           media_type: mediaType || null,
+          has_poll: hasPoll,
+          poll_question: pollQuestion.trim() || null,
+          poll_options: pollOptions.map((o) => o.trim()).filter(Boolean),
           author_alias: customAuthorAlias.trim() || identity?.alias || 'u/นิรนาม #????',
           author_avatar: identity?.avatarIcon || 'terminal',
           is_pinned: isPinned ? 1 : 0,
@@ -594,11 +630,102 @@ export default function NewThreadPage() {
             />
           </div>
 
+          {/* 6. Community Poll Options (เปิดโหวตในโพสต์) */}
+          <div className="p-3.5 bg-black/40 border border-white/[0.08] hover:border-white/[0.14] rounded-xl space-y-3 transition-colors">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-yellow-500/10 text-yellow-400 border border-yellow-500/25 flex items-center justify-center shrink-0">
+                  <BarChart2 size={16} />
+                </div>
+                <div>
+                  <span className="text-xs font-semibold text-zinc-100 block">
+                    6. เปิดโพลสำรวจความคิดเห็น (Community Poll)
+                  </span>
+                  <span className="text-[10px] text-zinc-400">
+                    ให้สมาชิกในชุมชนเข้ามาลงคะแนนโหวตแบบไม่ระบุตัวตน (Zero-Log Anonymity)
+                  </span>
+                </div>
+              </div>
+
+              <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                <input
+                  type="checkbox"
+                  checked={hasPoll}
+                  onChange={(e) => setHasPoll(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-9 h-5 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-yellow-400"></div>
+              </label>
+            </div>
+
+            {hasPoll && (
+              <div className="space-y-3 pt-3 border-t border-white/[0.06] animate-in fade-in duration-200">
+                <div>
+                  <label className="text-[11px] font-mono text-zinc-400 block mb-1">
+                    คำถามหรือหัวข้อโหวต (ไม่บังคับ - หากเว้นว่างจะใช้หัวข้อกระทู้):
+                  </label>
+                  <input
+                    type="text"
+                    value={pollQuestion}
+                    onChange={(e) => setPollQuestion(e.target.value)}
+                    placeholder="เช่น คุณเห็นด้วยกับเรื่องนี้หรือไม่?"
+                    maxLength={150}
+                    className="w-full bg-white/[0.02] border border-white/[0.08] focus:border-yellow-400 rounded-lg px-3 py-1.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none font-sans"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[11px] font-mono text-zinc-400 block">
+                    ตัวเลือกสำหรับการโหวต (อย่างน้อย 2 ตัวเลือก, สูงสุด 8 ตัวเลือก):
+                  </label>
+
+                  {pollOptions.map((opt, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <span className="text-[11px] font-mono text-zinc-500 w-5 text-right shrink-0">
+                        {idx + 1}.
+                      </span>
+                      <input
+                        type="text"
+                        required={hasPoll && idx < 2}
+                        value={opt}
+                        onChange={(e) => handlePollOptionChange(idx, e.target.value)}
+                        placeholder={`ระบุตัวเลือกที่ ${idx + 1}...`}
+                        maxLength={80}
+                        className="flex-1 bg-white/[0.02] border border-white/[0.08] focus:border-yellow-400 rounded-lg px-3 py-1.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none font-sans"
+                      />
+                      {pollOptions.length > 2 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemovePollOption(idx)}
+                          className="p-1.5 text-zinc-500 hover:text-red-400 rounded hover:bg-white/[0.04] transition-colors shrink-0"
+                          title="ลบตัวเลือกนี้"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+
+                  {pollOptions.length < 8 && (
+                    <button
+                      type="button"
+                      onClick={handleAddPollOption}
+                      className="mt-1 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-white/20 hover:border-yellow-400 text-xs text-zinc-400 hover:text-yellow-400 hover:bg-yellow-400/[0.05] transition-colors"
+                    >
+                      <Plus size={12} />
+                      <span>+ เพิ่มตัวเลือก</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Auto-Destruction TTL (Touch of Orange) */}
           <div className="space-y-2">
             <label className="text-xs font-mono text-zinc-400 flex items-center gap-1">
               <Clock size={12} className="text-orange-400" />
-              <span>6. ระยะเวลาทำลายข้อมูลอัตโนมัติ (TTL)</span>
+              <span>7. ระยะเวลาทำลายข้อมูลอัตโนมัติ (TTL)</span>
             </label>
             <div className="grid grid-cols-3 gap-2">
               {EXPIRY_OPTIONS.map((opt) => {
@@ -627,7 +754,7 @@ export default function NewThreadPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
                 <Key size={14} className="text-yellow-400" />
-                <span className="text-xs font-medium text-zinc-200">7. รหัสลับสำหรับแก้ไขหรือลบโพสต์ (Edit Passcode)</span>
+                <span className="text-xs font-medium text-zinc-200">8. รหัสลับสำหรับแก้ไขหรือลบโพสต์ (Edit Passcode)</span>
               </div>
               <button
                 type="button"

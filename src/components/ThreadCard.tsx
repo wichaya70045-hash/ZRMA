@@ -21,11 +21,13 @@ import {
   Pin,
   Edit3,
   Trash2,
+  BarChart2,
 } from 'lucide-react';
 import IdentityAvatar from './IdentityAvatar';
 import ReportModal from './ReportModal';
 import EditThreadModal from './EditThreadModal';
 import DeleteThreadModal from './DeleteThreadModal';
+import ThreadPoll from './ThreadPoll';
 import { isThreadAuthor } from '@/lib/privacy';
 import { useSettings } from '@/lib/settings';
 
@@ -250,6 +252,12 @@ export default function ThreadCard({
             {thread.flair && (
               <span className="px-1 py-0.2 rounded text-[9px] font-semibold border text-yellow-400 bg-yellow-500/10 border-yellow-500/25">
                 {thread.flair}
+              </span>
+            )}
+            {thread.poll && (
+              <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-yellow-500/10 text-yellow-400 border border-yellow-500/25 flex items-center gap-1 shrink-0">
+                <BarChart2 size={9} />
+                <span>โพล ({thread.poll.total_votes || 0})</span>
               </span>
             )}
             {thread.source_url && (
@@ -562,6 +570,19 @@ export default function ThreadCard({
                   )}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Community Poll (if enabled) */}
+          {thread.poll && (
+            <div className="mb-2.5">
+              <ThreadPoll
+                threadId={thread.id}
+                poll={thread.poll}
+                onPollUpdated={(updated) => {
+                  setThread((prev) => ({ ...prev, poll: updated }));
+                }}
+              />
             </div>
           )}
 

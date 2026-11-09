@@ -203,3 +203,26 @@ export function getAuthoredChatMessageToken(msgId: string): string | null {
     return null;
   }
 }
+
+// ----------------------------------------------------
+// Community Poll Voting Tracking (Local Device, Zero-Log)
+// ----------------------------------------------------
+
+export function getVotedPollOption(threadId: string): number | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const val = localStorage.getItem(`zrma_poll_${threadId}`);
+    return val ? parseInt(val, 10) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function setVotedPollOption(threadId: string, optionId: number): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(`zrma_poll_${threadId}`, String(optionId));
+  } catch {
+    // ignore
+  }
+}

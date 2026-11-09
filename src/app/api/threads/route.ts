@@ -81,6 +81,47 @@ export async function POST(req: NextRequest) {
 
     const isPinned = (body.is_pinned === 1 || body.is_pinned === true || body.pin_breaking === true) ? 1 : 0;
 
+    // Process Poll data if enabled
+    let pollDataString: string | null = null;
+    if (body.has_poll === true || body.poll) {
+      const rawOptions = Array.isArray(body.poll_options)
+        ? body.poll_options
+        : Array.isArray(body.poll?.options)
+        ? body.poll.options.map((o: any) => (typeof o === 'string' ? o : o.text))
+        : [];
+
+      const cleanOptions = rawOptions
+        .map((opt: any) => (typeof opt === 'string' ? opt.trim() : String(opt?.text || '').trim()))
+        .filter(Boolean);
+
+      if (cleanOptions.length < 2) {
+        return NextResponse.json(
+          { error: 'โพลสำรวจความคิดเห็นต้องมีตัวเลือกอย่างน้อย 2 ตัวเลือก' },
+          { status: 400 }
+        );
+      }
+
+      if (cleanOptions.length > 8) {
+        return NextResponse.json(
+          { error: 'โพลสามารถมีตัวเลือกได้สูงสุดไม่เกิน 8 ตัวเลือก' },
+          { status: 400 }
+        );
+      }
+
+      const pollQuestion = body.poll_question?.trim() || body.poll?.question?.trim() || null;
+      const pollPayload = {
+        question: pollQuestion,
+        options: cleanOptions.map((text: string, idx: number) => ({
+          id: idx + 1,
+          text,
+          votes: 0,
+        })),
+        total_votes: 0,
+        closed: false,
+      };
+      pollDataString = JSON.stringify(pollPayload);
+    }
+
     const id = crypto.randomUUID();
     const token = body.edit_token?.trim() || crypto.randomBytes(16).toString('hex');
     const newThread = createThread({
@@ -92,6 +133,7 @@ export async function POST(req: NextRequest) {
       source_url: source_url ? source_url.trim() : null,
       media_url: media_url ? media_url.trim() : null,
       media_type: validatedMediaType,
+      poll_data: pollDataString,
       author_alias: author_alias ? author_alias.trim() : 'u/ผู้ไม่ประสงค์ออกนาม #????',
       author_avatar: author_avatar || 'terminal',
       is_pinned: isPinned,

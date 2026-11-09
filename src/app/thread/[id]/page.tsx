@@ -14,6 +14,7 @@ import DeleteThreadModal from '@/components/DeleteThreadModal';
 import LiveChatBox from '@/components/LiveChatBox';
 import CommunitySidebar from '@/components/CommunitySidebar';
 import ThreadedCommentTree from '@/components/ThreadedCommentTree';
+import ThreadPoll from '@/components/ThreadPoll';
 import {
   ArrowLeft,
   ChevronUp,
@@ -674,6 +675,19 @@ export default function ThreadDetailPage({
                 }`}>
                   {thread.content}
                 </div>
+
+                {/* Community Poll (if enabled) */}
+                {thread.poll && (
+                  <div className="pt-2 pb-1">
+                    <ThreadPoll
+                      threadId={thread.id}
+                      poll={thread.poll}
+                      onPollUpdated={(updated) => {
+                        setThread((prev) => (prev ? { ...prev, poll: updated } : null));
+                      }}
+                    />
+                  </div>
+                )}
 
                 {/* Reddit Action Bar */}
                 <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-3 text-xs w-full">

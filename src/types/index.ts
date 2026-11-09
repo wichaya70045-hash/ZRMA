@@ -4,6 +4,19 @@ export type RedditSort = 'hot' | 'new' | 'top' | 'rising' | 'breaking';
 
 export type MediaType = 'image' | 'video';
 
+export interface PollOption {
+  id: number;
+  text: string;
+  votes: number;
+}
+
+export interface PollData {
+  question?: string | null;
+  options: PollOption[];
+  total_votes: number;
+  closed?: boolean;
+}
+
 export interface Thread {
   id: string;
   title: string;
@@ -13,6 +26,8 @@ export interface Thread {
   source_url?: string | null;
   media_url?: string | null;
   media_type?: MediaType | null;
+  poll_data?: string | null;
+  poll?: PollData | null;
   author_alias: string;
   author_avatar: string;
   upvotes: number;

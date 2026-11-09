@@ -1,7 +1,7 @@
 import { DatabaseSync } from 'node:sqlite';
 import path from 'path';
 import fs from 'fs';
-import { Thread, Comment, CommentNode, ChatMessage, Category, RedditSort, Community, MediaType, GhostRoom } from '@/types';
+import { Thread, Comment, CommentNode, ChatMessage, Category, RedditSort, Community, MediaType, GhostRoom, PollData, PollOption } from '@/types';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 if (!fs.existsSync(DATA_DIR)) {
@@ -136,6 +136,23 @@ export function getDatabase(): DatabaseSync {
     try { db.exec('ALTER TABLE threads ADD COLUMN is_edited INTEGER DEFAULT 0;'); } catch {}
     try { db.exec('ALTER TABLE threads ADD COLUMN edited_at TEXT;'); } catch {}
     try { db.exec('ALTER TABLE threads ADD COLUMN edit_token TEXT;'); } catch {}
+    try { db.exec('ALTER TABLE threads ADD COLUMN poll_data TEXT;'); } catch {}
+    try {
+      db.prepare(`
+        UPDATE threads
+        SET poll_data = ?
+        WHERE id = 'seed-thread-2' AND (poll_data IS NULL OR poll_data = '')
+      `).run(JSON.stringify({
+        question: 'คุณคิดว่าระบบ Zero-Log จำเป็นต่อการใช้อินเทอร์เน็ตในปัจจุบันมากน้อยเพียงใด?',
+        options: [
+          { id: 1, text: 'จำเป็นอย่างยิ่ง ข้อมูลและ IP ไม่ควรถูกบันทึก', votes: 42 },
+          { id: 2, text: 'มีประโยชน์เฉพาะบางกรณีหรือข่าวสารที่อ่อนไหว', votes: 16 },
+          { id: 3, text: 'ไม่จำเป็น แพลตฟอร์มทั่วไปก็เพียงพอแล้ว', votes: 3 }
+        ],
+        total_votes: 61,
+        closed: false
+      }));
+    } catch {}
     try { db.exec('ALTER TABLE chat_messages ADD COLUMN is_edited INTEGER DEFAULT 0;'); } catch {}
     try { db.exec('ALTER TABLE chat_messages ADD COLUMN edited_at TEXT;'); } catch {}
     try { db.exec('ALTER TABLE chat_messages ADD COLUMN edit_token TEXT;'); } catch {}
@@ -386,6 +403,26 @@ export function pruneChatRoom(roomId: string): void {
   }
 }
 
+export function parsePoll(raw: any): PollData | null {
+  if (!raw || typeof raw !== 'string') return null;
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && Array.isArray(parsed.options) && parsed.options.length > 0) {
+      return {
+        question: parsed.question || null,
+        options: parsed.options.map((opt: any, idx: number) => ({
+          id: Number(opt.id ?? idx + 1),
+          text: String(opt.text || ''),
+          votes: Number(opt.votes || 0),
+        })),
+        total_votes: Number(parsed.total_votes || 0),
+        closed: Boolean(parsed.closed),
+      };
+    }
+  } catch {}
+  return null;
+}
+
 export function getThreads(category?: string, sort: RedditSort = 'hot'): Thread[] {
   purgeExpiredData();
   const database = getDatabase();
@@ -432,6 +469,8 @@ export function getThreads(category?: string, sort: RedditSort = 'hot'): Thread[
     source_url: r.source_url,
     media_url: r.media_url || null,
     media_type: (r.media_type as MediaType) || null,
+    poll_data: r.poll_data || null,
+    poll: parsePoll(r.poll_data),
     author_alias: r.author_alias,
     author_avatar: r.author_avatar,
     upvotes: Number(r.upvotes),
@@ -471,6 +510,8 @@ export function getThreadById(id: string): Thread | null {
     source_url: row.source_url,
     media_url: row.media_url || null,
     media_type: (row.media_type as MediaType) || null,
+    poll_data: row.poll_data || null,
+    poll: parsePoll(row.poll_data),
     author_alias: row.author_alias,
     author_avatar: row.author_avatar,
     upvotes: Number(row.upvotes),
@@ -496,6 +537,7 @@ export function createThread(data: {
   source_url?: string | null;
   media_url?: string | null;
   media_type?: MediaType | null;
+  poll_data?: string | null;
   author_alias: string;
   author_avatar: string;
   is_pinned?: number;
@@ -519,8 +561,8 @@ export function createThread(data: {
   }
 
   database.prepare(`
-    INSERT INTO threads (id, title, content, category, flair, source_url, media_url, media_type, author_alias, author_avatar, is_pinned, edit_token, is_edited, expires_at, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
+    INSERT INTO threads (id, title, content, category, flair, source_url, media_url, media_type, poll_data, author_alias, author_avatar, is_pinned, edit_token, is_edited, expires_at, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
   `).run(
     data.id,
     data.title,
@@ -530,6 +572,7 @@ export function createThread(data: {
     data.source_url || null,
     data.media_url || null,
     data.media_type || null,
+    data.poll_data || null,
     data.author_alias,
     data.author_avatar,
     data.is_pinned ? 1 : 0,
@@ -539,6 +582,44 @@ export function createThread(data: {
   );
 
   return getThreadById(data.id)!;
+}
+
+export function voteThreadPoll(
+  threadId: string,
+  optionId: number
+): { success: boolean; poll?: PollData; error?: string } {
+  const database = getDatabase();
+  const existing = database.prepare(`SELECT * FROM threads WHERE id = ?`).get(threadId) as any;
+  if (!existing) {
+    return { success: false, error: 'ไม่พบกระทู้นี้ หรือกระทู้อาจหมดอายุแล้ว' };
+  }
+  if (!existing.poll_data) {
+    return { success: false, error: 'กระทู้นี้ไม่มีโพลให้โหวต' };
+  }
+
+  let poll: PollData;
+  try {
+    poll = JSON.parse(existing.poll_data);
+  } catch {
+    return { success: false, error: 'ข้อมูลโพลในระบบไม่ถูกต้อง' };
+  }
+
+  if (poll.closed) {
+    return { success: false, error: 'โพลนี้ปิดรับการลงคะแนนแล้ว' };
+  }
+
+  const targetOption = poll.options.find((o) => Number(o.id) === Number(optionId));
+  if (!targetOption) {
+    return { success: false, error: 'ไม่พบตัวเลือกที่ระบุ' };
+  }
+
+  targetOption.votes = (Number(targetOption.votes) || 0) + 1;
+  poll.total_votes = poll.options.reduce((sum, o) => sum + (Number(o.votes) || 0), 0);
+
+  const updatedJson = JSON.stringify(poll);
+  database.prepare(`UPDATE threads SET poll_data = ? WHERE id = ?`).run(updatedJson, threadId);
+
+  return { success: true, poll };
 }
 
 export function updateThread(id: string, data: {
