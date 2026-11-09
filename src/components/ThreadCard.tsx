@@ -13,6 +13,9 @@ import {
   AlertTriangle,
   Eye,
   EyeOff,
+  Share2,
+  Bookmark,
+  Check,
 } from 'lucide-react';
 import IdentityAvatar from './IdentityAvatar';
 import ReportModal from './ReportModal';
@@ -30,6 +33,8 @@ export default function ThreadCard({ thread, onVoteChange }: ThreadCardProps) {
   const [isHidden, setIsHidden] = useState(thread.is_hidden === 1);
   const [forceReveal, setForceReveal] = useState(false);
   const [reportCount, setReportCount] = useState(thread.report_count);
+  const [isSaved, setIsSaved] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   const getRemainingTime = () => {
     const expires = new Date(thread.expires_at).getTime();
@@ -84,6 +89,36 @@ export default function ThreadCard({ thread, onVoteChange }: ThreadCardProps) {
     }
   };
 
+  const handleShare = () => {
+    if (typeof window !== 'undefined') {
+      const url = `${window.location.origin}/thread/${thread.id}`;
+      navigator.clipboard.writeText(url);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
+    }
+  };
+
+  const handleToggleSave = () => {
+    setIsSaved(!isSaved);
+  };
+
+  const getSubredditName = () => {
+    switch (thread.category) {
+      case 'breaking':
+        return 'r/breaking';
+      case 'tech':
+        return 'r/tech';
+      case 'society':
+        return 'r/society';
+      case 'finance':
+        return 'r/finance';
+      case 'science':
+        return 'r/science';
+      default:
+        return 'r/general';
+    }
+  };
+
   const getCategoryMeta = () => {
     switch (thread.category) {
       case 'breaking':
@@ -104,7 +139,7 @@ export default function ThreadCard({ thread, onVoteChange }: ThreadCardProps) {
   const cat = getCategoryMeta();
 
   return (
-    <article className="bg-[#101217] border border-white/[0.07] hover:border-red-500/30 rounded-xl p-4 transition-all relative group shadow-sm hover:shadow-red-950/20">
+    <article className="bg-[#101217] border border-white/[0.07] hover:border-red-500/35 rounded-xl p-3.5 sm:p-4 transition-all relative group shadow-sm hover:shadow-red-950/20">
       {/* Hidden Banner */}
       {isHidden && !forceReveal && (
         <div className="bg-red-950/25 border border-red-900/40 rounded-lg p-2.5 mb-3 text-xs text-red-300 flex items-center justify-between">
@@ -122,9 +157,9 @@ export default function ThreadCard({ thread, onVoteChange }: ThreadCardProps) {
         </div>
       )}
 
-      <div className={`flex gap-3.5 ${isHidden && !forceReveal ? 'opacity-30 blur-[1px]' : ''}`}>
+      <div className={`flex gap-3 sm:gap-3.5 ${isHidden && !forceReveal ? 'opacity-30 blur-[1px]' : ''}`}>
         
-        {/* Vote Column (Signal Yellow for Up, Vivid Red for Down) */}
+        {/* Reddit Left-Hand Vote Column */}
         <div className="flex flex-col items-center bg-black/40 border border-white/[0.06] rounded-lg p-1 self-start shrink-0">
           <button
             onClick={() => handleVote('up')}
@@ -134,10 +169,10 @@ export default function ThreadCard({ thread, onVoteChange }: ThreadCardProps) {
                 ? 'text-yellow-400 bg-yellow-500/15'
                 : 'text-zinc-500 hover:text-yellow-400 hover:bg-white/[0.04]'
             }`}
-            title="โหวตขึ้น"
+            title="Upvote"
             aria-label="Upvote"
           >
-            <ChevronUp size={16} strokeWidth={2.5} />
+            <ChevronUp size={18} strokeWidth={2.5} />
           </button>
 
           <span
@@ -160,31 +195,38 @@ export default function ThreadCard({ thread, onVoteChange }: ThreadCardProps) {
                 ? 'text-red-400 bg-red-500/15'
                 : 'text-zinc-500 hover:text-red-400 hover:bg-white/[0.04]'
             }`}
-            title="โหวตลง"
+            title="Downvote"
             aria-label="Downvote"
           >
-            <ChevronDown size={16} strokeWidth={2.5} />
+            <ChevronDown size={18} strokeWidth={2.5} />
           </button>
         </div>
 
-        {/* Content Body */}
+        {/* Post Content Body */}
         <div className="flex-1 min-w-0">
           
-          {/* Metadata Row */}
-          <div className="flex items-center gap-2 mb-1.5 text-xs">
-            <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${cat.color}`}>
-              {cat.label}
+          {/* Reddit-style Header Line: r/community • u/author • time ago */}
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1.5 text-xs">
+            <span className="font-mono font-bold text-xs text-zinc-100 hover:underline cursor-pointer">
+              {getSubredditName()}
             </span>
 
-            <div className="flex items-center gap-1.5 text-zinc-300 font-medium text-xs">
+            <span className="text-zinc-600">•</span>
+
+            <div className="flex items-center gap-1 text-zinc-400 font-mono text-[11px]">
               <IdentityAvatar iconKey={thread.author_avatar} theme="red" size="xs" />
-              <span className="truncate max-w-[130px]">{thread.author_alias}</span>
+              <span>u/{thread.author_alias}</span>
             </div>
 
             <span className="text-zinc-600">•</span>
 
             <span className="font-mono text-zinc-500 text-[11px] tabular-nums">
               {getTimeAgo()}
+            </span>
+
+            {/* Flair tag if breaking or specific */}
+            <span className={`px-1.5 py-0.2 rounded text-[10px] font-semibold border ${cat.color} ml-1`}>
+              {cat.label}
             </span>
 
             {/* Expiration badge (Touch of Orange) */}
@@ -194,28 +236,28 @@ export default function ThreadCard({ thread, onVoteChange }: ThreadCardProps) {
             </div>
           </div>
 
-          {/* Title */}
+          {/* Post Title */}
           <Link href={`/thread/${thread.id}`} className="block group/link focus-visible:outline-none focus-visible:underline">
             <h2 className="text-sm sm:text-base font-semibold text-zinc-100 group-hover/link:text-white transition-colors line-clamp-2 leading-snug mb-1.5">
               {thread.title}
             </h2>
           </Link>
 
-          {/* Snippet */}
+          {/* Post Snippet */}
           <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed mb-2.5">
             {thread.content}
           </p>
 
-          {/* Source Link if present */}
+          {/* External Link Pill (Reddit Style) */}
           {thread.source_url && (
             <div className="mb-2.5">
               <a
                 href={thread.source_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-[11px] text-zinc-400 hover:text-yellow-400 bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.06] hover:border-yellow-500/25 px-2 py-0.5 rounded transition-colors"
+                className="inline-flex items-center gap-1.5 text-[11px] text-zinc-400 hover:text-yellow-400 bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.06] hover:border-yellow-500/25 px-2.5 py-1 rounded-md transition-colors"
               >
-                <ExternalLink size={11} />
+                <ExternalLink size={12} className="text-yellow-400" />
                 <span className="truncate max-w-xs font-mono">
                   {thread.source_url.replace(/^https?:\/\/(www\.)?/, '')}
                 </span>
@@ -223,19 +265,37 @@ export default function ThreadCard({ thread, onVoteChange }: ThreadCardProps) {
             </div>
           )}
 
-          {/* Footer: Comments Count & Report */}
-          <div className="flex items-center justify-between pt-2 border-t border-white/[0.04] text-xs">
+          {/* Reddit Action Bar: Comments, Share, Save, Report */}
+          <div className="flex items-center gap-3 sm:gap-4 pt-2 border-t border-white/[0.04] text-xs">
             <Link
               href={`/thread/${thread.id}`}
-              className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-yellow-400 transition-colors"
+              className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-yellow-400 transition-colors p-1 rounded hover:bg-white/[0.03]"
             >
-              <MessageSquare size={13} />
-              <span className="font-mono text-[11px] tabular-nums">
+              <MessageSquare size={14} />
+              <span className="font-mono text-[11px] tabular-nums font-semibold">
                 {thread.comment_count || 0} ความคิดเห็น
               </span>
             </Link>
 
-            <div className="flex items-center gap-2">
+            <button
+              onClick={handleShare}
+              className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-yellow-400 transition-colors p-1 rounded hover:bg-white/[0.03]"
+            >
+              {copiedLink ? <Check size={14} className="text-yellow-400" /> : <Share2 size={14} />}
+              <span className="text-[11px]">{copiedLink ? 'คัดลอกแล้ว' : 'แชร์'}</span>
+            </button>
+
+            <button
+              onClick={handleToggleSave}
+              className={`inline-flex items-center gap-1.5 transition-colors p-1 rounded hover:bg-white/[0.03] ${
+                isSaved ? 'text-yellow-400 font-semibold' : 'text-zinc-400 hover:text-yellow-400'
+              }`}
+            >
+              <Bookmark size={14} />
+              <span className="text-[11px]">{isSaved ? 'บันทึกแล้ว' : 'บันทึก'}</span>
+            </button>
+
+            <div className="ml-auto flex items-center gap-2">
               {forceReveal && isHidden && (
                 <button
                   onClick={() => setForceReveal(false)}
@@ -248,7 +308,7 @@ export default function ThreadCard({ thread, onVoteChange }: ThreadCardProps) {
 
               <button
                 onClick={() => setShowReportModal(true)}
-                className="flex items-center gap-1 text-[11px] text-zinc-500 hover:text-red-400 transition-colors"
+                className="flex items-center gap-1 text-[11px] text-zinc-500 hover:text-red-400 transition-colors p-1"
                 title="รายงานข้อความ"
               >
                 <Flag size={12} />

@@ -1,132 +1,75 @@
-# 🛡️ นิรนามบอร์ด (ZRMA Anonymous Board & Live Chat)
+# 🛡️ ZRMA Community
 
-เว็บแอปพลิเคชัน **"บอร์ดข่าว กระทู้พูดคุย และห้องสนทนาสด"** ที่ออกแบบตามหลักการ **Privacy by Design** และ **Zero-Trace Architecture** เพื่อมอบความเป็นส่วนตัวสูงสุดและไม่เปิดเผยตัวตนของผู้ใช้งาน 100%
+เว็บแอปพลิเคชัน **"ชุมชนข่าวสาร กระทู้พูดคุย และห้องสนทนาสด สไตล์ Reddit"** ที่ออกแบบตามหลักการ **Privacy by Design**, **Anti-Slop Design** และ **Zero-Trace Architecture** เพื่อมอบความเป็นส่วนตัวสูงสุดและไม่เปิดเผยตัวตนของผู้ใช้งาน 100%
 
 ---
 
-## 🔒 1. สถาปัตยกรรมความปลอดภัยและความเป็นส่วนตัว (Privacy First)
+## 🌟 ฟีเจอร์สไตล์ Reddit (Reddit-Style Mechanics)
 
-| จุดเด่น | รายละเอียดทางเทคนิค |
+1. **โครงสร้างชุมชนและหมวดหมู่ย่อย (Subreddits / r/communities)**:
+   - `r/all` — รวมโพสต์ทั้งหมด
+   - `r/breaking` — ข่าวด่วนและสถานการณ์สำคัญ
+   - `r/tech` — เทคโนโลยี, ไอที, CyberSec, AI, และความเป็นส่วนตัว
+   - `r/finance` — เศรษฐกิจ, คริปโทเคอร์เรนซี และการเงิน
+   - `r/society` — สังคมและการเมือง, นโยบายสาธารณะ
+   - `r/general` — เสวนาแลกเปลี่ยนความคิดเห็นทั่วไป
+   - `r/science` — วิทยาศาสตร์, นวัตกรรม และอวกาศ
+2. **ระบบจัดเรียงฟีดโพสต์แบบ Reddit (Reddit Ranking Algorithm)**:
+   - **Hot (🔥 มาแรง)**: คำนวณคะแนนตามสูตร Decay Algorithm (คะแนนโหวตผสานกับค่าความสดใหม่ของเวลา)
+   - **New (✨ ล่าสุด)**: แสดงตามลำดับเวลาล่าสุด
+   - **Top (🏆 ยอดนิยม)**: แสดงโพสต์ที่มีคะแนน Upvote สุทธิสูงสุด
+   - **Rising (📈 กำลังพุ่ง)**: โพสต์ที่มีอัตราการตอบกลับและโหวตเพิ่มขึ้นอย่างรวดเร็ว
+3. **การ์ดโพสต์สไตล์ Reddit (Reddit Post Card)**:
+   - คอลัมน์โหวตซ้ายมือ (`▲ score ▼`) สีส้ม/เหลือง (Upvote) และแดง (Downvote)
+   - ข้อมูลโพสต์: `r/community • โพสต์โดย u/author • time ago`
+   - แถบเมนูด้านล่าง: 💬 ความคิดเห็น, 🔗 แชร์ (คัดลอกลิงก์), 🔖 บันทึกโพสต์ (Saved), 🚩 รายงาน
+4. **ระบบความคิดเห็นแบบลูกโซ่จัดลำดับ (Threaded Nested Comment Tree)**:
+   - แสดงผลแบบต้นไม้แบบ Reddit แท้จริง (Parent-Child Hierarchy)
+   - เส้นแนวดิ่ง (`Threadline`) แสดงลำดับชั้น พร้อมปุ่ม `[-]` เพื่อย่อ/ขยายบทสนทนาย่อยได้อิสระ
+   - ป้ายระบุผู้เขียนกระทู้ **`OP` (Original Poster)** อัตโนมัติ
+   - ปุ่ม "ตอบกลับ" แทรกฟอร์มพิมพ์ใต้ความคิดเห็นนั้นๆ ได้โดยตรง
+5. **แถบข้างชุมชน (Community Sidebar)**:
+   - กล่องข้อมูล `About r/ZRMA`: คำอธิบายชุมชน, จำนวนสมาชิกนิรนาม, จำนวนผู้กำลังออนไลน์สด
+   - กฎระเบียบชุมชน 4 ข้อ
+   - ทางลัดเข้าสู่ห้องย่อย (Subreddits)
+6. **ห้องแชทสด (Reddit Live Chat / r/lounge)**:
+   - ห้องแชทส่วนกลาง `r/lounge` และห้องแชทสดประจำข่าวใหญ่ๆ สตรีมมิ่งแบบเรียลไทม์ด้วย Server-Sent Events (SSE) จำกัด 100 ข้อความล่าสุด (FIFO)
+
+---
+
+## 🔒 สถาปัตยกรรมความปลอดภัยและความเป็นส่วนตัว (Zero-Trace Architecture)
+
+| จุดเด่น | การทำงาน |
 |---|---|
-| **ไม่ต้องสมัครสมาชิก / ไม่ขอข้อมูลใดๆ** | เข้าถึงและใช้งานได้ทันที ไม่ขอชื่อ อีเมล เบอร์โทร หรือข้อมูลระบุตัวตนใดๆ ทั้งสิ้น |
-| **Zero-Log Database (ไม่มีการเก็บ IP)** | ในสคีมาฐานข้อมูล **ไม่มีฟิลด์ `ip_address` หรือ `user_agent` แม้แต่คอลัมน์เดียว** รวมถึงไม่ฝัง Tracking Cookie ใดๆ ลงในเบราว์เซอร์ |
-| **สุ่มชื่อชั่วคราวแยกรายกระทู้ (Per-Thread Alias)** | ชื่อผู้ใช้จะถูกสุ่ม (เช่น `เหยี่ยวราตรี #2041`, `นักรหัสลับ #8812`) และจัดเก็บเฉพาะใน `sessionStorage` **โดยจะเปลี่ยนรหัสสุ่มใหม่ทุกครั้งเมื่อไปตอบในกระทู้อื่น** เพื่อป้องกันการแกะรอยข้ามกระทู้โดยสมบูรณ์ พร้อมปุ่มทอยสุ่มชื่อใหม่ได้ตลอดเวลา (🎲) |
-| **ระบบทำลายข้อมูลอัตโนมัติ (Self-Destruct TTL)** | ผู้ตั้งกระทู้สามารถเลือกระยะเวลาลบกระทู้และข้อความอัตโนมัติ (24 ชั่วโมง, 3 วัน, 7 วัน) เมื่อครบกำหนด ข้อมูลจะถูกลบถาวรจากฐานข้อมูลทันที |
-| **ป้องกันสแปมแบบไร้การติดตาม (Zero-Knowledge Anti-Spam)** | ใช้การคำนวณคณิตศาสตร์แบบไร้สถานะ (Stateless HMAC Math Challenge) ผสานกับการหน่วงเวลาฝั่งหน้าบ้าน (Client Cooldown Timer) แทนการบันทึก IP เพื่อแบน |
+| **ไม่ต้องสมัครสมาชิก / ไม่ขอข้อมูลใดๆ** | เข้าอ่าน โหวต และโพสต์ได้ทันที ไม่ขออีเมลหรือเบอร์โทรศัพท์ |
+| **Zero-Log Database** | ฐานข้อมูลไม่มีฟิลด์ `ip_address` หรือ `user_agent` แม้แต่คอลัมน์เดียว |
+| **สุ่มชื่อชั่วคราวแยกรายกระทู้ (u/alias)** | ชื่อสุ่มเก็บไว้เฉพาะใน `sessionStorage` และเปลี่ยนรหัสใหม่ทุกครั้งเมื่อไปตอบในกระทู้อื่น ป้องกันการแกะรอยข้ามกระทู้ |
+| **ลบข้อมูลอัตโนมัติ (Self-Destruct TTL)** | ผู้ตั้งกระทู้เลือกเวลาลบข้อมูลได้ (24 ชั่วโมง, 3 วัน, 7 วัน) เมื่อครบกำหนด ข้อมูลจะถูกลบถาวรจาก Disk ทันที |
+| **ป้องกันสแปมไร้การติดตาม (Stateless Captcha)** | ใช้การคำนวณเลขสุ่มแบบไร้สถานะ (HMAC Token) ผสาน Cooldown Timer แทนการแบน IP |
+| **ดูแลความเรียบร้อยโดยชุมชน** | หากโพสต์หรือความคิดเห็นใดถูกรายงานครบ 5 ครั้ง ระบบจะซ่อนอัตโนมัติทันที |
 
 ---
 
-## 🚀 2. ฟีเจอร์หลักของระบบ
-
-### 📰 บอร์ดข่าวและกระทู้เสวนา
-- **ตั้งกระทู้ข่าวใหม่ได้ทันที**: ระบุหัวข้อ, หมวดหมู่, และลิงก์ข่าวต้นทาง (Source Link) พร้อมปุ่มเปิดไปยังแหล่งข่าวต้นฉบับอย่างปลอดภัย (`rel="noopener noreferrer"`)
-- **หมวดหมู่ครอบคลุม**: 🚨 ข่าวด่วน (Breaking News), 💻 เทคโนโลยี, 🏛️ สังคมและการเมือง, 📈 เศรษฐกิจและการเงิน, 💬 ทั่วไป, 🔬 วิทยาศาสตร์
-- **ระบบโหวต (Upvote / Downvote)**: ให้คะแนนกระทู้และความคิดเห็นแบบตอบสนองทันที
-- **ตอบกลับแบบอ้างอิงข้อความ (Quote Reply)**: กดปุ่ม "อ้างอิงข้อความนี้" บนความคิดเห็นใดๆ ระบบจะดึงข้อความมาแสดงเป็น Quote Card ด้านบนช่องพิมพ์ตอบกลับ ช่วยให้ติดตามบทสนทนาที่ซับซ้อนได้อย่างชัดเจน
-
-### 💬 ห้องแชทสด (Real-Time Live Chat)
-- **ห้องสนทนาสดส่วนกลาง (Central Live Chat)**: หน้าคุยสดเฉพาะทางที่ `/chat` และ Sidebar สำหรับแลกเปลี่ยนข่าวสารแบบเรียลไทม์
-- **ห้องแชทสดประจำกระทู้ (Thread-Specific Live Chat)**: สลับหน้าจอในกระทู้เพื่อเปิดห้องคุยสดเฉพาะประเด็นข่าวนั้นๆ ได้
-- **จำกัด 100 ข้อความล่าสุด (FIFO Queue)**: เมื่อมีข้อความที่ 101 เข้ามา ระบบจะลบข้อความที่เก่าที่สุดออกทันทีอัตโนมัติ เพื่อป้องกันการสะสมของประวัติการสนทนา
-- **เทคโนโลยี Real-Time**: ขับเคลื่อนด้วย Server-Sent Events (SSE) ร่วมกับ In-Memory Broadcaster เพื่อความเร็วสูงสุดและไม่ต้อง Polling
-
-### ⚖️ ระบบดูแลความเรียบร้อยโดยชุมชน (Community Moderation)
-- ทุกกระทู้, ความคิดเห็น และข้อความแชทสด มีปุ่มกด **"รายงาน" (Report)**
-- เลือกระบุสาเหตุ: สแปม/โฆษณา, ข้อมูลเท็จ (Fake News), ผิดกฎหมาย, คุกคาม/Hate Speech
-- **กฎเกณฑ์ชุมชนอัตโนมัติ**: หากข้อความใดได้รับการรายงานครบ **5 ครั้ง** ระบบจะซ่อนเนื้อหานั้นออกจากหน้าเว็บทันที (`is_hidden = 1`) โดยยังคงเปิดให้ผู้ใช้กดยืนยันเพื่อเปิดดูเนื้อหาเดิมได้หากต้องการ
+## 🎨 ธีมสี (Color Palette)
+- **ดำ (Black)**: `#090a0d`, `#101217`, `#161922`
+- **แดง (Vivid Crimson Red)**: `#dc2626`, `#ef4444` (ปุ่มหลัก, โลโก้, ป้ายข่าวด่วน, Downvote)
+- **เหลือง (Signal Yellow)**: `#facc15` (Upvote, สถานะออนไลน์, ป้าย OP, แท็ก Zero-Log)
+- **ส้ม (Warm Amber/Orange)**: `#f97316` (เวลานับถอยหลัง TTL, ป้าย Hot, เส้นขอบ Quote)
 
 ---
 
-## 🛠️ 3. โครงสร้างฐานข้อมูล (Database Schema)
-
-### SQLite ในตัว (Node.js Native `node:sqlite`)
-ระบบใช้ฐานข้อมูล SQLite ประสิทธิภาพสูงที่ติดมากับ Node.js v22+ โดยไฟล์ถูกจัดเก็บไว้ที่ `data/privacy_board.sqlite`:
-
-```sql
--- 1. ตารางกระทู้ (ไร้ฟิลด์ระบุตัวตน / มีระบบ TTL)
-CREATE TABLE threads (
-  id TEXT PRIMARY KEY,
-  title TEXT NOT NULL,
-  content TEXT NOT NULL,
-  category TEXT NOT NULL,
-  source_url TEXT,
-  author_alias TEXT NOT NULL,
-  author_avatar TEXT NOT NULL,
-  upvotes INTEGER DEFAULT 0,
-  downvotes INTEGER DEFAULT 0,
-  report_count INTEGER DEFAULT 0,
-  is_hidden INTEGER DEFAULT 0,
-  expires_at TEXT NOT NULL,
-  created_at TEXT NOT NULL
-);
-
--- 2. ตารางความคิดเห็น (รองรับการอ้างอิงข้อความ Quote Reply)
-CREATE TABLE comments (
-  id TEXT PRIMARY KEY,
-  thread_id TEXT NOT NULL,
-  parent_id TEXT,
-  quote_text TEXT,
-  quote_author TEXT,
-  content TEXT NOT NULL,
-  author_alias TEXT NOT NULL,
-  author_avatar TEXT NOT NULL,
-  upvotes INTEGER DEFAULT 0,
-  downvotes INTEGER DEFAULT 0,
-  report_count INTEGER DEFAULT 0,
-  is_hidden INTEGER DEFAULT 0,
-  created_at TEXT NOT NULL,
-  FOREIGN KEY (thread_id) REFERENCES threads(id) ON DELETE CASCADE
-);
-
--- 3. ตารางแชทสด (FIFO 100 ข้อความล่าสุด)
-CREATE TABLE chat_messages (
-  id TEXT PRIMARY KEY,
-  room_id TEXT NOT NULL DEFAULT 'global',
-  content TEXT NOT NULL,
-  author_alias TEXT NOT NULL,
-  author_avatar TEXT NOT NULL,
-  report_count INTEGER DEFAULT 0,
-  is_hidden INTEGER DEFAULT 0,
-  created_at TEXT NOT NULL
-);
-
--- 4. ตารางรายงานเพื่อการดูแลชุมชน
-CREATE TABLE reports (
-  id TEXT PRIMARY KEY,
-  target_type TEXT NOT NULL, -- 'thread', 'comment', 'chat'
-  target_id TEXT NOT NULL,
-  reason TEXT NOT NULL,
-  created_at TEXT NOT NULL
-);
-```
-
-### การปรับใช้กับ Supabase (Optional)
-หากต้องการนำไประบบ Cloud ของ Supabase สามารถใช้ไฟล์ [supabase_schema.sql](supabase_schema.sql) ที่เตรียมไว้ให้ โดยมีฟังก์ชัน Trigger อัตโนมัติ:
-- `prune_old_chat_messages()`: ลบข้อความที่เกิน 100 ข้อความอัตโนมัติ
-- `auto_hide_reported_content()`: ซ่อนเนื้อหาอัตโนมัติเมื่อครบ 5 รายงาน
-- Row Level Security (RLS) แบบ Public Anonymous
-
----
-
-## 💻 4. วิธีการติดตั้งและรันโปรเจกต์ (Quickstart)
+## 💻 วิธีการรันโปรเจกต์ (Quickstart)
 
 ```bash
-# 1. ติดตั้ง Dependencies
+# ติดตั้ง Dependencies
 npm install
 
-# 2. รันโหมด Development (Hot-Reload)
-npm run dev
-
-# หรือ 3. บิลด์และรันโหมด Production (แนะนำสำหรับความเร็วสูงสุด)
+# รันโหมด Production (แนะนำ)
 npm run build
 npm start
+
+# หรือรันโหมด Development
+npm run dev
 ```
 
-เข้าใช้งานผ่านเบราว์เซอร์ได้ที่: **`http://localhost:3000`**
-
----
-
-## 📱 5. การออกแบบ (Design System)
-- **ธีมหลัก Dark Mode**: ใช้โทนสีมืด (`#090d16` และ `#111726`) พร้อมเฉดสีมรกต (`Emerald`) สื่อถึงความปลอดภัยและความเป็นส่วนตัว
-- **Mobile Responsive**: รองรับการใช้งานบนมือถืออย่างสมบูรณ์แบบ มีแท็บสลับระหว่าง "บอร์ดกระทู้" กับ "ห้องแชทสด" และแถบเลื่อนหมวดหมู่แนวนอน
-- **Typography**: รองรับภาษาไทยอย่างสวยงามด้วย Fallback Fonts ที่อ่านสบายตา
+เปิดใช้งานที่เบราว์เซอร์: **`http://localhost:3000`**

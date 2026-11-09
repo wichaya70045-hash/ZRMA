@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import { getThreads, createThread } from '@/lib/db';
 import { verifyCaptcha } from '@/lib/captcha';
 import { broadcastToRoom } from '@/lib/sse';
-import { Category } from '@/types';
+import { Category, RedditSort } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,7 +11,15 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const category = searchParams.get('category') || undefined;
-    const sort = (searchParams.get('sort') || 'latest') as 'latest' | 'hot' | 'breaking';
+    const rawSort = searchParams.get('sort') || 'hot';
+    
+    // Map legacy 'latest' to Reddit 'new'
+    let sort: RedditSort = 'hot';
+    if (rawSort === 'latest' || rawSort === 'new') {
+      sort = 'new';
+    } else if (rawSort === 'top' || rawSort === 'rising' || rawSort === 'breaking') {
+      sort = rawSort;
+    }
 
     const threads = getThreads(category, sort);
     return NextResponse.json({ threads });
@@ -76,6 +84,7 @@ export async function POST(req: NextRequest) {
       title: title.trim(),
       content: content.trim(),
       category,
+      flair: body.flair || null,
       source_url: source_url ? source_url.trim() : null,
       author_alias: author_alias || 'ผู้ไม่ประสงค์ออกนาม #????',
       author_avatar: author_avatar || '🥷',

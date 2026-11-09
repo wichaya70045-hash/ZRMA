@@ -1,7 +1,7 @@
 import { DatabaseSync } from 'node:sqlite';
 import path from 'path';
 import fs from 'fs';
-import { Thread, Comment, ChatMessage, Category } from '@/types';
+import { Thread, Comment, CommentNode, ChatMessage, Category, RedditSort } from '@/types';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 if (!fs.existsSync(DATA_DIR)) {
@@ -24,23 +24,22 @@ export function getDatabase(): DatabaseSync {
 
   const db = new DatabaseSync(DB_PATH);
   
-  // Set busy timeout to 5000ms so concurrent worker threads during build/requests wait instead of locking
   db.exec('PRAGMA busy_timeout = 5000;');
   try {
     db.exec('PRAGMA journal_mode = WAL;');
   } catch {
-    // ignore if already in WAL mode
+    // ignore
   }
   db.exec('PRAGMA foreign_keys = ON;');
 
   if (!global.__dbInitialized) {
-    // Create schema
     db.exec(`
       CREATE TABLE IF NOT EXISTS threads (
         id TEXT PRIMARY KEY,
         title TEXT NOT NULL,
         content TEXT NOT NULL,
         category TEXT NOT NULL,
+        flair TEXT,
         source_url TEXT,
         author_alias TEXT NOT NULL,
         author_avatar TEXT NOT NULL,
@@ -74,6 +73,7 @@ export function getDatabase(): DatabaseSync {
       );
 
       CREATE INDEX IF NOT EXISTS idx_comments_thread ON comments(thread_id);
+      CREATE INDEX IF NOT EXISTS idx_comments_parent ON comments(parent_id);
       CREATE INDEX IF NOT EXISTS idx_comments_created ON comments(created_at ASC);
 
       CREATE TABLE IF NOT EXISTS chat_messages (
@@ -97,6 +97,13 @@ export function getDatabase(): DatabaseSync {
         created_at TEXT NOT NULL
       );
     `);
+
+    // Safely ensure flair column exists if table was created in an older build
+    try {
+      db.exec('ALTER TABLE threads ADD COLUMN flair TEXT;');
+    } catch {
+      // column already exists
+    }
 
     try {
       const countRow = db.prepare(`SELECT COUNT(*) as count FROM threads`).get() as any;
@@ -126,8 +133,8 @@ function seedInitialData(database: DatabaseSync) {
     const nowIso = now.toISOString();
 
     const insertThread = database.prepare(`
-      INSERT OR IGNORE INTO threads (id, title, content, category, source_url, author_alias, author_avatar, expires_at, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT OR IGNORE INTO threads (id, title, content, category, flair, source_url, author_alias, author_avatar, expires_at, created_at, upvotes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     insertThread.run(
@@ -135,11 +142,13 @@ function seedInitialData(database: DatabaseSync) {
       '🚨 ข่าวด่วน: มาตรการรักษาความปลอดภัยข้อมูลและความเป็นส่วนตัวดิจิทัลใหม่ ประกาศใช้แล้ววันนี้',
       'คณะกรรมการคุ้มครองข้อมูลฯ ได้ประกาศกรอบการกำกับดูแลใหม่ที่เข้มงวด มุ่งเน้นการลดการเก็บข้อมูลที่เกินความจำเป็น (Data Minimization) โดยสนับสนุนแพลตฟอร์มที่ไม่เปิดเผยตัวตน (Pseudonymous & Zero-Log Systems) เพื่อคืนสิทธิความเป็นส่วนตัวให้กับประชาชน\n\nหัวใจสำคัญคือการห้ามผู้ให้บริการเก็บ IP Address และประวัติการท่องเว็บโดยไม่จำเป็น เพื่อป้องกันการรั่วไหลและการสอดแนมทางไซเบอร์ที่กำลังเพิ่มขึ้นในปัจจุบัน',
       'breaking',
+      'ข่าวด่วน',
       'https://www.thaigov.go.th',
       'เหยี่ยวราตรี #2041',
-      '🦉',
+      'shield',
       d3,
-      nowIso
+      nowIso,
+      12
     );
 
     insertThread.run(
@@ -147,11 +156,13 @@ function seedInitialData(database: DatabaseSync) {
       '💻 ทำไมระบบ Zero-Log และ Ephemeral Sessions ถึงเป็นอนาคตของการสื่อสารบนโลกอินเทอร์เน็ต?',
       'หลายปีที่ผ่านมา ข้อมูลส่วนบุคคลของผู้ใช้ทั่วโลกถูกนำไปขาย ยิงโฆษณา และตกเป็นเป้าหมายของมัลแวร์เรียกค่าไถ่\n\nการออกแบบระบบที่ไม่เก็บ Log เลยตั้งแต่ต้น (Zero-Log Architecture) ควบคู่กับชื่อสุ่มแบบชั่วคราว (Ephemeral Identity) ที่เปลี่ยนใหม่ทุกห้อง ทำให้ผู้ใช้สามารถพูดคุย แลกเปลี่ยนข้อมูลเชิงลึก และแสดงความคิดเห็นได้อย่างเสรีโดยไม่ต้องหวาดระแวงการถูก Digital Footprint เล่นงานย้อนหลัง\n\nทุกคนมีความเห็นอย่างไรกับการสื่อสารรูปแบบนี้?',
       'tech',
+      'บทวิเคราะห์',
       'https://eff.org',
       'นักรหัสลับ #8812',
-      '🥷',
+      'terminal',
       d7,
-      nowIso
+      nowIso,
+      48
     );
 
     insertThread.run(
@@ -159,16 +170,18 @@ function seedInitialData(database: DatabaseSync) {
       '💬 พูดคุยทั่วไป: วิธีจัดการความเครียดจากข้อมูลข่าวสารท่วมท้น (Information Overload)',
       'ทุกวันนี้เปิดโซเชียลมีเดียมีแต่ข่าวด่วน ข่าวเครียด อัลกอริทึมพยายามดึงเวลาและความสนใจของเราตลอด 24 ชม.\n\nมีใครมีวิธีตัดการเชื่อมต่อ (Digital Detox) หรือเลือกเสพเฉพาะข้อมูลที่จำเป็นโดยไม่ต้องเอาตัวตนจริงไปผูกกับแพลตฟอร์มบ้างไหมครับ?',
       'general',
+      'เสวนา',
       null,
       'ก้อนเมฆลอยละล่อง #4159',
-      '🍃',
+      'globe',
       d1,
-      nowIso
+      nowIso,
+      8
     );
 
     const insertComment = database.prepare(`
-      INSERT OR IGNORE INTO comments (id, thread_id, parent_id, quote_text, quote_author, content, author_alias, author_avatar, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT OR IGNORE INTO comments (id, thread_id, parent_id, quote_text, quote_author, content, author_alias, author_avatar, created_at, upvotes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     insertComment.run(
@@ -179,8 +192,9 @@ function seedInitialData(database: DatabaseSync) {
       null,
       'เห็นด้วยมากๆ ครับ ปกติไปโพสต์ในบอร์ดอื่นจะกังวลเรื่องคนตามส่องประวัติย้อนหลัง ระบบเปลี่ยนชื่อทุกกระทู้นี่ตอบโจทย์มาก!',
       'แมวส้มหลงทาง #1240',
-      '🐱',
-      nowIso
+      'cpu',
+      nowIso,
+      5
     );
 
     insertComment.run(
@@ -191,8 +205,9 @@ function seedInitialData(database: DatabaseSync) {
       'แมวส้มหลงทาง #1240',
       'ใช่เลยครับ ทำให้เราโฟกัสกับ "เนื้อหาของสาร" มากกว่า "ใครเป็นคนพูด" บอร์ดแบบนี้หาได้ยากมากในยุคปัจจุบัน',
       'สายลมแปรปรวน #9931',
-      '🌊',
-      nowIso
+      'radar',
+      nowIso,
+      3
     );
 
     const insertChat = database.prepare(`
@@ -203,18 +218,9 @@ function seedInitialData(database: DatabaseSync) {
     insertChat.run(
       'seed-chat-1',
       'global',
-      'ยินดีต้อนรับสู่ห้องแชทสดนิรนาม 🛡️ ทุกข้อความในห้องนี้จะเก็บสูงสุด 100 ข้อความเท่านั้น และไม่มีการบันทึก IP ใดๆ',
+      'ยินดีต้อนรับสู่ ZRMA Community Live Chat 🛡️ แลกเปลี่ยนแบบนิรนาม 100% ไม่มีการบันทึก IP ใดๆ',
       'ระบบนิรนาม #0000',
-      '🛡️',
-      nowIso
-    );
-
-    insertChat.run(
-      'seed-chat-2',
-      'global',
-      'สวัสดีทุกคนครับ เข้ามาแลกเปลี่ยนข่าวสารกันได้แบบสบายใจเลย',
-      'หิ่งห้อยส่องทาง #3301',
-      '⚡',
+      'shield',
       nowIso
     );
   } catch (err) {
@@ -222,9 +228,6 @@ function seedInitialData(database: DatabaseSync) {
   }
 }
 
-/**
- * Auto-delete expired threads and orphaned comments/reports
- */
 export function purgeExpiredData(): void {
   try {
     const database = getDatabase();
@@ -236,9 +239,6 @@ export function purgeExpiredData(): void {
   }
 }
 
-/**
- * Ensure chat FIFO: keep at most 100 messages per room
- */
 export function pruneChatRoom(roomId: string): void {
   try {
     const database = getDatabase();
@@ -258,9 +258,14 @@ export function pruneChatRoom(roomId: string): void {
 }
 
 /**
- * Thread operations
+ * Thread operations with Reddit-grade sorting:
+ * - 'hot': Score weighted by time decay
+ * - 'new': Chronological (latest)
+ * - 'top': Highest net upvotes
+ * - 'rising': High comment & vote velocity
+ * - 'breaking': Breaking news
  */
-export function getThreads(category?: string, sort: 'latest' | 'hot' | 'breaking' = 'latest'): Thread[] {
+export function getThreads(category?: string, sort: RedditSort = 'hot'): Thread[] {
   purgeExpiredData();
   const database = getDatabase();
 
@@ -279,8 +284,16 @@ export function getThreads(category?: string, sort: 'latest' | 'hot' | 'breaking
     params.push(category);
   }
 
+  // Reddit Sorting Engine
   if (sort === 'hot') {
+    // Reddit-style decay formula: score weighted with timestamp in seconds
+    query += ` ORDER BY ((t.upvotes - t.downvotes) * 1000 + unixepoch(t.created_at) / 100) DESC, t.created_at DESC`;
+  } else if (sort === 'new') {
+    query += ` ORDER BY t.created_at DESC`;
+  } else if (sort === 'top') {
     query += ` ORDER BY score DESC, t.created_at DESC`;
+  } else if (sort === 'rising') {
+    query += ` ORDER BY comment_count DESC, score DESC, t.created_at DESC`;
   } else if (sort === 'breaking') {
     query += ` AND t.category = 'breaking' ORDER BY t.created_at DESC`;
   } else {
@@ -290,11 +303,12 @@ export function getThreads(category?: string, sort: 'latest' | 'hot' | 'breaking
   query += ` LIMIT 50`;
 
   const rows = database.prepare(query).all(...params) as any[];
-  return rows.map(r => ({
+  return rows.map((r) => ({
     id: r.id,
     title: r.title,
     content: r.content,
     category: r.category as Category,
+    flair: r.flair || null,
     source_url: r.source_url,
     author_alias: r.author_alias,
     author_avatar: r.author_avatar,
@@ -328,6 +342,7 @@ export function getThreadById(id: string): Thread | null {
     title: row.title,
     content: row.content,
     category: row.category as Category,
+    flair: row.flair || null,
     source_url: row.source_url,
     author_alias: row.author_alias,
     author_avatar: row.author_avatar,
@@ -347,6 +362,7 @@ export function createThread(data: {
   title: string;
   content: string;
   category: Category;
+  flair?: string | null;
   source_url?: string | null;
   author_alias: string;
   author_avatar: string;
@@ -358,13 +374,14 @@ export function createThread(data: {
   const createdAt = now.toISOString();
 
   database.prepare(`
-    INSERT INTO threads (id, title, content, category, source_url, author_alias, author_avatar, expires_at, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO threads (id, title, content, category, flair, source_url, author_alias, author_avatar, expires_at, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     data.id,
     data.title,
     data.content,
     data.category,
+    data.flair || null,
     data.source_url || null,
     data.author_alias,
     data.author_avatar,
@@ -406,7 +423,7 @@ export function getCommentsByThread(threadId: string): Comment[] {
     ORDER BY c.created_at ASC
   `).all(threadId) as any[];
 
-  return rows.map(r => ({
+  return rows.map((r) => ({
     id: r.id,
     thread_id: r.thread_id,
     parent_id: r.parent_id,
@@ -423,6 +440,8 @@ export function getCommentsByThread(threadId: string): Comment[] {
     created_at: r.created_at,
   }));
 }
+
+export { buildCommentTree } from './commentTree';
 
 export function createComment(data: {
   id: string;
@@ -489,7 +508,7 @@ export function voteComment(id: string, type: 'up' | 'down'): { upvotes: number;
 }
 
 /**
- * Chat operations (Capped at 100 messages)
+ * Chat operations
  */
 export function getChatMessages(roomId: string = 'global'): ChatMessage[] {
   pruneChatRoom(roomId);
@@ -501,7 +520,7 @@ export function getChatMessages(roomId: string = 'global'): ChatMessage[] {
     LIMIT 100
   `).all(roomId) as any[];
 
-  return rows.map(r => ({
+  return rows.map((r) => ({
     id: r.id,
     room_id: r.room_id,
     content: r.content,
@@ -550,7 +569,7 @@ export function sendChatMessage(data: {
 }
 
 /**
- * Community Moderation: Reports
+ * Community Reports
  */
 export function reportContent(data: {
   id: string;

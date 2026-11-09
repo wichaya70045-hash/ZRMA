@@ -11,7 +11,9 @@ import {
   Lock,
   EyeOff,
   Clock,
-  Sparkles,
+  Search,
+  MessageSquare,
+  Users,
 } from 'lucide-react';
 
 export default function Navbar() {
@@ -19,50 +21,54 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-white/[0.08] bg-[#090a0d]/90 backdrop-blur-md">
-        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+      <header className="sticky top-0 z-40 w-full border-b border-white/[0.08] bg-[#090a0d]/95 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between gap-3 sm:gap-6">
           
-          {/* Brand Identity: Black & Crimson Red with Yellow Tag */}
-          <div className="flex items-center gap-3">
+          {/* Brand Identity: ZRMA Community */}
+          <div className="flex items-center gap-3 shrink-0">
             <Link
               href="/"
               className="flex items-center gap-2.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 rounded-md"
             >
-              <div className="w-8 h-8 rounded-lg bg-red-950/40 border border-red-500/30 flex items-center justify-center text-red-500 group-hover:border-red-500/60 group-hover:bg-red-950/60 transition-colors shadow-sm">
-                <Shield size={16} strokeWidth={2.2} />
+              <div className="w-8 h-8 rounded-lg bg-red-950/50 border border-red-500/40 flex items-center justify-center text-red-500 group-hover:border-red-500/70 group-hover:bg-red-950/70 transition-colors shadow-sm">
+                <Shield size={16} strokeWidth={2.4} />
               </div>
               <div className="flex flex-col">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-sm tracking-tight text-zinc-100 group-hover:text-white transition-colors">
-                    นิรนามบอร์ด
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-sm tracking-tight text-white group-hover:text-yellow-400 transition-colors">
+                    ZRMA Community
                   </span>
-                  <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
-                    Zero-Log
+                  <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
+                    r/all
                   </span>
                 </div>
               </div>
             </Link>
           </div>
 
-          {/* Center Subtle Telemetry: Signal Yellow & Orange Accents */}
-          <div className="hidden md:flex items-center gap-4 text-xs text-zinc-400">
-            <div className="flex items-center gap-2 font-mono text-[11px] text-zinc-300">
-              <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse"></span>
-              <span>NO IP / NO LOGS</span>
-            </div>
-            <span className="text-zinc-700">|</span>
-            <div className="flex items-center gap-1.5 text-[11px] text-zinc-400">
-              <EyeOff size={13} className="text-orange-400" />
-              <span>ชื่อสุ่มแยกรายกระทู้</span>
+          {/* Center Search Input (Reddit Style) */}
+          <div className="flex-1 max-w-xl hidden md:block">
+            <div className="relative">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+              <input
+                type="text"
+                readOnly
+                onClick={() => {
+                  const el = document.getElementById('main-search-input');
+                  el?.focus();
+                }}
+                placeholder="ค้นหาใน ZRMA Community..."
+                className="w-full bg-[#101217] border border-white/[0.08] hover:border-white/[0.14] rounded-full pl-9 pr-4 py-1.5 text-xs text-zinc-100 placeholder-zinc-500 cursor-pointer transition-colors"
+              />
             </div>
           </div>
 
-          {/* Primary & Secondary Actions */}
-          <div className="flex items-center gap-2">
+          {/* Right Actions */}
+          <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => setShowPrivacyModal(true)}
-              className="p-1.5 text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.04] rounded-md border border-transparent hover:border-white/[0.06] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400"
-              title="อ่านนโยบายความเป็นส่วนตัว"
+              className="p-1.5 text-zinc-400 hover:text-yellow-400 hover:bg-white/[0.04] rounded-md border border-transparent hover:border-white/[0.06] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400"
+              title="สถาปัตยกรรมความเป็นส่วนตัวของชุมชน"
               aria-label="Privacy architecture details"
             >
               <Info size={16} strokeWidth={1.75} />
@@ -71,9 +77,10 @@ export default function Navbar() {
             <Link
               href="/chat"
               className="btn-secondary !py-1.5 !px-3 text-xs"
+              title="ห้องสนทนาสดส่วนกลาง"
             >
               <Radio size={13} className="text-yellow-400" />
-              <span>ห้องแชทสด</span>
+              <span className="hidden sm:inline">ห้องแชทสด</span>
             </Link>
 
             <Link
@@ -81,7 +88,7 @@ export default function Navbar() {
               className="btn-primary !py-1.5 !px-3 text-xs"
             >
               <Plus size={14} strokeWidth={2.5} />
-              <span>ตั้งกระทู้</span>
+              <span>สร้างโพสต์</span>
             </Link>
           </div>
         </div>
@@ -104,8 +111,8 @@ export default function Navbar() {
                 <Shield size={18} strokeWidth={2} />
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-zinc-100">สถาปัตยกรรมความเป็นส่วนตัวสูงสุด (Zero-Trace)</h3>
-                <p className="text-xs text-zinc-400">หลักการทำงานด้านความปลอดภัยและคุ้มครองข้อมูล</p>
+                <h3 className="text-sm font-semibold text-zinc-100">ZRMA Community (Zero-Trace Architecture)</h3>
+                <p className="text-xs text-zinc-400">สร้างขึ้นบนหลักการคุ้มครองความเป็นส่วนตัวขั้นสูงสุด</p>
               </div>
             </div>
 
@@ -133,7 +140,7 @@ export default function Navbar() {
               <div className="p-3 bg-zinc-950/60 rounded-lg border border-white/[0.06] space-y-1">
                 <div className="flex items-center gap-2 font-medium text-zinc-100">
                   <span className="text-orange-400 text-xs font-mono font-bold shrink-0">#ID</span>
-                  <span>ระบบสุ่มชื่อชั่วคราวแยกรายกระทู้</span>
+                  <span>ระบบสุ่มชื่อชั่วคราวแยกรายกระทู้ (u/alias)</span>
                 </div>
                 <p className="text-zinc-400 text-[11px] pl-5 leading-relaxed">
                   ชื่อสุ่มจะผูกอยู่เฉพาะใน `sessionStorage` ของแต่ละกระทู้ เมื่อไปตอบในกระทู้อื่น คุณจะได้รหัสใหม่โดยอัตโนมัติ ไม่สามารถแกะรอยข้ามกระทู้ได้

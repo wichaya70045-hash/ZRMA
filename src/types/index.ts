@@ -1,10 +1,13 @@
 export type Category = 'breaking' | 'tech' | 'society' | 'finance' | 'general' | 'science';
 
+export type RedditSort = 'hot' | 'new' | 'top' | 'rising' | 'breaking';
+
 export interface Thread {
   id: string;
   title: string;
   content: string;
   category: Category;
+  flair?: string | null;
   source_url?: string | null;
   author_alias: string;
   author_avatar: string;
@@ -35,6 +38,10 @@ export interface Comment {
   created_at: string;
 }
 
+export interface CommentNode extends Comment {
+  children: CommentNode[];
+}
+
 export interface ChatMessage {
   id: string;
   room_id: string; // 'global' or threadId
@@ -51,4 +58,13 @@ export type ReportReason = 'spam' | 'fake_news' | 'illegal' | 'harassment' | 'ot
 export interface CaptchaChallenge {
   token: string;
   question: string;
+}
+
+export interface SubredditCommunity {
+  id: Category;
+  slug: string; // e.g. 'r/technology'
+  name: string;
+  description: string;
+  icon: string;
+  memberCount: number;
 }

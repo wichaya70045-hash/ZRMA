@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Thread } from '@/types';
+import { Thread, RedditSort } from '@/types';
 import ThreadCard from '@/components/ThreadCard';
 import CategoryFilter from '@/components/CategoryFilter';
+import CommunitySidebar from '@/components/CommunitySidebar';
 import LiveChatBox from '@/components/LiveChatBox';
 import {
   Search,
@@ -13,13 +14,18 @@ import {
   FileText,
   Shield,
   Zap,
+  Flame,
+  Clock,
+  TrendingUp,
+  Award,
+  Sparkles,
 } from 'lucide-react';
 
 export default function HomePage() {
   const [threads, setThreads] = useState<Thread[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedSort, setSelectedSort] = useState<'latest' | 'hot' | 'breaking'>('latest');
+  const [selectedSort, setSelectedSort] = useState<RedditSort>('hot');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTabMobile, setActiveTabMobile] = useState<'threads' | 'chat'>('threads');
 
@@ -89,36 +95,8 @@ export default function HomePage() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       
-      {/* Page Header (Black, Red & Yellow Accents) */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/[0.08]">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-            <span className="text-[11px] font-mono text-yellow-400 font-semibold uppercase tracking-wider">
-              Secure & Anonymous Platform
-            </span>
-          </div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
-            บอร์ดข่าวและกระทู้สนทนา
-          </h1>
-          <p className="text-xs text-zinc-400 mt-1 max-w-xl leading-relaxed">
-            พื้นที่แลกเปลี่ยนข่าวสารแบบไม่ระบุตัวตน ปราศจากการเก็บ IP Address พร้อมระบบทำลายข้อมูลอัตโนมัติ (TTL)
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 shrink-0">
-          <Link
-            href="/new"
-            className="btn-primary"
-          >
-            <Plus size={15} strokeWidth={2.5} />
-            <span>ตั้งกระทู้ใหม่</span>
-          </Link>
-        </div>
-      </div>
-
       {/* Mobile Segmented Switcher */}
       <div className="flex lg:hidden bg-black/40 p-1 rounded-lg border border-white/[0.06] text-xs">
         <button
@@ -129,7 +107,7 @@ export default function HomePage() {
               : 'text-zinc-400 hover:text-zinc-200'
           }`}
         >
-          กระทู้ ({filteredThreads.length})
+          ฟีดโพสต์ ({filteredThreads.length})
         </button>
         <button
           onClick={() => setActiveTabMobile('chat')}
@@ -140,27 +118,48 @@ export default function HomePage() {
           }`}
         >
           <Radio size={12} className={activeTabMobile === 'chat' ? 'text-zinc-950' : 'text-yellow-400'} />
-          <span>แชทสด</span>
+          <span>ห้องแชทสด</span>
         </button>
       </div>
 
-      {/* Main Grid (Asymmetric 8:4 split on desktop) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      {/* Main Grid: Feed (Left 8 cols) & Community Sidebar (Right 4 cols) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         
-        {/* Left Column: Feed and Unified Control Bar */}
+        {/* Left Column: Feed and Controls */}
         <section
-          className={`lg:col-span-7 xl:col-span-8 space-y-4 ${
+          className={`lg:col-span-8 space-y-3.5 ${
             activeTabMobile === 'chat' ? 'hidden lg:block' : 'block'
           }`}
         >
-          {/* Unified Search Control */}
+          {/* Reddit-style Create Post Prompt Bar */}
+          <div className="bg-[#101217] border border-white/[0.08] hover:border-white/[0.14] rounded-xl p-2.5 flex items-center gap-2.5 shadow-sm transition-colors">
+            <div className="w-8 h-8 rounded-full bg-red-950/60 border border-red-500/30 flex items-center justify-center text-red-500 shrink-0">
+              <Shield size={16} />
+            </div>
+            <Link
+              href="/new"
+              className="flex-1 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] rounded-lg px-3 py-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
+            >
+              สร้างโพสต์ใหม่ใน r/{selectedCategory === 'all' ? 'all' : selectedCategory}...
+            </Link>
+            <Link
+              href="/new"
+              className="btn-primary !py-1.5 !px-3 text-xs shrink-0"
+            >
+              <Plus size={14} strokeWidth={2.5} />
+              <span>โพสต์</span>
+            </Link>
+          </div>
+
+          {/* Search Bar */}
           <div className="relative">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
             <input
+              id="main-search-input"
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="ค้นหากระทู้, คำสำคัญ, หรือรหัสผู้เขียน..."
+              placeholder="ค้นหาตามหัวข้อ, ข้อความ, หรือรหัสผู้เขียน..."
               className="w-full bg-[#101217] border border-white/[0.08] focus:border-red-500 rounded-lg pl-9 pr-8 py-2 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-red-500 transition-colors"
             />
             {searchQuery && (
@@ -173,12 +172,12 @@ export default function HomePage() {
             )}
           </div>
 
-          {/* Category Filter & Sorting */}
+          {/* Subreddits & Reddit Sorting Tabs */}
           <CategoryFilter
             selectedCategory={selectedCategory}
             onSelectCategory={setSelectedCategory}
             selectedSort={selectedSort}
-            onSelectSort={setSelectedSort}
+            onSelectSort={(sort) => setSelectedSort(sort as RedditSort)}
           />
 
           {/* Thread List */}
@@ -200,9 +199,9 @@ export default function HomePage() {
               <div className="w-10 h-10 rounded-lg bg-white/[0.04] text-zinc-400 flex items-center justify-center mx-auto border border-white/[0.08]">
                 <FileText size={18} />
               </div>
-              <h3 className="text-sm font-semibold text-zinc-200">ไม่พบกระทู้ที่ตรงกับเงื่อนไข</h3>
+              <h3 className="text-sm font-semibold text-zinc-200">ไม่พบโพสต์ที่ตรงกับเงื่อนไข</h3>
               <p className="text-xs text-zinc-500 max-w-sm mx-auto leading-relaxed">
-                อาจยังไม่มีกระทู้ในหมวดหมู่นี้ หรือกระทู้อาจหมดอายุและถูกลบทำลายไปแล้วตามนโยบายความเป็นส่วนตัว
+                อาจยังไม่มีโพสต์ในหมวดหมู่นี้ หรือกระทู้อาจหมดอายุและถูกลบทำลายไปแล้วตามนโยบายความเป็นส่วนตัว
               </p>
               <div className="pt-2">
                 <Link
@@ -210,7 +209,7 @@ export default function HomePage() {
                   className="btn-secondary text-xs hover:border-red-500/40"
                 >
                   <Plus size={13} className="text-red-400" />
-                  <span>สร้างกระทู้ใหม่</span>
+                  <span>สร้างโพสต์แรกเลย</span>
                 </Link>
               </div>
             </div>
@@ -231,21 +230,20 @@ export default function HomePage() {
           )}
         </section>
 
-        {/* Right Column: Terminal-Grade Live Chat */}
+        {/* Right Column: Reddit Community Sidebar & Live Chat */}
         <aside
-          className={`lg:col-span-5 xl:col-span-4 lg:sticky lg:top-20 space-y-3 ${
+          className={`lg:col-span-4 lg:sticky lg:top-16 space-y-4 ${
             activeTabMobile === 'threads' ? 'hidden lg:block' : 'block'
           }`}
         >
-          <LiveChatBox roomId="global" title="ห้องสนทนาสดส่วนกลาง" />
+          {/* Reddit Community Info Widget */}
+          <CommunitySidebar
+            currentCategory={selectedCategory}
+            onSelectCategory={(cat) => setSelectedCategory(cat)}
+          />
 
-          {/* Concise Telemetry Footer */}
-          <div className="p-3 bg-[#101217] border border-white/[0.06] rounded-xl text-xs text-zinc-400 flex items-center gap-2.5">
-            <Shield size={14} className="text-red-400 shrink-0" />
-            <p className="text-[11px] text-zinc-400 leading-relaxed">
-              สตรีมแชทสดแบบ FIFO 100 ข้อความล่าสุด ไม่บันทึกประวัติถาวร
-            </p>
-          </div>
+          {/* Live Lounge Chat Widget */}
+          <LiveChatBox roomId="global" title="r/lounge ห้องแชทสด" />
         </aside>
 
       </div>
