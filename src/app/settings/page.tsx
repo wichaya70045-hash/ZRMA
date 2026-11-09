@@ -340,10 +340,10 @@ export default function SettingsPage() {
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                 {[
-                  { key: 'hot', label: '🔥 มาแรง (Hot)', desc: 'โพสต์ที่มีการพูดคุยสูง' },
-                  { key: 'breaking', label: '⚡ ข่าวด่วน (Breaking)', desc: 'ปักหมุดข่าวเร่งด่วน' },
-                  { key: 'new', label: '✨ ใหม่ล่าสุด (New)', desc: 'เรียงตามเวลาสร้าง' },
-                  { key: 'top', label: '🔝 ยอดนิยม (Top)', desc: 'คะแนนโหวตสูงสุด' },
+                  { key: 'hot', label: 'มาแรง (Hot)', desc: 'โพสต์ที่มีการพูดคุยสูง' },
+                  { key: 'breaking', label: 'ข่าวด่วน (Breaking)', desc: 'ปักหมุดข่าวเร่งด่วน' },
+                  { key: 'new', label: 'ใหม่ล่าสุด (New)', desc: 'เรียงตามเวลาสร้าง' },
+                  { key: 'top', label: 'ยอดนิยม (Top)', desc: 'คะแนนโหวตสูงสุด' },
                 ].map((s) => (
                   <button
                     key={s.key}

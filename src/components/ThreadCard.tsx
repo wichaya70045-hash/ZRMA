@@ -18,6 +18,7 @@ import {
   Check,
   Film,
   Image as ImageIcon,
+  Pin,
 } from 'lucide-react';
 import IdentityAvatar from './IdentityAvatar';
 import ReportModal from './ReportModal';
@@ -128,8 +129,8 @@ export default function ThreadCard({ thread, layout, onVoteChange }: ThreadCardP
       <article
         className={`rounded-lg px-3 py-2.5 transition-all relative group shadow-sm flex items-center gap-2.5 sm:gap-3.5 ${
           thread.is_pinned === 1
-            ? 'border-2 border-red-500/60 bg-gradient-to-r from-red-950/25 via-[#101217] to-[#101217]'
-            : 'bg-[#101217] border border-white/[0.06] hover:border-red-500/30'
+            ? 'border border-red-500/40 border-l-4 border-l-red-500 bg-[#101217]'
+            : 'bg-[#101217] border border-white/[0.06] hover:border-white/[0.15]'
         }`}
       >
         {/* Upvote & Score Compact Pill */}
@@ -190,8 +191,9 @@ export default function ThreadCard({ thread, layout, onVoteChange }: ThreadCardP
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
             {thread.is_pinned === 1 && (
-              <span className="text-[9px] font-mono font-bold text-red-400 bg-red-950/60 px-1 py-0.2 rounded border border-red-500/30 flex items-center gap-0.5">
-                📌 PIN
+              <span className="text-[9px] font-mono font-bold text-red-400 bg-red-950/60 px-1 py-0.2 rounded border border-red-500/30 flex items-center gap-1">
+                <Pin size={9} />
+                <span>PIN</span>
               </span>
             )}
             <Link
@@ -264,22 +266,23 @@ export default function ThreadCard({ thread, layout, onVoteChange }: ThreadCardP
     <article
       className={`rounded-xl p-3.5 sm:p-4 transition-all relative group shadow-sm ${
         thread.is_pinned === 1
-          ? 'border-2 border-red-500/60 bg-gradient-to-r from-red-950/30 via-[#101217] to-[#101217] shadow-red-950/30'
-          : 'bg-[#101217] border border-white/[0.07] hover:border-red-500/35 hover:shadow-red-950/20'
+          ? 'border border-red-500/40 border-l-4 border-l-red-500 bg-[#101217]'
+          : 'bg-[#101217] border border-white/[0.07] hover:border-white/[0.18]'
       }`}
     >
       {/* Pinned Breaking News Header Ribbon */}
       {thread.is_pinned === 1 && (
-        <div className="flex items-center gap-2 mb-3 pb-2 border-b border-red-500/25 text-xs">
+        <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/[0.06] text-xs">
           <span className="relative flex h-2 w-2">
             <span className={`absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75 ${settings.reduceMotion ? '' : 'animate-ping'}`}></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
           </span>
-          <span className="text-[11px] font-mono font-bold text-red-400 uppercase tracking-wider flex items-center gap-1">
-            <span>📌 ข่าวด่วนปักหมุด (PINNED BREAKING NEWS)</span>
+          <span className="text-[11px] font-mono font-bold text-red-400 flex items-center gap-1.5">
+            <Pin size={11} />
+            <span>ข่าวด่วนปักหมุด</span>
           </span>
           {thread.source_url && (
-            <span className="ml-auto text-[10px] font-mono text-yellow-400 bg-yellow-400/10 px-2 py-0.5 rounded border border-yellow-400/20 flex items-center gap-1">
+            <span className="ml-auto text-[10px] font-mono text-zinc-400 bg-white/[0.03] px-2 py-0.5 rounded border border-white/[0.08] flex items-center gap-1">
               <span>แหล่งข่าวอ้างอิง</span>
             </span>
           )}

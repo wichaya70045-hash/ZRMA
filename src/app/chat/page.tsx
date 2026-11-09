@@ -7,24 +7,25 @@ import CreateGhostRoomModal from '@/components/CreateGhostRoomModal';
 import { GhostRoom } from '@/types';
 import {
   ArrowLeft,
-  Shield,
-  Ghost,
   Radio,
+  Ghost,
   Plus,
   Users,
-  Flame,
+  Shield,
   Clock,
   Sparkles,
   ChevronRight,
-  ShieldAlert,
+  Hash,
+  MessageSquare,
+  Lock,
 } from 'lucide-react';
 
-export default function GlobalChatPage() {
-  const [activeTab, setActiveTab] = useState<'global' | 'ghost'>('global');
+export default function ChatPage() {
+  const [activeChannel, setActiveChannel] = useState<'global' | string>('global');
   const [ghostRooms, setGhostRooms] = useState<GhostRoom[]>([]);
-  const [currentGhostRoom, setCurrentGhostRoom] = useState<GhostRoom | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isLoadingRooms, setIsLoadingRooms] = useState(false);
+  const [showMobileRoomList, setShowMobileRoomList] = useState(false);
 
   const fetchGhostRooms = async () => {
     setIsLoadingRooms(true);
@@ -42,221 +43,272 @@ export default function GlobalChatPage() {
   };
 
   useEffect(() => {
-    if (activeTab === 'ghost') {
-      fetchGhostRooms();
-    }
-  }, [activeTab]);
+    fetchGhostRooms();
+  }, []);
 
   const handleRoomCreated = (room: GhostRoom) => {
     setGhostRooms((prev) => [room, ...prev.filter((r) => r.name !== room.name)]);
-    setCurrentGhostRoom(room);
+    setActiveChannel(room.name);
+    setShowMobileRoomList(false);
   };
 
+  const selectedGhostRoom = ghostRooms.find((r) => r.name === activeChannel);
+  const isGhostActive = activeChannel !== 'global';
+
   return (
-    <div className="max-w-4xl mx-auto space-y-4">
+    <div className="max-w-6xl mx-auto space-y-4">
       
-      {/* Top Header & Breadcrumb */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-yellow-400 transition-colors"
-        >
-          <ArrowLeft size={13} />
-          <span>กลับหน้าบอร์ดข่าว ZRMA</span>
-        </Link>
-
-        {/* Tab Switcher */}
-        <div className="inline-flex items-center bg-black/50 border border-white/[0.08] p-1 rounded-xl text-xs">
-          <button
-            onClick={() => {
-              setActiveTab('global');
-              setCurrentGhostRoom(null);
-            }}
-            className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg transition-colors font-semibold ${
-              activeTab === 'global'
-                ? 'bg-red-600 text-white shadow-sm'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
+      {/* Top Header & Navigation */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-white/[0.06]">
+        <div>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-yellow-400 transition-colors mb-1.5"
           >
-            <Radio size={13} />
-            <span>ห้องแชทสดส่วนกลาง (z/lounge)</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('ghost')}
-            className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg transition-colors font-semibold ${
-              activeTab === 'ghost'
-                ? 'bg-orange-500 text-zinc-950 font-bold shadow-sm'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            <Ghost size={13} className={activeTab === 'ghost' ? 'text-zinc-950' : 'text-orange-400'} />
-            <span>ห้องหายไปเมื่อไม่มีคน (Ghost Rooms)</span>
-          </button>
+            <ArrowLeft size={13} />
+            <span>กลับหน้าบอร์ด (z/all)</span>
+          </Link>
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-lg sm:text-xl font-bold text-zinc-100 flex items-center gap-2">
+              <MessageSquare size={18} className="text-red-500" />
+              <span>ห้องสนทนาสด (Live Chat Channels)</span>
+            </h1>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/[0.04] text-zinc-400 border border-white/[0.08]">
+              Zero-Log
+            </span>
+          </div>
+          <p className="text-xs text-zinc-400 mt-0.5">
+            แลกเปลี่ยนข้อมูลแบบเรียลไทม์ ไร้การบันทึก IP และเลือกคุยในห้องสลายตัวอัตโนมัติได้
+          </p>
         </div>
+
+        {/* Action Button: Create Vanishing Room */}
+        <button
+          onClick={() => setIsCreateModalOpen(true)}
+          className="btn-primary text-xs !py-2 !px-3.5 self-start sm:self-auto font-semibold shrink-0"
+        >
+          <Plus size={14} strokeWidth={2.5} />
+          <span>+ เปิดห้องชั่วคราวใหม่</span>
+        </button>
       </div>
 
-      {/* Main Container */}
-      {activeTab === 'global' ? (
-        <div className="h-[calc(100dvh-150px)] sm:h-[75vh] sm:min-h-[520px]">
-          <LiveChatBox
-            roomId="global"
-            title="ห้องสนทนาสดส่วนกลาง (z/lounge)"
-          />
-        </div>
-      ) : currentGhostRoom ? (
-        <div className="h-[calc(100dvh-150px)] sm:h-[75vh] sm:min-h-[520px] space-y-2">
-          <div className="flex items-center justify-between px-1">
+      {/* Mobile Channel Switcher Pill Bar */}
+      <div className="flex lg:hidden items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+        <button
+          onClick={() => {
+            setActiveChannel('global');
+            setShowMobileRoomList(false);
+          }}
+          className={`px-3 py-1.5 rounded-lg font-medium flex items-center gap-1.5 shrink-0 transition-colors ${
+            activeChannel === 'global' && !showMobileRoomList
+              ? 'bg-red-600 text-white font-semibold shadow-sm'
+              : 'bg-white/[0.04] text-zinc-400 hover:text-zinc-200 border border-white/[0.06]'
+          }`}
+        >
+          <Radio size={12} className={activeChannel === 'global' && !showMobileRoomList ? 'text-white' : 'text-zinc-400'} />
+          <span>z/lounge (ห้องหลัก)</span>
+        </button>
+
+        <button
+          onClick={() => setShowMobileRoomList(!showMobileRoomList)}
+          className={`px-3 py-1.5 rounded-lg font-medium flex items-center gap-1.5 shrink-0 transition-colors ${
+            showMobileRoomList || isGhostActive
+              ? 'bg-orange-500 text-zinc-950 font-bold shadow-sm'
+              : 'bg-white/[0.04] text-zinc-400 hover:text-zinc-200 border border-white/[0.06]'
+          }`}
+        >
+          <Ghost size={12} />
+          <span>ห้องชั่วคราว ({ghostRooms.length})</span>
+        </button>
+
+        <button
+          onClick={() => setIsCreateModalOpen(true)}
+          className="px-2.5 py-1.5 rounded-lg font-medium flex items-center gap-1 shrink-0 bg-white/[0.03] text-zinc-400 hover:text-yellow-400 border border-dashed border-white/20 ml-auto"
+        >
+          <Plus size={12} />
+          <span>สร้างห้อง</span>
+        </button>
+      </div>
+
+      {/* Main Channel Layout: Dual Pane on Desktop */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        
+        {/* Left Pane: Channels Directory */}
+        <aside
+          className={`lg:col-span-4 space-y-4 ${
+            showMobileRoomList ? 'block' : 'hidden lg:block'
+          }`}
+        >
+          {/* Public Channels Card */}
+          <div className="bg-[#101217] border border-white/[0.08] rounded-xl p-3 space-y-2">
+            <div className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-500 px-1.5 flex items-center justify-between">
+              <span>ห้องสาธารณะทั่วไป</span>
+              <span className="text-[10px] text-zinc-600">FIFO 100</span>
+            </div>
+
             <button
-              onClick={() => setCurrentGhostRoom(null)}
-              className="text-xs text-zinc-400 hover:text-yellow-400 flex items-center gap-1 font-mono"
+              onClick={() => {
+                setActiveChannel('global');
+                setShowMobileRoomList(false);
+              }}
+              className={`w-full text-left p-2.5 rounded-lg border transition-all flex items-center justify-between gap-2.5 ${
+                activeChannel === 'global' && !showMobileRoomList
+                  ? 'border-red-500/50 bg-red-950/20 text-white shadow-sm ring-1 ring-red-500/30'
+                  : 'border-white/[0.06] bg-black/30 text-zinc-300 hover:border-white/[0.12] hover:bg-white/[0.02]'
+              }`}
             >
-              <ArrowLeft size={12} />
-              <span>ดูรายชื่อห้องหายไปเมื่อไม่มีคนทั้งหมด</span>
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-7 h-7 rounded-md bg-red-500/10 text-red-400 flex items-center justify-center shrink-0 border border-red-500/20">
+                  <Radio size={13} />
+                </div>
+                <div className="min-w-0">
+                  <div className="font-semibold text-xs text-zinc-100 flex items-center gap-1.5">
+                    <span>z/lounge</span>
+                    {activeChannel === 'global' && !showMobileRoomList && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse"></span>
+                    )}
+                  </div>
+                  <div className="text-[10px] text-zinc-400 truncate">
+                    ห้องสนทนาสดส่วนกลางสำหรับทุกคน
+                  </div>
+                </div>
+              </div>
+
+              <span className="text-[10px] font-mono text-zinc-500 shrink-0">
+                สาธารณะ
+              </span>
             </button>
           </div>
-          <div className="h-[calc(100%-32px)]">
-            <LiveChatBox
-              roomId={`ghost_${currentGhostRoom.name}`}
-              title={`ห้องระเหย: ${currentGhostRoom.title}`}
-              isGhostRoom={true}
-              onLeaveGhostRoom={() => {
-                setCurrentGhostRoom(null);
-                fetchGhostRooms();
-              }}
-            />
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          
-          {/* Ghost Room Feature Explainer Banner */}
-          <div className="relative overflow-hidden rounded-2xl border-2 border-orange-500/40 bg-gradient-to-r from-red-950/40 via-zinc-950 to-[#101217] p-5 shadow-xl">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="space-y-1.5 max-w-xl">
-                <div className="flex items-center gap-2">
-                  <span className="relative flex h-2.5 w-2.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-orange-500"></span>
-                  </span>
-                  <span className="text-[10px] font-mono text-orange-400 uppercase font-black tracking-widest flex items-center gap-1">
-                    <Ghost size={12} />
-                    <span>VANISHING GHOST ROOM ARCHITECTURE</span>
-                  </span>
-                </div>
-                <h2 className="text-base sm:text-lg font-bold text-white">
-                  โหมด "ห้องหายไปเมื่อไม่มีคน" (Ghost Rooms)
-                </h2>
-                <p className="text-xs text-zinc-300 leading-relaxed">
-                  ห้องแชทชั่วคราวที่จะลบทำลายตัวเองและข้อความทั้งหมดทันทีเมื่อทุกคนออกจากห้อง (Active Users = 0) ไร้รอยเท้าดิจิทัล 100% เหมาะสำหรับเสวนาเรื่องลับหรือข่าวกรองเฉพาะกิจ
-                </p>
+
+          {/* Ephemeral Ghost Rooms Card */}
+          <div className="bg-[#101217] border border-white/[0.08] rounded-xl p-3 space-y-2.5">
+            <div className="flex items-center justify-between px-1.5 text-[11px] font-mono font-bold text-zinc-400">
+              <div className="flex items-center gap-1.5">
+                <Ghost size={13} className="text-orange-400" />
+                <span>ห้องสลายตัวอัตโนมัติ ({ghostRooms.length})</span>
               </div>
-
-              <button
-                onClick={() => setIsCreateModalOpen(true)}
-                className="btn-primary !bg-orange-600 hover:!bg-orange-500 !py-2.5 !px-4 text-xs font-bold shrink-0 self-start sm:self-auto shadow-lg shadow-orange-950/40"
-              >
-                <Plus size={14} strokeWidth={2.5} />
-                <span>+ เปิดห้องหายไปเมื่อไม่มีคนใหม่</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Active Ghost Rooms Grid */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between text-xs text-zinc-400 font-mono px-1">
-              <span>ห้องระเหยที่กำลังใช้งาน ({ghostRooms.length})</span>
               <button
                 onClick={fetchGhostRooms}
-                className="text-[11px] hover:text-yellow-400"
+                className="text-[10px] text-zinc-500 hover:text-yellow-400 transition-colors font-sans"
               >
-                รีเฟรชรายชื่อ
+                รีเฟรช
               </button>
             </div>
 
+            <p className="text-[11px] text-zinc-400 px-1.5 leading-relaxed">
+              ข้อความและห้องจะถูกลบทำลายถาวร 100% ทันทีเมื่อทุกคนออกจากห้อง
+            </p>
+
             {isLoadingRooms ? (
-              <div className="py-12 text-center text-xs font-mono text-zinc-500">
-                SCANNING ACTIVE GHOST ROOMS...
+              <div className="py-6 text-center text-xs font-mono text-zinc-500">
+                กำลังโหลดรายชื่อห้อง...
               </div>
             ) : ghostRooms.length === 0 ? (
-              <div className="bg-[#101217] border border-white/[0.08] rounded-2xl p-10 text-center space-y-3">
-                <div className="w-12 h-12 rounded-full bg-orange-500/10 text-orange-400 flex items-center justify-center mx-auto border border-orange-500/25">
-                  <Ghost size={24} />
-                </div>
-                <h3 className="text-sm font-bold text-zinc-200">ยังไม่มีห้องระเหยที่เปิดอยู่ขณะนี้</h3>
-                <p className="text-xs text-zinc-500 max-w-sm mx-auto leading-relaxed">
-                  ห้องทั้งหมดที่สร้างก่อนหน้านี้ได้สลายตัวทำลายตัวเองไปเรียบร้อยแล้วหลังจากทุกคนออกจากห้อง
-                </p>
+              <div className="p-4 bg-black/30 border border-white/[0.06] rounded-lg text-center space-y-2">
+                <p className="text-xs text-zinc-400">ยังไม่มีห้องชั่วคราวที่เปิดอยู่</p>
                 <button
                   onClick={() => setIsCreateModalOpen(true)}
-                  className="btn-secondary text-xs !py-1.5 !px-3.5 hover:border-orange-500/40"
+                  className="btn-secondary !py-1 !px-3 text-xs text-orange-400 hover:border-orange-500/40"
                 >
-                  <Plus size={13} className="text-orange-400" />
+                  <Plus size={12} />
                   <span>เปิดห้องแรกเลย</span>
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {ghostRooms.map((room) => (
-                  <div
-                    key={room.id}
-                    onClick={() => setCurrentGhostRoom(room)}
-                    className="group bg-[#101217] border border-white/[0.08] hover:border-orange-500/50 rounded-xl p-4 transition-all cursor-pointer shadow-sm hover:shadow-orange-950/20 space-y-2.5 relative"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-orange-500/10 text-orange-400 flex items-center justify-center border border-orange-500/25 shrink-0">
-                          <Ghost size={14} />
+              <div className="space-y-1.5 max-h-[300px] overflow-y-auto pr-0.5">
+                {ghostRooms.map((room) => {
+                  const isCurrent = activeChannel === room.name && !showMobileRoomList;
+
+                  return (
+                    <button
+                      key={room.id}
+                      onClick={() => {
+                        setActiveChannel(room.name);
+                        setShowMobileRoomList(false);
+                      }}
+                      className={`w-full text-left p-2.5 rounded-lg border transition-all flex items-center justify-between gap-2 ${
+                        isCurrent
+                          ? 'border-orange-500/60 bg-orange-950/20 text-white shadow-sm ring-1 ring-orange-500/30'
+                          : 'border-white/[0.06] bg-black/30 text-zinc-300 hover:border-white/[0.12] hover:bg-white/[0.02]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className="w-6 h-6 rounded bg-orange-500/10 text-orange-400 flex items-center justify-center shrink-0 border border-orange-500/20">
+                          <Ghost size={12} />
                         </div>
-                        <div>
-                          <h3 className="text-sm font-bold text-zinc-100 group-hover:text-orange-400 transition-colors">
-                            {room.title}
-                          </h3>
-                          <span className="text-[10px] font-mono text-zinc-500">
-                            ghost_{room.name}
-                          </span>
+                        <div className="min-w-0">
+                          <div className="font-semibold text-xs text-zinc-100 truncate flex items-center gap-1">
+                            <span>{room.title}</span>
+                          </div>
+                          {room.topic && (
+                            <div className="text-[10px] text-zinc-400 truncate">
+                              {room.topic}
+                            </div>
+                          )}
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1 text-[10px] font-mono text-yellow-400 bg-yellow-400/10 px-2 py-0.5 rounded border border-yellow-400/20 shrink-0">
-                        <Users size={11} />
-                        <span>{room.active_users} คนในห้อง</span>
+                      <div className="flex items-center gap-1 font-mono text-[10px] text-yellow-400 bg-yellow-400/10 px-1.5 py-0.5 rounded border border-yellow-400/20 shrink-0">
+                        <Users size={10} />
+                        <span>{room.active_users}</span>
                       </div>
-                    </div>
-
-                    {room.topic && (
-                      <p className="text-xs text-zinc-400 line-clamp-1 leading-relaxed">
-                        {room.topic}
-                      </p>
-                    )}
-
-                    <div className="flex items-center justify-between pt-2 border-t border-white/[0.04] text-[11px] font-mono text-zinc-500">
-                      <span>สร้างโดย: {room.creator_alias}</span>
-                      <span className="text-orange-400 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
-                        <span>เข้าร่วมห้อง</span>
-                        <ChevronRight size={12} />
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
 
-        </div>
-      )}
+          {/* Security & Anti-Trace Guarantee */}
+          <div className="bg-[#101217] border border-white/[0.06] rounded-xl p-3 text-xs space-y-1.5 text-zinc-400">
+            <div className="flex items-center gap-1.5 font-medium text-zinc-200 text-xs">
+              <Shield size={13} className="text-red-400" />
+              <span>การันตีความเป็นส่วนตัว 100%</span>
+            </div>
+            <ul className="text-[11px] text-zinc-400 space-y-1 pl-4 list-disc list-outside">
+              <li>ไม่บันทึก IP Address และข้อมูลเบราว์เซอร์</li>
+              <li>สุ่มรหัสผู้ส่งแยกเซสชัน ไม่ผูกกับกระทู้</li>
+              <li>ระบบส่งข้อมูลสดผ่าน SSE Real-Time ปลอดภัย</li>
+            </ul>
+          </div>
+        </aside>
 
-      {/* Footnote */}
-      <div className="p-3 bg-[#101217] border border-white/[0.06] rounded-xl text-xs text-zinc-400 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <Shield size={14} className="text-red-400 shrink-0" />
-          <p className="text-[11px] text-zinc-400">
-            ห้องสนทนาทั้งหมดบน ZRMA ไม่มีการบันทึก IP และห้องแบบ Ghost Room จะสลายตัวทันทีเมื่อคนสุดท้ายออกจากห้อง
-          </p>
-        </div>
-        <span className="text-[10px] font-mono text-yellow-500/80">
-          ZERO-LOG • SSE REAL-TIME
-        </span>
+        {/* Right Pane: Live Active Chat Arena */}
+        <main
+          className={`lg:col-span-8 ${
+            showMobileRoomList ? 'hidden lg:block' : 'block'
+          }`}
+        >
+          <div className="h-[calc(100dvh-170px)] sm:h-[620px] max-h-[720px] min-h-[480px]">
+            {isGhostActive && selectedGhostRoom ? (
+              <LiveChatBox
+                roomId={`ghost_${selectedGhostRoom.name}`}
+                title={`ห้องระเหย: ${selectedGhostRoom.title}`}
+                isGhostRoom={true}
+                onLeaveGhostRoom={() => {
+                  setActiveChannel('global');
+                  fetchGhostRooms();
+                }}
+              />
+            ) : isGhostActive ? (
+              <LiveChatBox
+                roomId={`ghost_${activeChannel}`}
+                title={`ห้องระเหย: ${activeChannel}`}
+                isGhostRoom={true}
+                onLeaveGhostRoom={() => {
+                  setActiveChannel('global');
+                  fetchGhostRooms();
+                }}
+              />
+            ) : (
+              <LiveChatBox
+                roomId="global"
+                title="ห้องสนทนาสดส่วนกลาง (z/lounge)"
+              />
+            )}
+          </div>
+        </main>
+
       </div>
 
       <CreateGhostRoomModal

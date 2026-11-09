@@ -27,9 +27,9 @@ export default function RootLayout({
             <div className="max-w-6xl mx-auto px-4 space-y-1.5">
               <div className="flex items-center justify-center gap-2 font-mono text-[11px] text-zinc-400">
                 <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-                <span className="text-yellow-400 font-semibold">ZRMA COMMUNITY</span>
+                <span className="text-zinc-200 font-semibold">ZRMA Community</span>
                 <span className="text-zinc-600">•</span>
-                <span>ZERO-LOG ANONYMOUS ARCHITECTURE</span>
+                <span className="text-zinc-400">Zero-Log Architecture</span>
               </div>
               <p className="text-[11px] text-zinc-600">
                 โพสต์และข้อความจะถูกทำลายตามระยะเวลาที่กำหนด (TTL) และห้องแชทสดจำกัดเพียง 100 ข้อความล่าสุด

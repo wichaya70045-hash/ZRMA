@@ -87,11 +87,11 @@ export default function CommunitySidebar({
       {/* About Community Card (Reddit Style) */}
       <div className="bg-[#101217] border border-white/[0.08] rounded-xl overflow-hidden shadow-lg">
         {/* Banner Top */}
-        <div className="h-12 bg-gradient-to-r from-red-950 via-zinc-900 to-black p-3 flex items-center justify-between border-b border-white/[0.06]">
-          <span className="text-[11px] font-mono font-bold text-yellow-400 tracking-wider">
-            ABOUT COMMUNITY
+        <div className="h-10 bg-zinc-950 p-3 flex items-center justify-between border-b border-white/[0.06]">
+          <span className="text-[11px] font-mono font-semibold text-zinc-400">
+            ข้อมูลชุมชน
           </span>
-          <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+          <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
         </div>
 
         <div className="p-4 space-y-3.5">
@@ -103,26 +103,28 @@ export default function CommunitySidebar({
               <h2 className="text-sm font-bold text-zinc-100 flex items-center gap-1.5">
                 <span>ZRMA Community</span>
               </h2>
-              <span className="text-[11px] font-mono text-zinc-500">z/ZRMA • Zero-Trace Reddit</span>
+              <span className="text-[11px] font-mono text-zinc-500">z/ZRMA • Zero-Trace Architecture</span>
             </div>
           </div>
 
           <p className="text-xs text-zinc-300 leading-relaxed">
-            ชุมชนข่าวสารและเสวนาแบบไร้ตัวตน 100% สุ่มรหัสใหม่ทุกกระทู้ ไม่เก็บ IP Address ทำลายตัวเองอัตโนมัติตามกำหนด (TTL) และรองรับรูปภาพ/วิดีโอ
+            ชุมชนแลกเปลี่ยนข่าวสารและเสวนาแบบไร้ตัวตน 100% สุ่มรหัสใหม่ทุกกระทู้ ไม่บันทึก IP Address และมีระบบทำลายตัวเองอัตโนมัติ
           </p>
 
-          {/* Reddit-style Community Stats */}
+          {/* Genuine Telemetry */}
           <div className="grid grid-cols-2 gap-2 py-2 border-y border-white/[0.06]">
             <div>
-              <div className="text-xs font-mono font-bold text-zinc-100 tabular-nums">1.4k</div>
-              <div className="text-[10px] text-zinc-500">สมาชิกนิรนาม</div>
+              <div className="text-xs font-mono font-bold text-zinc-100 tabular-nums">
+                {communities.length || 8} ห้อง
+              </div>
+              <div className="text-[10px] text-zinc-500">หมวดหมู่ z/ ทั้งหมด</div>
             </div>
             <div>
               <div className="text-xs font-mono font-bold text-yellow-400 flex items-center gap-1 tabular-nums">
-                <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse"></span>
-                <span>52</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                <span>ZERO-LOG</span>
               </div>
-              <div className="text-[10px] text-zinc-500">กำลังคุยสด</div>
+              <div className="text-[10px] text-zinc-500">ไร้ฐานข้อมูลบุคคล</div>
             </div>
           </div>
 

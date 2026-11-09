@@ -134,12 +134,12 @@ export default function CategoryFilter({
             onClick={() => onSelectSort('hot')}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors active:scale-95 ${
               selectedSort === 'hot'
-                ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30 shadow-sm'
+                ? 'bg-orange-500/15 text-orange-400 border border-orange-500/30'
                 : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.03]'
             }`}
           >
-            <Flame size={14} className={selectedSort === 'hot' ? 'text-orange-400' : ''} />
-            <span>Hot 🔥</span>
+            <Flame size={13} className={selectedSort === 'hot' ? 'text-orange-400' : ''} />
+            <span>Hot</span>
           </button>
 
           {/* New */}
@@ -147,12 +147,12 @@ export default function CategoryFilter({
             onClick={() => onSelectSort('new')}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors active:scale-95 ${
               selectedSort === 'new'
-                ? 'bg-yellow-400 text-zinc-950 font-bold shadow-sm'
+                ? 'bg-yellow-400 text-zinc-950 font-bold'
                 : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.03]'
             }`}
           >
-            <Sparkles size={14} />
-            <span>New ✨</span>
+            <Sparkles size={13} />
+            <span>New</span>
           </button>
 
           {/* Top */}
@@ -160,12 +160,12 @@ export default function CategoryFilter({
             onClick={() => onSelectSort('top')}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors active:scale-95 ${
               selectedSort === 'top'
-                ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 shadow-sm'
+                ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/30'
                 : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.03]'
             }`}
           >
-            <Award size={14} className={selectedSort === 'top' ? 'text-yellow-400' : ''} />
-            <span>Top 🏆</span>
+            <Award size={13} className={selectedSort === 'top' ? 'text-yellow-400' : ''} />
+            <span>Top</span>
           </button>
 
           {/* Rising */}
@@ -173,12 +173,12 @@ export default function CategoryFilter({
             onClick={() => onSelectSort('rising')}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors active:scale-95 ${
               selectedSort === 'rising'
-                ? 'bg-red-500/20 text-red-400 border border-red-500/30 shadow-sm'
+                ? 'bg-red-500/15 text-red-400 border border-red-500/30'
                 : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.03]'
             }`}
           >
-            <Zap size={14} className={selectedSort === 'rising' ? 'text-red-400' : ''} />
-            <span>Rising 📈</span>
+            <Zap size={13} className={selectedSort === 'rising' ? 'text-red-400' : ''} />
+            <span>Rising</span>
           </button>
         </div>
 

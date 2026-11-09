@@ -270,11 +270,11 @@ export default function NewThreadPage() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-              <span className="text-[10px] font-mono text-yellow-400 uppercase font-bold tracking-wider">
-                ZRMA Anonymous Publisher
+              <span className="text-[11px] font-mono text-zinc-400 font-medium">
+                โพสต์นิรนาม • Zero-Log
               </span>
             </div>
-            <h1 className="text-lg font-bold text-zinc-100">ตั้งโพสต์ใหม่ (Create Post)</h1>
+            <h1 className="text-lg font-bold text-zinc-100">สร้างกระทู้ใหม่</h1>
           </div>
 
           {/* Editable Display Name Box */}

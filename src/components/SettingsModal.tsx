@@ -341,10 +341,10 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {[
-                    { key: 'hot', label: '🔥 มาแรง (Hot)', desc: 'โพสต์ที่มีปฏิสัมพันธ์สูง' },
-                    { key: 'breaking', label: '⚡ ข่าวด่วน (Breaking)', desc: 'ปักหมุดข่าวเร่งด่วน' },
-                    { key: 'new', label: '✨ ใหม่ล่าสุด (New)', desc: 'เรียงตามเวลาสร้าง' },
-                    { key: 'top', label: '🔝 ยอดนิยม (Top)', desc: 'คะแนนโหวตสูงสุด' },
+                    { key: 'hot', label: 'มาแรง (Hot)', desc: 'โพสต์ที่มีปฏิสัมพันธ์สูง' },
+                    { key: 'breaking', label: 'ข่าวด่วน (Breaking)', desc: 'ปักหมุดข่าวเร่งด่วน' },
+                    { key: 'new', label: 'ใหม่ล่าสุด (New)', desc: 'เรียงตามเวลาสร้าง' },
+                    { key: 'top', label: 'ยอดนิยม (Top)', desc: 'คะแนนโหวตสูงสุด' },
                   ].map((s) => (
                     <button
                       key={s.key}
@@ -577,19 +577,19 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] font-mono">
                   <div className="p-2 rounded bg-white/[0.03] border border-white/[0.04]">
                     <div className="text-zinc-500 text-[10px]">Cookies</div>
-                    <div className="text-green-400 font-bold">0 TRACKERS</div>
+                    <div className="text-zinc-200 font-semibold">0 Trackers</div>
                   </div>
                   <div className="p-2 rounded bg-white/[0.03] border border-white/[0.04]">
                     <div className="text-zinc-500 text-[10px]">IP Logging</div>
-                    <div className="text-green-400 font-bold">NONE (0B)</div>
+                    <div className="text-zinc-200 font-semibold">None (0B)</div>
                   </div>
                   <div className="p-2 rounded bg-white/[0.03] border border-white/[0.04]">
                     <div className="text-zinc-500 text-[10px]">Identity TTL</div>
-                    <div className="text-yellow-400 font-bold">SESSION ONLY</div>
+                    <div className="text-zinc-200 font-semibold">Session Only</div>
                   </div>
                   <div className="p-2 rounded bg-white/[0.03] border border-white/[0.04]">
                     <div className="text-zinc-500 text-[10px]">Self Destruct</div>
-                    <div className="text-orange-400 font-bold">ACTIVE</div>
+                    <div className="text-zinc-200 font-semibold">Enabled</div>
                   </div>
                 </div>
               </div>

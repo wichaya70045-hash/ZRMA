@@ -354,8 +354,8 @@ export default function LiveChatBox({
       {/* Destruction Alert Overlay */}
       {isRoomDestroyed ? (
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-3">
-          <div className="w-14 h-14 rounded-full bg-red-950/60 border border-red-500/40 text-red-400 flex items-center justify-center text-3xl">
-            👻
+          <div className="w-12 h-12 rounded-full bg-red-950/60 border border-red-500/40 text-red-400 flex items-center justify-center">
+            <Ghost size={26} />
           </div>
           <h3 className="text-base font-bold text-zinc-100">
             ห้องสนทนานี้สลายตัวแล้ว (Room Vaporized)
