@@ -374,8 +374,8 @@ export default function ThreadDetailPage({
   }
 
   const isThreadHidden = thread.is_hidden === 1 && !revealedIds[thread.id];
-  const cleanCategory = (thread.category || 'general').replace(/^r\//, '');
-  const subredditName = `r/${cleanCategory}`;
+  const cleanCategory = (thread.category || 'general').replace(/^[zr]\//i, '');
+  const subredditName = `z/${cleanCategory}`;
   const cleanAuthorAlias = (thread.author_alias || 'ผู้ไม่ประสงค์ออกนาม').replace(/^u\//, '');
 
   const isVideo =

@@ -65,7 +65,7 @@ export default function CategoryFilter({
     <div className="space-y-3">
       {/* Subreddit Horizontal Filter Bar */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none font-mono text-xs">
-        {/* r/all */}
+        {/* z/all */}
         <button
           onClick={() => onSelectCategory('all')}
           className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors border active:scale-95 ${
@@ -75,7 +75,7 @@ export default function CategoryFilter({
           }`}
         >
           <Layers size={13} strokeWidth={selectedCategory === 'all' ? 2.5 : 1.75} />
-          <span>r/all</span>
+          <span>z/all</span>
         </button>
 
         {/* Dynamic subreddits */}
@@ -110,19 +110,19 @@ export default function CategoryFilter({
                     : 'text-zinc-400'
                 }
               />
-              <span>r/{comm.name}</span>
+              <span>z/{comm.name}</span>
             </button>
           );
         })}
 
-        {/* Create new r/ button */}
+        {/* Create new z/ button */}
         <button
           onClick={() => setIsModalOpen(true)}
           className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors border border-dashed border-white/20 hover:border-yellow-400 text-zinc-400 hover:text-yellow-400 hover:bg-yellow-400/[0.05]"
-          title="สร้างห้อง r/ ใหม่"
+          title="สร้างห้อง z/ ใหม่"
         >
           <Plus size={13} />
-          <span>+ สร้าง r/</span>
+          <span>+ สร้าง z/</span>
         </button>
       </div>
 
@@ -182,11 +182,11 @@ export default function CategoryFilter({
           </button>
         </div>
 
-        {/* Current r/ badge */}
+        {/* Current z/ badge */}
         <div className="hidden sm:flex items-center gap-1 text-[11px] font-mono text-zinc-500 pr-2">
           <span>Viewing:</span>
           <span className="text-zinc-200 font-bold">
-            {selectedCategory === 'all' ? 'r/all' : `r/${selectedCategory}`}
+            {selectedCategory === 'all' ? 'z/all' : `z/${selectedCategory}`}
           </span>
         </div>
       </div>

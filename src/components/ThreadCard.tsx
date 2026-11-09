@@ -104,8 +104,8 @@ export default function ThreadCard({ thread, onVoteChange }: ThreadCardProps) {
     setIsSaved(!isSaved);
   };
 
-  const cleanCategory = (thread.category || 'general').replace(/^r\//, '');
-  const subredditName = `r/${cleanCategory}`;
+  const cleanCategory = (thread.category || 'general').replace(/^[zr]\//i, '');
+  const subredditName = `z/${cleanCategory}`;
   const cleanAlias = (thread.author_alias || 'ผู้ไม่ประสงค์ออกนาม').replace(/^u\//, '');
 
   const isVideo =
@@ -206,7 +206,7 @@ export default function ThreadCard({ thread, onVoteChange }: ThreadCardProps) {
         {/* Post Content Body */}
         <div className="flex-1 min-w-0">
           
-          {/* Reddit-style Header Line: r/community • u/author • time ago */}
+          {/* Reddit-style Header Line: z/community • u/author • time ago */}
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1.5 text-xs">
             <Link
               href={`/?category=${cleanCategory}`}

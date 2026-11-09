@@ -205,7 +205,7 @@ export default function NewThreadPage() {
 
     const finalCategory = (customCategory.trim() || category || 'general')
       .toLowerCase()
-      .replace(/^r\//, '')
+      .replace(/^[zr]\//i, '')
       .replace(/[^a-z0-9_]/g, '');
 
     setIsSubmitting(true);
@@ -306,7 +306,7 @@ export default function NewThreadPage() {
 
         <form onSubmit={handleSubmit} className="mt-5 space-y-5">
           
-          {/* Subreddit / Community Selector (r/...) */}
+          {/* Subreddit / Community Selector (z/...) */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="text-xs font-mono uppercase text-zinc-400">
@@ -318,7 +318,7 @@ export default function NewThreadPage() {
                 className="text-[11px] font-mono text-yellow-400 hover:underline flex items-center gap-1"
               >
                 <Plus size={11} />
-                <span>สร้างห้อง r/ ใหม่</span>
+                <span>สร้างห้อง z/ ใหม่</span>
               </button>
             </div>
 
@@ -342,7 +342,7 @@ export default function NewThreadPage() {
                   >
                     <div className="flex items-center gap-1.5 mb-0.5">
                       <IconComp size={14} className={isSelected ? 'text-red-400' : 'text-zinc-400'} />
-                      <span className="text-xs font-mono font-bold text-zinc-100">r/{comm.name}</span>
+                      <span className="text-xs font-mono font-bold text-zinc-100">z/{comm.name}</span>
                     </div>
                     <span className="text-[10px] text-zinc-500 line-clamp-1">{comm.description}</span>
                   </button>
@@ -353,7 +353,7 @@ export default function NewThreadPage() {
             {/* Custom Subreddit Input option */}
             <div className="pt-1">
               <div className="flex items-center bg-black/40 border border-white/[0.08] focus-within:border-red-500 rounded-lg px-3 py-1.5 text-xs">
-                <span className="text-zinc-500 font-mono font-bold mr-1">หรือพิมพ์ชื่อห้องเอง: r/</span>
+                <span className="text-zinc-500 font-mono font-bold mr-1">หรือพิมพ์ชื่อห้องเอง: z/</span>
                 <input
                   type="text"
                   value={customCategory}
@@ -378,7 +378,7 @@ export default function NewThreadPage() {
                       <span>📌 ปักหมุดข่าวด่วนพิเศษ (Pin Breaking Live Wire)</span>
                     </div>
                     <div className="text-[10px] text-zinc-400">
-                      จะถูกปักหมุดบนสุดของ r/breaking พร้อมระบุแหล่งที่มาและเวลาอัปเดตแบบเรียลไทม์
+                      จะถูกปักหมุดบนสุดของ z/breaking พร้อมระบุแหล่งที่มาและเวลาอัปเดตแบบเรียลไทม์
                     </div>
                   </div>
                 </div>

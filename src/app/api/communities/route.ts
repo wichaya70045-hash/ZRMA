@@ -19,11 +19,11 @@ export async function POST(req: NextRequest) {
     let { name, title, description, icon } = body;
 
     if (!name || !name.trim()) {
-      return NextResponse.json({ error: 'กรุณาระบุชื่อห้อง r/' }, { status: 400 });
+      return NextResponse.json({ error: 'กรุณาระบุชื่อห้อง z/' }, { status: 400 });
     }
 
-    // Clean name: remove leading r/ if entered, convert to lowercase alphanumeric/hyphen
-    name = name.trim().toLowerCase().replace(/^r\//, '');
+    // Clean name: remove leading z/ or r/ if entered, convert to lowercase alphanumeric/hyphen
+    name = name.trim().toLowerCase().replace(/^[zr]\//i, '');
     if (!/^[a-z0-9_]{2,30}$/.test(name)) {
       return NextResponse.json(
         { error: 'ชื่อห้องต้องเป็นตัวอักษรภาษาอังกฤษ ตัวเลข หรือขีดล่าง ความยาว 2-30 ตัวอักษร (เช่น tech, breaking, crypto)' },
@@ -32,13 +32,13 @@ export async function POST(req: NextRequest) {
     }
 
     if (!title || !title.trim()) {
-      title = `r/${name}`;
+      title = `z/${name}`;
     }
 
     const community = createOrUpdateCommunity({
       name,
       title: title.trim(),
-      description: description ? description.trim() : `ชุมชนแลกเปลี่ยนข่าวสาร r/${name}`,
+      description: description ? description.trim() : `ชุมชนแลกเปลี่ยนข่าวสาร z/${name}`,
       icon: icon || 'terminal',
     });
 

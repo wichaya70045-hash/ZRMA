@@ -35,7 +35,7 @@ export default function HomePage() {
       const params = new URLSearchParams(window.location.search);
       const cat = params.get('category');
       if (cat) {
-        setSelectedCategory(cat.replace(/^r\//, ''));
+        setSelectedCategory(cat.replace(/^[zr]\//i, ''));
       }
     }
   }, []);
@@ -151,7 +151,7 @@ export default function HomePage() {
               href="/new"
               className="flex-1 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] rounded-lg px-3 py-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
             >
-              สร้างโพสต์ใหม่ใน r/{selectedCategory === 'all' ? 'all' : selectedCategory}...
+              สร้างโพสต์ใหม่ใน z/{selectedCategory === 'all' ? 'all' : selectedCategory}...
             </Link>
             <Link
               href="/new"
@@ -261,7 +261,7 @@ export default function HomePage() {
           />
 
           {/* Live Lounge Chat Widget */}
-          <LiveChatBox roomId="global" title="r/lounge ห้องแชทสด" />
+          <LiveChatBox roomId="global" title="z/lounge ห้องแชทสด" />
         </aside>
 
       </div>

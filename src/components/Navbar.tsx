@@ -39,7 +39,7 @@ export default function Navbar() {
                     ZRMA Community
                   </span>
                   <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
-                    r/all
+                    z/all
                   </span>
                 </div>
               </div>

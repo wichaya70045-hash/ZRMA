@@ -103,7 +103,7 @@ export default function CommunitySidebar({
               <h2 className="text-sm font-bold text-zinc-100 flex items-center gap-1.5">
                 <span>ZRMA Community</span>
               </h2>
-              <span className="text-[11px] font-mono text-zinc-500">r/ZRMA • Zero-Trace Reddit</span>
+              <span className="text-[11px] font-mono text-zinc-500">z/ZRMA • Zero-Trace Reddit</span>
             </div>
           </div>
 
@@ -141,7 +141,7 @@ export default function CommunitySidebar({
               className="w-full btn-secondary text-xs justify-center hover:border-yellow-500/40"
             >
               <Plus size={13} className="text-yellow-400" />
-              <span>+ สร้างห้อง r/ ชุมชนใหม่</span>
+              <span>+ สร้างห้อง z/ ชุมชนใหม่</span>
             </button>
 
             <Link
@@ -159,7 +159,7 @@ export default function CommunitySidebar({
       <div className="bg-[#101217] border border-white/[0.08] rounded-xl p-3.5 space-y-3">
         <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">
           <h3 className="text-xs font-mono font-bold uppercase text-zinc-400 tracking-wider">
-            ห้องชุมชน r/ ทั้งหมด
+            ห้องชุมชน z/ ทั้งหมด
           </h3>
           <span className="text-[10px] font-mono text-zinc-500">
             {communities.length} ห้อง
@@ -179,7 +179,7 @@ export default function CommunitySidebar({
             <div className="flex items-center gap-2">
               <Layers size={14} className="text-yellow-400" />
               <div>
-                <div className="font-mono text-xs font-bold">r/all</div>
+                <div className="font-mono text-xs font-bold">z/all</div>
                 <div className="text-[10px] text-zinc-500">ฟีดรวมกระทู้ทั้งหมด</div>
               </div>
             </div>
@@ -201,7 +201,7 @@ export default function CommunitySidebar({
                 <div className="flex items-center gap-2 min-w-0">
                   <IconComponent size={14} className={isSelected ? 'text-yellow-400' : 'text-zinc-400 shrink-0'} />
                   <div className="min-w-0">
-                    <div className="font-mono text-xs font-bold truncate">r/{sub.name}</div>
+                    <div className="font-mono text-xs font-bold truncate">z/{sub.name}</div>
                     <div className="text-[10px] text-zinc-500 truncate">{sub.description}</div>
                   </div>
                 </div>

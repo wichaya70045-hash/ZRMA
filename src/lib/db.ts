@@ -131,6 +131,8 @@ export function getDatabase(): DatabaseSync {
     try { db.exec('ALTER TABLE threads ADD COLUMN is_pinned INTEGER DEFAULT 0;'); } catch {}
     try { db.exec('ALTER TABLE comments ADD COLUMN media_url TEXT;'); } catch {}
     try { db.exec("UPDATE threads SET is_pinned = 1 WHERE category = 'breaking' AND id = 'seed-thread-1';"); } catch {}
+    try { db.exec("UPDATE communities SET title = REPLACE(title, 'r/', 'z/'), description = REPLACE(description, 'r/', 'z/');"); } catch {}
+    try { db.exec("UPDATE threads SET title = REPLACE(title, 'r/', 'z/'), content = REPLACE(content, 'r/', 'z/');"); } catch {}
 
     // Seed default communities and sample threads if empty
     try {
@@ -152,14 +154,14 @@ export function getDatabase(): DatabaseSync {
 
 function seedDefaultCommunities(database: DatabaseSync) {
   const defaults = [
-    { name: 'breaking', title: 'r/breaking', description: 'ข่าวด่วน เหตุการณ์สำคัญ และสถานการณ์สด', icon: 'radar' },
-    { name: 'tech', title: 'r/tech', description: 'เทคโนโลยี, AI, ซอฟต์แวร์, และความปลอดภัยไซเบอร์', icon: 'terminal' },
-    { name: 'finance', title: 'r/finance', description: 'เศรษฐกิจ, การลงทุน, หุ้น, และคริปโทเคอร์เรนซี', icon: 'cpu' },
-    { name: 'society', title: 'r/society', description: 'ประเด็นสังคม กฎหมาย และนโยบายสาธารณะ', icon: 'globe' },
-    { name: 'general', title: 'r/general', description: 'แลกเปลี่ยนความคิดเห็นทั่วไป เสวนาเรื่องรอบตัว', icon: 'shield' },
-    { name: 'gaming', title: 'r/gaming', description: 'วิดีโอเกม อีสปอร์ต คอนโซล และเกมพีซี', icon: 'key' },
-    { name: 'science', title: 'r/science', description: 'วิทยาศาสตร์ นวัตกรรม อวกาศ และธรรมชาติ', icon: 'binary' },
-    { name: 'memes', title: 'r/memes', description: 'มีม มุกตลก และเรื่องบันเทิงแบบนิรนาม', icon: 'eye-off' },
+    { name: 'breaking', title: 'z/breaking', description: 'ข่าวด่วน เหตุการณ์สำคัญ และสถานการณ์สด', icon: 'radar' },
+    { name: 'tech', title: 'z/tech', description: 'เทคโนโลยี, AI, ซอฟต์แวร์, และความปลอดภัยไซเบอร์', icon: 'terminal' },
+    { name: 'finance', title: 'z/finance', description: 'เศรษฐกิจ, การลงทุน, หุ้น, และคริปโทเคอร์เรนซี', icon: 'cpu' },
+    { name: 'society', title: 'z/society', description: 'ประเด็นสังคม กฎหมาย และนโยบายสาธารณะ', icon: 'globe' },
+    { name: 'general', title: 'z/general', description: 'แลกเปลี่ยนความคิดเห็นทั่วไป เสวนาเรื่องรอบตัว', icon: 'shield' },
+    { name: 'gaming', title: 'z/gaming', description: 'วิดีโอเกม อีสปอร์ต คอนโซล และเกมพีซี', icon: 'key' },
+    { name: 'science', title: 'z/science', description: 'วิทยาศาสตร์ นวัตกรรม อวกาศ และธรรมชาติ', icon: 'binary' },
+    { name: 'memes', title: 'z/memes', description: 'มีม มุกตลก และเรื่องบันเทิงแบบนิรนาม', icon: 'eye-off' },
   ];
 
   const now = new Date().toISOString();
@@ -393,7 +395,7 @@ export function getThreads(category?: string, sort: RedditSort = 'hot'): Thread[
   const params: any[] = [];
 
   if (category && category !== 'all') {
-    const cleanCat = category.replace(/^r\//, '');
+    const cleanCat = category.replace(/^[zr]\//i, '');
     query += ` AND t.category = ?`;
     params.push(cleanCat);
   }
@@ -493,14 +495,14 @@ export function createThread(data: {
   const now = new Date();
   const expiresAt = new Date(now.getTime() + data.expires_hours * 60 * 60 * 1000).toISOString();
   const createdAt = now.toISOString();
-  const cleanCat = data.category.toLowerCase().trim().replace(/^r\//, '');
+  const cleanCat = data.category.toLowerCase().trim().replace(/^[zr]\//i, '');
 
   // Auto-register community in communities table if new
   try {
     database.prepare(`
       INSERT OR IGNORE INTO communities (name, title, description, icon, post_count, created_at)
       VALUES (?, ?, ?, 'terminal', 0, ?)
-    `).run(cleanCat, `r/${cleanCat}`, `ชุมชนแลกเปลี่ยนข่าวสาร r/${cleanCat}`, createdAt);
+    `).run(cleanCat, `z/${cleanCat}`, `ชุมชนแลกเปลี่ยนข่าวสาร z/${cleanCat}`, createdAt);
   } catch {
     // ignore
   }

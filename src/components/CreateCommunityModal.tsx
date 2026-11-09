@@ -43,7 +43,7 @@ export default function CreateCommunityModal({
   onCommunityCreated,
   initialName = '',
 }: CreateCommunityModalProps) {
-  const [name, setName] = useState(initialName.replace(/^r\//, ''));
+  const [name, setName] = useState(initialName.replace(/^[zr]\//i, ''));
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [selectedIcon, setSelectedIcon] = useState('terminal');
@@ -56,7 +56,7 @@ export default function CreateCommunityModal({
     e.preventDefault();
     setErrorMsg('');
 
-    const cleanName = name.trim().toLowerCase().replace(/^r\//, '').replace(/[^a-z0-9_]/g, '');
+    const cleanName = name.trim().toLowerCase().replace(/^[zr]\//i, '').replace(/[^a-z0-9_]/g, '');
     if (!cleanName || cleanName.length < 2 || cleanName.length > 30) {
       setErrorMsg('ชื่อห้องต้องเป็นตัวอักษรภาษาอังกฤษ ตัวเลข หรือขีดล่าง ความยาว 2-30 ตัวอักษร');
       return;
@@ -70,8 +70,8 @@ export default function CreateCommunityModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: cleanName,
-          title: title.trim() || `r/${cleanName}`,
-          description: description.trim() || `ชุมชนแลกเปลี่ยนข่าวสาร r/${cleanName}`,
+          title: title.trim() || `z/${cleanName}`,
+          description: description.trim() || `ชุมชนแลกเปลี่ยนข่าวสาร z/${cleanName}`,
           icon: selectedIcon,
         }),
       });
@@ -108,7 +108,7 @@ export default function CreateCommunityModal({
             </span>
           </div>
           <h2 className="text-base sm:text-lg font-bold text-zinc-100">
-            สร้างหรือแก้ไขชุมชน r/
+            สร้างหรือแก้ไขชุมชน z/
           </h2>
           <p className="text-xs text-zinc-400 mt-0.5">
             สร้างชุมชนย่อยของคุณเอง ทุกคนสามารถร่วมตั้งกระทู้และแลกเปลี่ยนความเห็นได้ทันที
@@ -128,7 +128,7 @@ export default function CreateCommunityModal({
               ชื่อห้อง (Subreddit Slug)
             </label>
             <div className="flex items-center bg-black/40 border border-white/[0.08] focus-within:border-red-500 rounded-lg px-3 py-2 text-xs">
-              <span className="text-zinc-500 font-mono font-bold mr-1">r/</span>
+              <span className="text-zinc-500 font-mono font-bold mr-1">z/</span>
               <input
                 type="text"
                 required
@@ -152,7 +152,7 @@ export default function CreateCommunityModal({
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder={`r/${name || 'name'} - ชุมชน...`}
+              placeholder={`z/${name || 'name'} - ชุมชน...`}
               maxLength={60}
               className="w-full bg-black/40 border border-white/[0.08] focus:border-yellow-400 rounded-lg px-3 py-2 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-yellow-400 font-sans"
             />

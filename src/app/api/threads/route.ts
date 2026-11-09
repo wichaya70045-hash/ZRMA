@@ -70,8 +70,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Process r/ category slug
-    const rawCategory = (category || 'general').trim().replace(/^r\//i, '').toLowerCase();
+    // Process z/ category slug
+    const rawCategory = (category || 'general').trim().replace(/^[zr]\//i, '').toLowerCase();
     const cleanCategory = rawCategory.replace(/[^a-z0-9_\-]/g, '') || 'general';
 
     const validHours = [24, 72, 168]; // 24h, 3 days, 7 days

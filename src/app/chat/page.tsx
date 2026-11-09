@@ -79,7 +79,7 @@ export default function GlobalChatPage() {
             }`}
           >
             <Radio size={13} />
-            <span>ห้องแชทสดส่วนกลาง (r/lounge)</span>
+            <span>ห้องแชทสดส่วนกลาง (z/lounge)</span>
           </button>
 
           <button
@@ -101,7 +101,7 @@ export default function GlobalChatPage() {
         <div className="h-[75vh] min-h-[500px]">
           <LiveChatBox
             roomId="global"
-            title="ห้องสนทนาสดส่วนกลาง (r/lounge)"
+            title="ห้องสนทนาสดส่วนกลาง (z/lounge)"
           />
         </div>
       ) : currentGhostRoom ? (

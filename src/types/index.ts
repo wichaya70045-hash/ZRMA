@@ -1,4 +1,4 @@
-export type Category = string; // Dynamic r/community slug, e.g. 'tech', 'breaking', 'gaming', 'memes', etc.
+export type Category = string; // Dynamic z/community slug, e.g. 'tech', 'breaking', 'gaming', 'memes', etc.
 
 export type RedditSort = 'hot' | 'new' | 'top' | 'rising' | 'breaking';
 
@@ -8,7 +8,7 @@ export interface Thread {
   id: string;
   title: string;
   content: string;
-  category: string; // r/{category}
+  category: string; // z/{category}
   flair?: string | null;
   source_url?: string | null;
   media_url?: string | null;
@@ -67,8 +67,8 @@ export interface CaptchaChallenge {
 }
 
 export interface Community {
-  name: string; // e.g. 'tech', 'breaking', 'crypto' (slug without r/)
-  title: string; // e.g. 'r/tech - ข่าวเทคโนโลยี & ซอฟต์แวร์'
+  name: string; // e.g. 'tech', 'breaking', 'crypto' (slug without z/)
+  title: string; // e.g. 'z/tech - ข่าวเทคโนโลยี & ซอฟต์แวร์'
   description: string;
   icon: string;
   post_count: number;
