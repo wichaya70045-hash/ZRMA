@@ -1,8 +1,18 @@
 'use client';
 
 import React from 'react';
-import { Category } from '@/types';
-import { Flame, Clock, Zap, Layers } from 'lucide-react';
+import {
+  Layers,
+  AlertCircle,
+  Terminal,
+  Landmark,
+  TrendingUp,
+  MessageSquare,
+  Atom,
+  Clock,
+  Flame,
+  Zap,
+} from 'lucide-react';
 
 interface CategoryFilterProps {
   selectedCategory: string;
@@ -11,14 +21,14 @@ interface CategoryFilterProps {
   onSelectSort: (sort: 'latest' | 'hot' | 'breaking') => void;
 }
 
-const CATEGORIES: { key: string; label: string; icon: string }[] = [
-  { key: 'all', label: 'ทั้งหมด', icon: '🌐' },
-  { key: 'breaking', label: 'ข่าวด่วน', icon: '🚨' },
-  { key: 'tech', label: 'เทคโนโลยี', icon: '💻' },
-  { key: 'society', label: 'สังคม & การเมือง', icon: '🏛️' },
-  { key: 'finance', label: 'เศรษฐกิจ & การเงิน', icon: '📈' },
-  { key: 'general', label: 'ทั่วไป & พูดคุย', icon: '💬' },
-  { key: 'science', label: 'วิทยาศาสตร์', icon: '🔬' },
+const CATEGORIES = [
+  { key: 'all', label: 'ทั้งหมด', icon: Layers },
+  { key: 'breaking', label: 'ข่าวด่วน', icon: AlertCircle },
+  { key: 'tech', label: 'เทคโนโลยี', icon: Terminal },
+  { key: 'society', label: 'สังคม & การเมือง', icon: Landmark },
+  { key: 'finance', label: 'เศรษฐกิจ', icon: TrendingUp },
+  { key: 'general', label: 'ทั่วไป', icon: MessageSquare },
+  { key: 'science', label: 'วิทยาศาสตร์', icon: Atom },
 ];
 
 export default function CategoryFilter({
@@ -28,69 +38,69 @@ export default function CategoryFilter({
   onSelectSort,
 }: CategoryFilterProps) {
   return (
-    <div className="space-y-3 mb-6">
-      {/* Category Pills (Horizontal Scrollable on Mobile) */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1.5 scrollbar-none text-xs">
+    <div className="space-y-3">
+      {/* Category Horizontal Filter (Scrollable on small viewports) */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
         {CATEGORIES.map((cat) => {
+          const Icon = cat.icon;
           const isActive = selectedCategory === cat.key;
           return (
             <button
               key={cat.key}
               onClick={() => onSelectCategory(cat.key)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full whitespace-nowrap font-medium transition-all ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-colors border ${
                 isActive
-                  ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20 font-semibold'
-                  : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800'
+                  ? 'bg-zinc-100 text-zinc-950 border-zinc-100 font-semibold'
+                  : 'bg-white/[0.03] hover:bg-white/[0.06] text-zinc-400 hover:text-zinc-200 border-white/[0.06]'
               }`}
             >
-              <span>{cat.icon}</span>
+              <Icon size={13} strokeWidth={isActive ? 2 : 1.75} />
               <span>{cat.label}</span>
             </button>
           );
         })}
       </div>
 
-      {/* Sort Buttons */}
-      <div className="flex items-center justify-between border-t border-b border-slate-800/80 py-2.5">
-        <div className="flex items-center gap-1 text-slate-400 text-xs">
-          <Layers className="w-3.5 h-3.5" />
-          <span>เรียงตาม:</span>
-        </div>
+      {/* Sort Bar (Clean minimal row) */}
+      <div className="flex items-center justify-between py-1 text-xs border-b border-white/[0.06]">
+        <span className="text-[11px] font-mono uppercase text-zinc-500">
+          ลำดับการแสดงผล:
+        </span>
 
-        <div className="flex items-center gap-1.5 text-xs">
+        <div className="inline-flex items-center gap-1 bg-white/[0.03] p-0.5 rounded-md border border-white/[0.06]">
           <button
             onClick={() => onSelectSort('latest')}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg transition-colors ${
+            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs transition-colors ${
               selectedSort === 'latest'
-                ? 'bg-slate-800 text-emerald-400 font-semibold border border-slate-700'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-zinc-800 text-zinc-100 font-medium'
+                : 'text-zinc-400 hover:text-zinc-200'
             }`}
           >
-            <Clock className="w-3.5 h-3.5" />
+            <Clock size={12} />
             <span>ล่าสุด</span>
           </button>
 
           <button
             onClick={() => onSelectSort('hot')}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg transition-colors ${
+            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs transition-colors ${
               selectedSort === 'hot'
-                ? 'bg-slate-800 text-amber-400 font-semibold border border-slate-700'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-zinc-800 text-zinc-100 font-medium'
+                : 'text-zinc-400 hover:text-zinc-200'
             }`}
           >
-            <Flame className="w-3.5 h-3.5" />
+            <Flame size={12} />
             <span>มาแรง</span>
           </button>
 
           <button
             onClick={() => onSelectSort('breaking')}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg transition-colors ${
+            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs transition-colors ${
               selectedSort === 'breaking'
-                ? 'bg-slate-800 text-rose-400 font-semibold border border-slate-700'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-zinc-800 text-rose-400 font-medium'
+                : 'text-zinc-400 hover:text-zinc-200'
             }`}
           >
-            <Zap className="w-3.5 h-3.5" />
+            <Zap size={12} />
             <span>ข่าวด่วน</span>
           </button>
         </div>

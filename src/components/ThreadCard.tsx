@@ -12,9 +12,9 @@ import {
   Flag,
   AlertTriangle,
   Eye,
-  Shield,
-  EyeOff
+  EyeOff,
 } from 'lucide-react';
+import IdentityAvatar from './IdentityAvatar';
 import ReportModal from './ReportModal';
 
 interface ThreadCardProps {
@@ -31,7 +31,6 @@ export default function ThreadCard({ thread, onVoteChange }: ThreadCardProps) {
   const [forceReveal, setForceReveal] = useState(false);
   const [reportCount, setReportCount] = useState(thread.report_count);
 
-  // Calculate remaining time before auto-destruction
   const getRemainingTime = () => {
     const expires = new Date(thread.expires_at).getTime();
     const now = Date.now();
@@ -40,31 +39,30 @@ export default function ThreadCard({ thread, onVoteChange }: ThreadCardProps) {
 
     const hours = Math.floor(diff / (1000 * 60 * 60));
     if (hours < 24) {
-      return `ลบใน ${hours} ชม.`;
+      return `${hours}h เหลือ`;
     }
     const days = Math.floor(hours / 24);
-    return `ลบใน ${days} วัน`;
+    return `${days}d เหลือ`;
   };
 
-  // Format relative creation time
   const getTimeAgo = () => {
     const created = new Date(thread.created_at).getTime();
     const diffSec = Math.floor((Date.now() - created) / 1000);
     if (diffSec < 60) return 'เมื่อสักครู่';
     const diffMin = Math.floor(diffSec / 60);
-    if (diffMin < 60) return `${diffMin} น. ที่แล้ว`;
+    if (diffMin < 60) return `${diffMin}m`;
     const diffHr = Math.floor(diffMin / 60);
-    if (diffHr < 24) return `${diffHr} ชม. ที่แล้ว`;
-    return `${Math.floor(diffHr / 24)} วันที่แล้ว`;
+    if (diffHr < 24) return `${diffHr}h`;
+    return `${Math.floor(diffHr / 24)}d`;
   };
 
   const handleVote = async (type: 'up' | 'down') => {
     if (isVoting) return;
-    if (userVote === type) return; // already voted this direction
+    if (userVote === type) return;
 
     setIsVoting(true);
     const voteDelta = userVote === null ? (type === 'up' ? 1 : -1) : (type === 'up' ? 2 : -2);
-    setScore(prev => prev + voteDelta);
+    setScore((prev) => prev + voteDelta);
     setUserVote(type);
 
     try {
@@ -79,99 +77,76 @@ export default function ThreadCard({ thread, onVoteChange }: ThreadCardProps) {
         if (onVoteChange) onVoteChange(thread.id, data.score);
       }
     } catch {
-      // rollback if failed
-      setScore(prev => prev - voteDelta);
+      setScore((prev) => prev - voteDelta);
       setUserVote(null);
     } finally {
       setIsVoting(false);
     }
   };
 
-  const getCategoryBadge = () => {
+  const getCategoryMeta = () => {
     switch (thread.category) {
       case 'breaking':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-500/15 text-rose-400 border border-rose-500/30 animate-pulse">
-            🚨 ข่าวด่วน
-          </span>
-        );
+        return { label: 'ข่าวด่วน', color: 'text-rose-400 bg-rose-500/10 border-rose-500/20' };
       case 'tech':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">
-            💻 เทคโนโลยี
-          </span>
-        );
+        return { label: 'เทคโนโลยี', color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20' };
       case 'society':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-violet-500/15 text-violet-400 border border-violet-500/30">
-            🏛️ สังคม
-          </span>
-        );
+        return { label: 'สังคม', color: 'text-zinc-300 bg-zinc-500/10 border-zinc-500/20' };
       case 'finance':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-            📈 เศรษฐกิจ
-          </span>
-        );
+        return { label: 'เศรษฐกิจ', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' };
       case 'science':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/30">
-            🔬 วิทยาศาสตร์
-          </span>
-        );
+        return { label: 'วิทยาศาสตร์', color: 'text-amber-400 bg-amber-500/10 border-amber-500/20' };
       default:
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-slate-800 text-slate-300 border border-slate-700">
-            💬 ทั่วไป
-          </span>
-        );
+        return { label: 'ทั่วไป', color: 'text-zinc-400 bg-zinc-800/40 border-zinc-700/50' };
     }
   };
 
+  const cat = getCategoryMeta();
+
   return (
-    <article className="bg-slate-900/90 border border-slate-800/80 hover:border-slate-700/80 rounded-2xl p-4 sm:p-5 transition-all shadow-lg hover:shadow-slate-900/50 relative overflow-hidden group">
-      {/* Top Banner if hidden due to community reports */}
+    <article className="bg-[#101216] border border-white/[0.07] hover:border-white/[0.14] rounded-xl p-4 transition-colors relative group">
+      {/* Hidden Banner */}
       {isHidden && !forceReveal && (
-        <div className="bg-rose-950/40 border border-rose-900/60 rounded-xl p-3 mb-3 text-xs text-rose-300 flex items-center justify-between">
+        <div className="bg-rose-950/20 border border-rose-900/40 rounded-lg p-2.5 mb-3 text-xs text-rose-300 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 shrink-0 text-rose-400" />
-            <span>กระทู้นี้ถูกซ่อนอัตโนมัติ เนื่องจากถูกรายงานจากชุมชนครบ 5 ครั้ง</span>
+            <AlertTriangle size={14} className="text-rose-400 shrink-0" />
+            <span>กระทู้นี้ถูกซ่อนอัตโนมัติเนื่องจากมีผู้รายงานครบ 5 ครั้ง</span>
           </div>
           <button
             onClick={() => setForceReveal(true)}
-            className="flex items-center gap-1 px-2.5 py-1 bg-rose-900/60 hover:bg-rose-800 text-rose-200 rounded-lg text-[11px] font-medium transition-colors"
+            className="flex items-center gap-1 px-2 py-1 bg-white/[0.06] hover:bg-white/[0.1] rounded text-[11px] text-zinc-200 transition-colors"
           >
-            <Eye className="w-3.5 h-3.5" />
-            <span>แสดงเนื้อหา</span>
+            <Eye size={12} />
+            <span>ดูเนื้อหา</span>
           </button>
         </div>
       )}
 
-      {/* Main Container */}
-      <div className={`flex gap-3 sm:gap-4 ${isHidden && !forceReveal ? 'opacity-40 filter blur-[1px]' : ''}`}>
+      <div className={`flex gap-3.5 ${isHidden && !forceReveal ? 'opacity-30 blur-[1px]' : ''}`}>
         
-        {/* Vote Counter Column */}
-        <div className="flex flex-col items-center bg-slate-950/60 border border-slate-800/60 rounded-xl p-1.5 self-start shrink-0">
+        {/* Vote Column */}
+        <div className="flex flex-col items-center bg-black/30 border border-white/[0.06] rounded-lg p-1 self-start shrink-0">
           <button
             onClick={() => handleVote('up')}
             disabled={isVoting}
-            className={`p-1 rounded-md transition-colors ${
+            className={`p-1 rounded transition-colors active:scale-95 ${
               userVote === 'up'
                 ? 'text-emerald-400 bg-emerald-500/10'
-                : 'text-slate-400 hover:text-emerald-400 hover:bg-slate-800/50'
+                : 'text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.04]'
             }`}
-            title="เห็นด้วย / โหวตขึ้น"
+            title="โหวตขึ้น"
+            aria-label="Upvote"
           >
-            <ChevronUp className="w-5 h-5" />
+            <ChevronUp size={16} strokeWidth={2.5} />
           </button>
 
           <span
-            className={`text-xs font-bold my-0.5 ${
+            className={`text-xs font-mono font-semibold tabular-nums my-0.5 ${
               score > 0
                 ? 'text-emerald-400'
                 : score < 0
                 ? 'text-rose-400'
-                : 'text-slate-400'
+                : 'text-zinc-400'
             }`}
           >
             {score}
@@ -180,105 +155,112 @@ export default function ThreadCard({ thread, onVoteChange }: ThreadCardProps) {
           <button
             onClick={() => handleVote('down')}
             disabled={isVoting}
-            className={`p-1 rounded-md transition-colors ${
+            className={`p-1 rounded transition-colors active:scale-95 ${
               userVote === 'down'
                 ? 'text-rose-400 bg-rose-500/10'
-                : 'text-slate-400 hover:text-rose-400 hover:bg-slate-800/50'
+                : 'text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.04]'
             }`}
-            title="ไม่เห็นด้วย / โหวตลง"
+            title="โหวตลง"
+            aria-label="Downvote"
           >
-            <ChevronDown className="w-5 h-5" />
+            <ChevronDown size={16} strokeWidth={2.5} />
           </button>
         </div>
 
-        {/* Content Body Column */}
+        {/* Content Body */}
         <div className="flex-1 min-w-0">
-          {/* Metadata Row: Category, Author, Time, Auto-Destruct */}
-          <div className="flex flex-wrap items-center gap-2 mb-2 text-xs text-slate-400">
-            {getCategoryBadge()}
+          
+          {/* Metadata Row */}
+          <div className="flex items-center gap-2 mb-1.5 text-xs">
+            <span className={`px-2 py-0.5 rounded text-[10px] font-medium border ${cat.color}`}>
+              {cat.label}
+            </span>
 
-            {/* Author alias */}
-            <div className="flex items-center gap-1.5 text-slate-300 font-medium">
-              <span className="text-sm">{thread.author_avatar}</span>
-              <span>{thread.author_alias}</span>
+            <div className="flex items-center gap-1.5 text-zinc-300 font-medium text-xs">
+              <IdentityAvatar iconKey={thread.author_avatar} size="xs" />
+              <span className="truncate max-w-[130px]">{thread.author_alias}</span>
             </div>
 
-            <span className="text-slate-600">•</span>
+            <span className="text-zinc-600">•</span>
 
-            {/* Time ago */}
-            <span>{getTimeAgo()}</span>
+            <span className="font-mono text-zinc-500 text-[11px] tabular-nums">
+              {getTimeAgo()}
+            </span>
 
-            {/* Expiry Badge */}
-            <div className="flex items-center gap-1 text-[11px] text-amber-400/90 bg-amber-950/30 border border-amber-800/30 px-2 py-0.5 rounded-full ml-auto">
-              <Clock className="w-3 h-3" />
+            {/* Expiration badge */}
+            <div className="flex items-center gap-1 font-mono text-[10px] text-zinc-400 ml-auto bg-white/[0.03] px-2 py-0.5 rounded border border-white/[0.04] tabular-nums">
+              <Clock size={11} className="text-zinc-500" />
               <span>{getRemainingTime()}</span>
             </div>
           </div>
 
           {/* Title */}
-          <Link href={`/thread/${thread.id}`} className="block group/title">
-            <h2 className="text-base sm:text-lg font-bold text-white group-hover/title:text-emerald-400 transition-colors line-clamp-2 leading-snug mb-2">
+          <Link href={`/thread/${thread.id}`} className="block group/link focus-visible:outline-none focus-visible:underline">
+            <h2 className="text-sm sm:text-base font-semibold text-zinc-100 group-hover/link:text-white transition-colors line-clamp-2 leading-snug mb-1.5">
               {thread.title}
             </h2>
           </Link>
 
-          {/* Content snippet */}
-          <p className="text-xs sm:text-sm text-slate-300/90 line-clamp-2 leading-relaxed mb-3">
+          {/* Snippet */}
+          <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed mb-2.5">
             {thread.content}
           </p>
 
-          {/* Source Link if provided */}
+          {/* Source Link if present */}
           {thread.source_url && (
-            <div className="mb-3">
+            <div className="mb-2.5">
               <a
                 href={thread.source_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-xs text-cyan-400/90 hover:text-cyan-300 bg-cyan-950/20 border border-cyan-800/30 px-2.5 py-1 rounded-lg transition-colors group/link"
+                className="inline-flex items-center gap-1.5 text-[11px] text-zinc-400 hover:text-zinc-200 bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.06] px-2 py-0.5 rounded transition-colors"
               >
-                <ExternalLink className="w-3.5 h-3.5 group-hover/link:translate-x-0.5 transition-transform" />
-                <span className="truncate max-w-xs sm:max-w-md">
-                  ข่าวต้นทาง: {thread.source_url.replace(/^https?:\/\/(www\.)?/, '')}
+                <ExternalLink size={11} />
+                <span className="truncate max-w-xs font-mono">
+                  {thread.source_url.replace(/^https?:\/\/(www\.)?/, '')}
                 </span>
               </a>
             </div>
           )}
 
-          {/* Card Footer: Comments, Report */}
-          <div className="flex items-center justify-between pt-2 border-t border-slate-800/60 text-xs">
+          {/* Footer: Comments Count & Report */}
+          <div className="flex items-center justify-between pt-2 border-t border-white/[0.04] text-xs">
             <Link
               href={`/thread/${thread.id}`}
-              className="flex items-center gap-1.5 text-slate-400 hover:text-emerald-400 transition-colors"
+              className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-zinc-200 transition-colors"
             >
-              <MessageSquare className="w-4 h-4" />
-              <span>{thread.comment_count || 0} ความคิดเห็น</span>
+              <MessageSquare size={13} />
+              <span className="font-mono text-[11px] tabular-nums">
+                {thread.comment_count || 0} ความคิดเห็น
+              </span>
             </Link>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               {forceReveal && isHidden && (
                 <button
                   onClick={() => setForceReveal(false)}
-                  className="flex items-center gap-1 text-slate-400 hover:text-slate-200"
+                  className="flex items-center gap-1 text-[11px] text-zinc-500 hover:text-zinc-300"
                 >
-                  <EyeOff className="w-3.5 h-3.5" />
+                  <EyeOff size={12} />
                   <span>ซ่อนกลับ</span>
                 </button>
               )}
 
               <button
                 onClick={() => setShowReportModal(true)}
-                className="flex items-center gap-1 text-slate-500 hover:text-rose-400 transition-colors"
-                title="รายงานกระทู้นี้"
+                className="flex items-center gap-1 text-[11px] text-zinc-500 hover:text-rose-400 transition-colors"
+                title="รายงานข้อความ"
               >
-                <Flag className="w-3.5 h-3.5" />
-                <span>รายงาน{reportCount > 0 ? ` (${reportCount})` : ''}</span>
+                <Flag size={12} />
+                <span className="font-mono tabular-nums">
+                  รายงาน{reportCount > 0 ? ` (${reportCount})` : ''}
+                </span>
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Report Modal */}
       <ReportModal
         isOpen={showReportModal}
         onClose={() => setShowReportModal(false)}

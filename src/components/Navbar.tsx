@@ -2,140 +2,162 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Shield, PlusCircle, MessageSquare, ShieldCheck, Flame, Info, X } from 'lucide-react';
+import {
+  Shield,
+  Plus,
+  Radio,
+  Info,
+  X,
+  Lock,
+  EyeOff,
+  Clock,
+  Sparkles,
+  ExternalLink,
+} from 'lucide-react';
 
 export default function Navbar() {
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-slate-800 bg-slate-950/80 backdrop-blur-md">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+      <header className="sticky top-0 z-40 w-full border-b border-white/[0.08] bg-[#090a0c]/90 backdrop-blur-md">
+        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
           
-          {/* Logo & Privacy Badge */}
+          {/* Brand Identity */}
           <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 p-0.5 shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition-transform">
-                <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-                  <Shield className="w-5 h-5 text-emerald-400" />
-                </div>
+            <Link
+              href="/"
+              className="flex items-center gap-2.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-md"
+            >
+              <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-white/[0.1] flex items-center justify-center text-emerald-400 group-hover:border-emerald-500/40 transition-colors">
+                <Shield size={16} strokeWidth={2} />
               </div>
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-lg text-white tracking-wide">นิรนามบอร์ด</span>
-                  <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <div className="flex flex-col">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-sm tracking-tight text-zinc-100 group-hover:text-white transition-colors">
+                    นิรนามบอร์ด
+                  </span>
+                  <span className="text-[10px] font-mono font-medium px-1.5 py-0.5 rounded bg-white/[0.04] text-zinc-400 border border-white/[0.06]">
                     Zero-Log
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-400 hidden sm:block">
-                  บอร์ดข่าว & แชทสด ไร้ตัวตน ปลอดภัยสูงสุด
-                </p>
               </div>
             </Link>
           </div>
 
-          {/* Center Privacy Indicators (Hidden on mobile) */}
-          <div className="hidden md:flex items-center gap-4 text-xs">
-            <div className="flex items-center gap-1.5 text-emerald-400 bg-emerald-950/40 border border-emerald-800/40 px-2.5 py-1 rounded-full">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span>ไม่บันทึก IP / ข้อมูลส่วนบุคคล</span>
+          {/* Center Subtle Telemetry (Desktop Only) */}
+          <div className="hidden md:flex items-center gap-4 text-xs text-zinc-400">
+            <div className="flex items-center gap-2 font-mono text-[11px] text-zinc-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <span>NO IP / NO LOGS</span>
             </div>
-            <div className="flex items-center gap-1.5 text-cyan-400 bg-cyan-950/40 border border-cyan-800/40 px-2.5 py-1 rounded-full">
-              <span>🎭 ชื่อสุ่มแยกตามกระทู้</span>
+            <span className="text-zinc-700">|</span>
+            <div className="flex items-center gap-1.5 text-[11px] text-zinc-400">
+              <EyeOff size={13} className="text-zinc-500" />
+              <span>ชื่อสุ่มแยกรายกระทู้</span>
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          {/* Primary & Secondary Actions (1-to-3 UX rule) */}
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setShowPrivacyModal(true)}
-              className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800/60 transition-colors"
-              title="ข้อมูลมาตรการความเป็นส่วนตัว"
+              className="p-1.5 text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.04] rounded-md border border-transparent hover:border-white/[0.06] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+              title="อ่านนโยบายความเป็นส่วนตัว"
+              aria-label="Privacy architecture details"
             >
-              <Info className="w-5 h-5" />
+              <Info size={16} strokeWidth={1.75} />
             </button>
 
             <Link
               href="/chat"
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-medium text-slate-200 bg-slate-900 hover:bg-slate-800 border border-slate-700/80 rounded-lg transition-colors"
+              className="btn-secondary !py-1.5 !px-3 text-xs"
             >
-              <MessageSquare className="w-4 h-4 text-cyan-400" />
+              <Radio size={13} className="text-emerald-400" />
               <span>ห้องแชทสด</span>
-              <span className="hidden sm:inline-block w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
             </Link>
 
             <Link
               href="/new"
-              className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium text-slate-950 bg-emerald-400 hover:bg-emerald-300 rounded-lg shadow-md shadow-emerald-500/20 font-semibold transition-all hover:scale-[1.02]"
+              className="btn-primary !py-1.5 !px-3 text-xs"
             >
-              <PlusCircle className="w-4 h-4" />
+              <Plus size={14} strokeWidth={2.5} />
               <span>ตั้งกระทู้</span>
             </Link>
           </div>
         </div>
       </header>
 
-      {/* Privacy Guarantee Modal */}
+      {/* Privacy Architecture Modal */}
       {showPrivacyModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative text-slate-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="bg-[#101216] border border-white/[0.1] rounded-xl max-w-lg w-full p-6 shadow-2xl relative text-zinc-200">
             <button
               onClick={() => setShowPrivacyModal(false)}
-              className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800"
+              className="absolute top-4 right-4 p-1.5 text-zinc-400 hover:text-white rounded-md hover:bg-white/[0.06] transition-colors"
+              aria-label="Close dialog"
             >
-              <X className="w-5 h-5" />
+              <X size={16} />
             </button>
 
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
-                <ShieldCheck className="w-6 h-6" />
+              <div className="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+                <Shield size={18} strokeWidth={2} />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">นโยบายความเป็นส่วนตัวสูงสุด (Zero-Trace)</h3>
-                <p className="text-xs text-slate-400">ระบบถูกออกแบบตามหลัก Privacy by Design</p>
+                <h3 className="text-sm font-semibold text-zinc-100">สถาปัตยกรรมความเป็นส่วนตัวสูงสุด (Zero-Trace)</h3>
+                <p className="text-xs text-zinc-400">หลักการทำงานด้านความปลอดภัยและคุ้มครองข้อมูล</p>
               </div>
             </div>
 
-            <div className="space-y-3.5 text-xs sm:text-sm leading-relaxed text-slate-300">
-              <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800/80 flex items-start gap-2.5">
-                <span className="text-emerald-400 text-base">🚫</span>
-                <div>
-                  <strong className="text-white">ไร้การยืนยันตัวตน & ไร้การลงทะเบียน:</strong>
-                  <p className="text-slate-400 text-xs mt-0.5">ไม่ต้องใช้ชื่อ, อีเมล หรือเบอร์โทรศัพท์ สามารถอ่านและโพสต์ได้ทันที</p>
+            <div className="space-y-2.5 text-xs text-zinc-300">
+              <div className="p-3 bg-zinc-950/60 rounded-lg border border-white/[0.06] space-y-1">
+                <div className="flex items-center gap-2 font-medium text-zinc-100">
+                  <Lock size={13} className="text-emerald-400 shrink-0" />
+                  <span>ไร้การขอข้อมูลและการลงทะเบียน</span>
                 </div>
+                <p className="text-zinc-400 text-[11px] pl-5 leading-relaxed">
+                  ไม่ต้องใช้อีเมล เบอร์โทร หรือชื่อจริง สามารถเข้าอ่านและแสดงความเห็นได้ทันที
+                </p>
               </div>
 
-              <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800/80 flex items-start gap-2.5">
-                <span className="text-emerald-400 text-base">🛡️</span>
-                <div>
-                  <strong className="text-white">ไม่เก็บ IP & ไม่ฝังคุกกี้สอดแนม:</strong>
-                  <p className="text-slate-400 text-xs mt-0.5">ฐานข้อมูลไม่มีฟิลด์ IP Address หรือ User-Agent แม้แต่คอลัมน์เดียว ข้อมูลไม่ถูกจัดเก็บในเซิร์ฟเวอร์</p>
+              <div className="p-3 bg-zinc-950/60 rounded-lg border border-white/[0.06] space-y-1">
+                <div className="flex items-center gap-2 font-medium text-zinc-100">
+                  <EyeOff size={13} className="text-emerald-400 shrink-0" />
+                  <span>ไม่บันทึก IP และไม่ฝังคุกกี้สอดแนม</span>
                 </div>
+                <p className="text-zinc-400 text-[11px] pl-5 leading-relaxed">
+                  ฐานข้อมูลไม่มีฟิลด์ `ip_address` หรือ `user_agent` แม้แต่คอลัมน์เดียว ข้อมูลเครือข่ายจะไม่ถูกจัดเก็บลง Disk
+                </p>
               </div>
 
-              <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800/80 flex items-start gap-2.5">
-                <span className="text-cyan-400 text-base">🎭</span>
-                <div>
-                  <strong className="text-white">ระบบสุ่มชื่อแยกตามกระทู้ (Per-Thread Alias):</strong>
-                  <p className="text-slate-400 text-xs mt-0.5">ชื่อของคุณจะถูกสร้างแบบสุ่มและเก็บไว้ใน sessionStorage เท่านั้น เมื่อไปตอบในกระทู้อื่น คุณจะได้ชื่อใหม่ ทำให้ไม่มีใครสามารถตามรอยการใช้งานข้ามกระทู้ได้</p>
+              <div className="p-3 bg-zinc-950/60 rounded-lg border border-white/[0.06] space-y-1">
+                <div className="flex items-center gap-2 font-medium text-zinc-100">
+                  <span className="text-emerald-400 text-xs font-mono font-bold shrink-0">#ID</span>
+                  <span>ระบบสุ่มชื่อชั่วคราวแยกรายกระทู้</span>
                 </div>
+                <p className="text-zinc-400 text-[11px] pl-5 leading-relaxed">
+                  ชื่อสุ่มจะผูกอยู่เฉพาะใน `sessionStorage` ของแต่ละกระทู้ เมื่อไปตอบในกระทู้อื่น คุณจะได้รหัสใหม่โดยอัตโนมัติ ไม่สามารถแกะรอยข้ามกระทู้ได้
+                </p>
               </div>
 
-              <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800/80 flex items-start gap-2.5">
-                <span className="text-amber-400 text-base">⏳</span>
-                <div>
-                  <strong className="text-white">ลบข้อมูลอัตโนมัติ (Auto-Destruct & FIFO):</strong>
-                  <p className="text-slate-400 text-xs mt-0.5">กระทู้มีอายุขัยที่แน่นอน (24 ชม. - 7 วัน) และจะถูกลบถาวรจากฐานข้อมูลอัตโนมัติ สำหรับห้องแชทสดจะเก็บเพียง 100 ข้อความล่าสุดเท่านั้น</p>
+              <div className="p-3 bg-zinc-950/60 rounded-lg border border-white/[0.06] space-y-1">
+                <div className="flex items-center gap-2 font-medium text-zinc-100">
+                  <Clock size={13} className="text-emerald-400 shrink-0" />
+                  <span>ลบข้อมูลอัตโนมัติ (Self-Destruct TTL & FIFO)</span>
                 </div>
+                <p className="text-zinc-400 text-[11px] pl-5 leading-relaxed">
+                  กระทู้จะถูกลบถาวรเมื่อครบอายุที่กำหนด (24 ชม. - 7 วัน) และห้องแชทสดจำกัดเพียง 100 ข้อความล่าสุดเท่านั้น
+                </p>
               </div>
             </div>
 
-            <div className="mt-6 flex justify-end">
+            <div className="mt-5 flex justify-end">
               <button
                 onClick={() => setShowPrivacyModal(false)}
-                className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition-colors"
+                className="btn-primary text-xs"
               >
-                เข้าใจแล้ว เข้าใช้งานได้ทันที
+                เข้าใจแล้ว เข้าใช้งานต่อ
               </button>
             </div>
           </div>

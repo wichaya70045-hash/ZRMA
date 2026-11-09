@@ -4,6 +4,7 @@ import React, { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import { Thread, Comment, CaptchaChallenge } from '@/types';
 import { getScopedIdentity, rerollScopedIdentity, AnonymousIdentity } from '@/lib/privacy';
+import IdentityAvatar from '@/components/IdentityAvatar';
 import ReportModal from '@/components/ReportModal';
 import LiveChatBox from '@/components/LiveChatBox';
 import {
@@ -24,8 +25,7 @@ import {
   Radio,
   Share2,
   Check,
-  ShieldCheck,
-  X
+  X,
 } from 'lucide-react';
 
 export default function ThreadDetailPage({
@@ -41,49 +41,37 @@ export default function ThreadDetailPage({
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
 
-  // Tab: 'comments' or 'livechat'
   const [activeView, setActiveView] = useState<'comments' | 'livechat'>('comments');
 
-  // Voting state for thread
   const [threadScore, setThreadScore] = useState(0);
   const [threadVote, setThreadVote] = useState<'up' | 'down' | null>(null);
 
-  // Voting state for comments
   const [commentVotes, setCommentVotes] = useState<Record<string, { score: number; voted: 'up' | 'down' | null }>>({});
 
-  // Ephemeral Scoped Persona for this specific thread
   const [identity, setIdentity] = useState<AnonymousIdentity | null>(null);
 
-  // Comment input form
   const [commentContent, setCommentContent] = useState('');
   const [quotedComment, setQuotedComment] = useState<{ id: string; author: string; text: string } | null>(null);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [cooldown, setCooldown] = useState(0);
 
-  // Captcha
   const [captchaData, setCaptchaData] = useState<CaptchaChallenge | null>(null);
   const [captchaAnswer, setCaptchaAnswer] = useState('');
 
-  // Report modal
   const [reportTarget, setReportTarget] = useState<{
     type: 'thread' | 'comment';
     id: string;
     title?: string;
   } | null>(null);
 
-  // Revealed hidden items
   const [revealedIds, setRevealedIds] = useState<Record<string, boolean>>({});
-
-  // Copied link indicator
   const [copiedLink, setCopiedLink] = useState(false);
 
-  // Load scoped identity specifically for this thread
   useEffect(() => {
     const id = getScopedIdentity(`thread_${threadId}`);
     setIdentity(id);
   }, [threadId]);
 
-  // Fetch captcha
   const fetchCaptcha = async () => {
     try {
       const res = await fetch('/api/captcha');
@@ -99,7 +87,6 @@ export default function ThreadDetailPage({
     fetchCaptcha();
   }, []);
 
-  // Cooldown countdown
   useEffect(() => {
     if (cooldown <= 0) return;
     const timer = setInterval(() => {
@@ -108,7 +95,6 @@ export default function ThreadDetailPage({
     return () => clearInterval(timer);
   }, [cooldown]);
 
-  // Fetch Thread and Comments
   const fetchData = async () => {
     setIsLoading(true);
     try {
@@ -129,7 +115,6 @@ export default function ThreadDetailPage({
       setThreadScore(threadData.thread.score);
       setComments(commentsData.comments || []);
 
-      // initialize comment votes map
       const votesMap: Record<string, { score: number; voted: 'up' | 'down' | null }> = {};
       (commentsData.comments || []).forEach((c: Comment) => {
         votesMap[c.id] = { score: c.score, voted: null };
@@ -146,7 +131,6 @@ export default function ThreadDetailPage({
     fetchData();
   }, [threadId]);
 
-  // Connect SSE for Real-Time Thread Updates
   useEffect(() => {
     const eventSource = new EventSource(`/api/chat/stream?room=thread_${threadId}`);
 
@@ -250,7 +234,6 @@ export default function ThreadDetailPage({
       author: c.author_alias,
       text: c.content.length > 100 ? `${c.content.substring(0, 100)}...` : c.content,
     });
-    // Scroll smoothly to reply form
     const formEl = document.getElementById('reply-form');
     formEl?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -276,7 +259,7 @@ export default function ThreadDetailPage({
           quote_text: quotedComment ? quotedComment.text : null,
           quote_author: quotedComment ? quotedComment.author : null,
           author_alias: identity.alias,
-          author_avatar: identity.avatar,
+          author_avatar: identity.avatarIcon,
           captcha_token: captchaData.token,
           captcha_answer: captchaAnswer.trim(),
         }),
@@ -286,7 +269,7 @@ export default function ThreadDetailPage({
       if (res.ok && data.comment) {
         setCommentContent('');
         setQuotedComment(null);
-        setCooldown(5); // 5 seconds anti-spam client cooldown
+        setCooldown(5);
         fetchCaptcha();
       } else {
         alert(data.error || 'เกิดข้อผิดพลาดในการตอบกลับ');
@@ -310,28 +293,27 @@ export default function ThreadDetailPage({
 
   if (isLoading) {
     return (
-      <div className="max-w-4xl mx-auto py-12 text-center text-slate-400 space-y-3">
-        <div className="w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
-        <p className="text-xs">กำลังโหลดเนื้อหาแบบปลอดภัย (Zero-Trace)...</p>
+      <div className="max-w-3xl mx-auto py-12 text-center text-zinc-500 font-mono text-xs">
+        LOADING DATA...
       </div>
     );
   }
 
   if (errorMsg || !thread) {
     return (
-      <div className="max-w-lg mx-auto py-12 text-center space-y-4">
-        <div className="w-14 h-14 bg-rose-950/40 border border-rose-800 text-rose-400 rounded-2xl flex items-center justify-center mx-auto">
-          <AlertTriangle className="w-7 h-7" />
+      <div className="max-w-md mx-auto py-12 text-center space-y-3">
+        <div className="w-10 h-10 bg-rose-950/20 border border-rose-900/40 text-rose-400 rounded-lg flex items-center justify-center mx-auto">
+          <AlertTriangle size={18} />
         </div>
-        <h2 className="text-lg font-bold text-white">ไม่พบกระทู้นี้</h2>
-        <p className="text-xs text-slate-400 leading-relaxed">
-          {errorMsg || 'กระทู้อาจหมดอายุและถูกลบทำลายโดยอัตโนมัติ (Self-Destruct) หรือถูกซ่อนโดยชุมชน'}
+        <h2 className="text-sm font-semibold text-zinc-100">ไม่พบกระทู้นี้</h2>
+        <p className="text-xs text-zinc-400 leading-relaxed">
+          {errorMsg || 'กระทู้อาจหมดอายุและถูกลบทำลายโดยอัตโนมัติ (Self-Destruct)'}
         </p>
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold"
+          className="btn-secondary text-xs inline-flex"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft size={13} />
           <span>กลับหน้าบอร์ดหลัก</span>
         </Link>
       </div>
@@ -341,91 +323,85 @@ export default function ThreadDetailPage({
   const isThreadHidden = thread.is_hidden === 1 && !revealedIds[thread.id];
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Top Navigation Bar */}
+    <div className="max-w-3xl mx-auto space-y-5">
+      {/* Top Bar */}
       <div className="flex items-center justify-between">
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-white transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft size={13} />
           <span>กลับบอร์ดข่าว</span>
         </Link>
 
-        {/* View Switcher: กระทู้สนทนา vs แชทสดประจำกระทู้ */}
-        <div className="flex items-center bg-slate-900 border border-slate-800 p-1 rounded-xl text-xs">
+        {/* View Switcher: Comments vs Live Chat */}
+        <div className="inline-flex items-center bg-white/[0.03] border border-white/[0.06] p-0.5 rounded-lg text-xs">
           <button
             onClick={() => setActiveView('comments')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-all ${
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md transition-colors ${
               activeView === 'comments'
-                ? 'bg-emerald-500 text-slate-950 font-bold shadow'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-zinc-800 text-white font-medium'
+                : 'text-zinc-400 hover:text-zinc-200'
             }`}
           >
-            <MessageSquare className="w-3.5 h-3.5" />
-            <span>กระทู้พูดคุย ({comments.length})</span>
+            <MessageSquare size={13} />
+            <span className="font-mono tabular-nums">ความคิดเห็น ({comments.length})</span>
           </button>
 
           <button
             onClick={() => setActiveView('livechat')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-all ${
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md transition-colors ${
               activeView === 'livechat'
-                ? 'bg-emerald-500 text-slate-950 font-bold shadow'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-zinc-800 text-white font-medium'
+                : 'text-zinc-400 hover:text-zinc-200'
             }`}
           >
-            <Radio className="w-3.5 h-3.5 text-cyan-400" />
-            <span>ห้องแชทสดประจำข่าวนี้</span>
+            <Radio size={13} className="text-emerald-400" />
+            <span>แชทสดประจำข่าว</span>
           </button>
         </div>
       </div>
 
-      {/* Main Thread Article */}
-      <article className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-7 shadow-2xl relative overflow-hidden">
-        {/* Hidden notification banner */}
+      {/* Main Post Card */}
+      <article className="bg-[#101216] border border-white/[0.08] rounded-xl p-5 sm:p-6 text-zinc-200">
         {isThreadHidden && (
-          <div className="bg-rose-950/50 border border-rose-900/60 rounded-xl p-3 mb-4 text-xs text-rose-300 flex items-center justify-between">
+          <div className="bg-rose-950/20 border border-rose-900/40 rounded-lg p-2.5 mb-4 text-xs text-rose-300 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 shrink-0 text-rose-400" />
-              <span>กระทู้นี้ถูกซ่อนอัตโนมัติ เนื่องจากถูกรายงานจากชุมชนครบ 5 ครั้ง</span>
+              <AlertTriangle size={14} className="text-rose-400" />
+              <span>กระทู้นี้ถูกซ่อนอัตโนมัติเนื่องจากมีผู้รายงานครบ 5 ครั้ง</span>
             </div>
             <button
               onClick={() => setRevealedIds((prev) => ({ ...prev, [thread.id]: true }))}
-              className="flex items-center gap-1 px-2.5 py-1 bg-rose-900/60 hover:bg-rose-800 text-rose-200 rounded-lg text-xs font-medium"
+              className="px-2 py-0.5 bg-white/[0.06] rounded text-[11px] text-zinc-200"
             >
-              <Eye className="w-3.5 h-3.5" />
-              <span>แสดงเนื้อหา</span>
+              แสดงเนื้อหา
             </button>
           </div>
         )}
 
-        <div className={isThreadHidden ? 'opacity-30 filter blur-sm pointer-events-none' : ''}>
-          {/* Metadata Header */}
-          <div className="flex flex-wrap items-center gap-2.5 mb-3 text-xs text-slate-400">
-            {/* Category */}
-            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-800 text-emerald-400 border border-slate-700">
+        <div className={isThreadHidden ? 'opacity-30 blur-sm pointer-events-none' : ''}>
+          {/* Metadata Row */}
+          <div className="flex flex-wrap items-center gap-2 mb-2.5 text-xs">
+            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-white/[0.04] text-zinc-300 border border-white/[0.06]">
               {thread.category.toUpperCase()}
             </span>
 
-            {/* Author */}
-            <div className="flex items-center gap-1.5 text-slate-200 font-semibold">
-              <span className="text-base">{thread.author_avatar}</span>
+            <div className="flex items-center gap-1.5 font-medium text-zinc-200">
+              <IdentityAvatar iconKey={thread.author_avatar} size="xs" />
               <span>{thread.author_alias}</span>
             </div>
 
-            <span className="text-slate-600">•</span>
+            <span className="text-zinc-600">•</span>
 
-            {/* Created time */}
-            <span>
+            <span className="font-mono text-zinc-500 text-[11px] tabular-nums">
               {new Date(thread.created_at).toLocaleString('th-TH', {
                 dateStyle: 'medium',
                 timeStyle: 'short',
               })}
             </span>
 
-            {/* Expiry Badge */}
-            <div className="flex items-center gap-1 text-[11px] text-amber-400 bg-amber-950/40 border border-amber-800/40 px-2.5 py-0.5 rounded-full ml-auto">
-              <Clock className="w-3 h-3" />
+            <div className="flex items-center gap-1 font-mono text-[10px] text-zinc-400 ml-auto bg-white/[0.03] px-2 py-0.5 rounded border border-white/[0.04] tabular-nums">
+              <Clock size={11} className="text-zinc-500" />
               <span>
                 ทำลายใน:{' '}
                 {Math.max(
@@ -433,61 +409,60 @@ export default function ThreadDetailPage({
                   Math.round(
                     (new Date(thread.expires_at).getTime() - Date.now()) / (1000 * 60 * 60)
                   )
-                )}{' '}
-                ชม.
+                )}
+                h
               </span>
             </div>
           </div>
 
           {/* Title */}
-          <h1 className="text-xl sm:text-2xl font-black text-white leading-snug mb-4">
+          <h1 className="text-lg sm:text-xl font-bold text-zinc-100 leading-snug mb-3">
             {thread.title}
           </h1>
 
           {/* Source Link */}
           {thread.source_url && (
-            <div className="mb-4">
+            <div className="mb-3">
               <a
                 href={thread.source_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs text-cyan-400 hover:text-cyan-300 bg-cyan-950/30 border border-cyan-800/40 px-3 py-1.5 rounded-xl transition-colors"
+                className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 bg-white/[0.02] border border-white/[0.06] px-2.5 py-1 rounded transition-colors font-mono"
               >
-                <ExternalLink className="w-3.5 h-3.5" />
+                <ExternalLink size={12} />
                 <span>ข่าวต้นทาง: {thread.source_url}</span>
               </a>
             </div>
           )}
 
-          {/* Body Content */}
-          <div className="text-slate-200 text-sm sm:text-base leading-relaxed whitespace-pre-wrap pb-6 border-b border-slate-800/80">
+          {/* Content Body */}
+          <div className="text-zinc-300 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap pb-5 border-b border-white/[0.06]">
             {thread.content}
           </div>
 
-          {/* Article Footer: Votes, Share, Report */}
-          <div className="flex items-center justify-between pt-4 text-xs">
+          {/* Footer: Votes & Share */}
+          <div className="flex items-center justify-between pt-3 text-xs">
             <div className="flex items-center gap-2">
-              {/* Vote controls */}
-              <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded-xl p-1">
+              <div className="flex items-center bg-black/30 border border-white/[0.06] rounded-md p-0.5">
                 <button
                   onClick={() => handleThreadVote('up')}
-                  className={`p-1.5 rounded-lg transition-colors ${
+                  className={`p-1 rounded transition-colors active:scale-95 ${
                     threadVote === 'up'
-                      ? 'text-emerald-400 bg-emerald-500/15'
-                      : 'text-slate-400 hover:text-emerald-400'
+                      ? 'text-emerald-400 bg-emerald-500/10'
+                      : 'text-zinc-500 hover:text-zinc-200'
                   }`}
-                  title="เห็นด้วย / โหวตขึ้น"
+                  title="โหวตขึ้น"
                 >
-                  <ChevronUp className="w-4 h-4" />
+                  <ChevronUp size={15} strokeWidth={2.5} />
                 </button>
 
                 <span
-                  className={`px-1.5 font-bold ${
+                  className={`px-1.5 font-mono font-semibold tabular-nums ${
                     threadScore > 0
                       ? 'text-emerald-400'
                       : threadScore < 0
                       ? 'text-rose-400'
-                      : 'text-slate-300'
+                      : 'text-zinc-400'
                   }`}
                 >
                   {threadScore}
@@ -495,28 +470,26 @@ export default function ThreadDetailPage({
 
                 <button
                   onClick={() => handleThreadVote('down')}
-                  className={`p-1.5 rounded-lg transition-colors ${
+                  className={`p-1 rounded transition-colors active:scale-95 ${
                     threadVote === 'down'
-                      ? 'text-rose-400 bg-rose-500/15'
-                      : 'text-slate-400 hover:text-rose-400'
+                      ? 'text-rose-400 bg-rose-500/10'
+                      : 'text-zinc-500 hover:text-zinc-200'
                   }`}
-                  title="ไม่เห็นด้วย / โหวตลง"
+                  title="โหวตลง"
                 >
-                  <ChevronDown className="w-4 h-4" />
+                  <ChevronDown size={15} strokeWidth={2.5} />
                 </button>
               </div>
 
-              {/* Share button */}
               <button
                 onClick={handleShare}
-                className="flex items-center gap-1 px-3 py-1.5 bg-slate-950 border border-slate-800 hover:bg-slate-850 rounded-xl text-slate-300 hover:text-white transition-colors"
+                className="btn-secondary !py-1 !px-2.5 text-xs"
               >
-                {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5" />}
-                <span>{copiedLink ? 'คัดลอกลิงก์แล้ว' : 'แชร์'}</span>
+                {copiedLink ? <Check size={12} className="text-emerald-400" /> : <Share2 size={12} />}
+                <span>{copiedLink ? 'คัดลอกแล้ว' : 'แชร์'}</span>
               </button>
             </div>
 
-            {/* Report */}
             <button
               onClick={() =>
                 setReportTarget({
@@ -525,104 +498,94 @@ export default function ThreadDetailPage({
                   title: thread.title,
                 })
               }
-              className="flex items-center gap-1 text-slate-500 hover:text-rose-400 transition-colors"
+              className="flex items-center gap-1 text-[11px] text-zinc-500 hover:text-rose-400 transition-colors"
             >
-              <Flag className="w-3.5 h-3.5" />
-              <span>รายงานกระทู้ ({thread.report_count})</span>
+              <Flag size={12} />
+              <span className="font-mono tabular-nums">
+                รายงาน ({thread.report_count})
+              </span>
             </button>
           </div>
         </div>
       </article>
 
-      {/* Conditionally Show Live Chat vs Comments */}
+      {/* Conditional View: Live Chat vs Comments */}
       {activeView === 'livechat' ? (
         <div className="space-y-3">
-          <div className="p-3 bg-cyan-950/20 border border-cyan-800/30 rounded-2xl text-xs text-cyan-300 flex items-center gap-2">
-            <Radio className="w-4 h-4 shrink-0 text-cyan-400" />
-            <span>
-              ห้องแชทสดประจำกระทู้นี้ (คุยสดแบบเรียลไทม์ จำกัด 100 ข้อความล่าสุด ไม่บันทึกข้อมูลส่วนบุคคล)
-            </span>
-          </div>
           <LiveChatBox roomId={`thread_${thread.id}`} title={`แชทสด: ${thread.title.substring(0, 30)}...`} />
         </div>
       ) : (
-        /* Comments Section */
-        <div className="space-y-6">
+        <div className="space-y-5">
           
-          {/* Per-Thread Scoped Anonymous Identity Card */}
+          {/* Identity Scoped Card */}
           {identity && (
-            <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 flex items-center justify-center text-lg">
-                  {identity.avatar}
-                </div>
+            <div className="bg-[#101216] border border-white/[0.06] rounded-xl p-3 flex items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2.5">
+                <IdentityAvatar iconKey={identity.avatarIcon} size="sm" />
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <span className="text-slate-400">คุณกำลังตอบในฐานะ:</span>
-                    <strong className="text-emerald-400 font-bold">{identity.alias}</strong>
+                    <span className="text-zinc-400">คุณกำลังตอบในฐานะ:</span>
+                    <strong className="text-zinc-100 font-semibold">{identity.alias}</strong>
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-0.5">
-                    🛡️ ชื่อนี้สุ่มเฉพาะสำหรับกระทู้นี้เท่านั้น เมื่อไปกระทู้อื่นคุณจะได้ชื่อใหม่ เพื่อไม่ให้คนอื่นตามรอยได้
+                  <p className="text-[10px] text-zinc-500">
+                    ชื่อนี้ถูกสุ่มเฉพาะสำหรับกระทู้นี้เท่านั้น จะเปลี่ยนใหม่เมื่อไปกระทู้อื่น
                   </p>
                 </div>
               </div>
 
               <button
                 onClick={handleRerollIdentity}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-slate-300 hover:text-emerald-400 transition-colors self-start sm:self-auto shrink-0"
+                className="btn-secondary !py-1 !px-2 text-xs shrink-0"
+                title="สุ่มชื่อใหม่เฉพาะกระทู้นี้"
               >
-                <Dices className="w-3.5 h-3.5" />
-                <span>ทอยสุ่มชื่อใหม่</span>
+                <Dices size={13} />
+                <span className="hidden sm:inline">สุ่มชื่อใหม่</span>
               </button>
             </div>
           )}
 
           {/* Reply Form */}
-          <div id="reply-form" className="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <MessageSquare className="w-4 h-4 text-emerald-400" />
-                <span>เขียนความคิดเห็นตอบกลับ</span>
-              </h3>
-            </div>
+          <div id="reply-form" className="bg-[#101216] border border-white/[0.08] rounded-xl p-4 space-y-3">
+            <h3 className="text-xs font-semibold text-zinc-200 flex items-center gap-1.5">
+              <MessageSquare size={13} className="text-emerald-400" />
+              <span>แสดงความคิดเห็น</span>
+            </h3>
 
-            {/* Quoted Comment Preview Banner */}
+            {/* Quoted preview block */}
             {quotedComment && (
-              <div className="bg-slate-950 border border-slate-700/80 rounded-xl p-3 text-xs relative flex items-start justify-between gap-3">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1.5 text-cyan-400 font-semibold">
-                    <Quote className="w-3.5 h-3.5" />
-                    <span>กำลังอ้างอิงถึงข้อความของ: {quotedComment.author}</span>
+              <div className="bg-white/[0.02] border-l-2 border-emerald-500/70 p-2.5 rounded-r text-xs relative flex items-start justify-between gap-2">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-1 text-emerald-400 font-medium text-[11px]">
+                    <Quote size={11} />
+                    <span>อ้างอิงถึง {quotedComment.author}:</span>
                   </div>
-                  <p className="text-slate-300 italic border-l-2 border-cyan-500/40 pl-2">
+                  <p className="text-zinc-400 italic text-[11px] line-clamp-2">
                     &ldquo;{quotedComment.text}&rdquo;
                   </p>
                 </div>
                 <button
                   onClick={() => setQuotedComment(null)}
-                  className="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800"
+                  className="p-1 text-zinc-500 hover:text-white rounded"
                   title="ยกเลิกการอ้างอิง"
                 >
-                  <X className="w-4 h-4" />
+                  <X size={13} />
                 </button>
               </div>
             )}
 
-            <form onSubmit={handleSubmitComment} className="space-y-4">
+            <form onSubmit={handleSubmitComment} className="space-y-3">
               <textarea
                 rows={3}
                 required
                 value={commentContent}
                 onChange={(e) => setCommentContent(e.target.value)}
-                placeholder="แสดงความคิดเห็นแบบสุภาพ ให้เกียรติซึ่งกันและกัน (ไม่เก็บ IP หรือประวัติ)..."
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500/80 transition-colors"
+                placeholder="แสดงความคิดเห็นอย่างสุภาพ (ไม่บันทึก IP หรือประวัติ)..."
+                className="w-full bg-white/[0.02] border border-white/[0.08] focus:border-zinc-500 rounded-lg p-2.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-600 transition-colors font-sans"
               />
 
-              {/* Captcha and Submit row */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                {/* Math Captcha */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                 <div className="flex items-center gap-2">
-                  <div className="px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs font-mono font-bold text-emerald-300 shrink-0">
+                  <div className="px-2.5 py-1 bg-white/[0.03] border border-white/[0.08] rounded text-xs font-mono font-bold text-emerald-400 shrink-0">
                     {captchaData ? captchaData.question : '...'}
                   </div>
                   <input
@@ -631,28 +594,27 @@ export default function ThreadDetailPage({
                     value={captchaAnswer}
                     onChange={(e) => setCaptchaAnswer(e.target.value)}
                     placeholder="คำตอบ..."
-                    className="w-24 bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+                    className="w-20 bg-white/[0.02] border border-white/[0.08] rounded px-2.5 py-1 text-xs text-white focus:outline-none focus:border-zinc-500 font-mono"
                   />
                   <button
                     type="button"
                     onClick={fetchCaptcha}
-                    className="p-1.5 text-slate-500 hover:text-white rounded-lg"
-                    title="เปลี่ยนโจทย์คำถาม"
+                    className="p-1 text-zinc-500 hover:text-zinc-300"
+                    title="เปลี่ยนคำถาม"
                   >
-                    <RefreshCw className="w-3.5 h-3.5" />
+                    <RefreshCw size={12} />
                   </button>
                 </div>
 
-                {/* Submit button */}
                 <button
                   type="submit"
                   disabled={!commentContent.trim() || cooldown > 0 || isSubmittingComment}
-                  className="flex items-center justify-center gap-1.5 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-slate-950 font-bold rounded-xl text-xs shadow-md transition-all self-end sm:self-auto"
+                  className="btn-primary !py-1.5 !px-3.5 text-xs self-end sm:self-auto"
                 >
-                  <Send className="w-3.5 h-3.5" />
+                  <Send size={12} />
                   <span>
                     {cooldown > 0
-                      ? `รอ ${cooldown} วินาที...`
+                      ? `รอ ${cooldown}s...`
                       : isSubmittingComment
                       ? 'กำลังส่ง...'
                       : 'ส่งความเห็น'}
@@ -663,14 +625,14 @@ export default function ThreadDetailPage({
           </div>
 
           {/* Comments List */}
-          <div className="space-y-3.5">
-            <h3 className="text-sm font-bold text-slate-300">
+          <div className="space-y-3">
+            <h3 className="text-xs font-mono uppercase text-zinc-400 tabular-nums">
               ความคิดเห็นทั้งหมด ({comments.length})
             </h3>
 
             {comments.length === 0 ? (
-              <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-8 text-center text-slate-500 text-xs">
-                ยังไม่มีความคิดเห็นในกระทู้นี้ มาเป็นคนแรกที่เปิดประเด็นกันเลย
+              <div className="bg-[#101216] border border-white/[0.06] rounded-xl p-6 text-center text-zinc-500 text-xs">
+                ยังไม่มีความคิดเห็นในกระทู้นี้
               </div>
             ) : (
               comments.map((comment) => {
@@ -680,32 +642,26 @@ export default function ThreadDetailPage({
                 return (
                   <div
                     key={comment.id}
-                    className="bg-slate-900/90 border border-slate-800/80 rounded-2xl p-4 sm:p-5 space-y-3 transition-colors"
+                    className="bg-[#101216] border border-white/[0.06] rounded-xl p-3.5 space-y-2.5"
                   >
-                    {/* If comment is hidden by 5 reports */}
                     {isCommentHidden ? (
-                      <div className="bg-rose-950/30 border border-rose-900/40 rounded-xl p-3 text-xs text-rose-300 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
-                          <span>ความคิดเห็นนี้ถูกซ่อน เนื่องจากมีผู้รายงานครบ 5 ครั้ง</span>
-                        </div>
+                      <div className="bg-rose-950/20 border border-rose-900/40 rounded-lg p-2 text-xs text-rose-300 flex items-center justify-between">
+                        <span>ความคิดเห็นนี้ถูกซ่อนเนื่องจากถูกรายงาน 5 ครั้ง</span>
                         <button
                           onClick={() => setRevealedIds((prev) => ({ ...prev, [comment.id]: true }))}
-                          className="flex items-center gap-1 px-2 py-0.5 bg-rose-900/60 rounded text-[11px]"
+                          className="px-2 py-0.5 bg-white/[0.06] rounded text-[11px]"
                         >
-                          <Eye className="w-3 h-3" />
-                          <span>ดูเนื้อหา</span>
+                          ดูเนื้อหา
                         </button>
                       </div>
                     ) : (
                       <>
-                        {/* Comment Header: Author & Time */}
                         <div className="flex items-center justify-between text-xs">
-                          <div className="flex items-center gap-2">
-                            <span className="text-base">{comment.author_avatar}</span>
-                            <span className="font-bold text-slate-200">{comment.author_alias}</span>
-                            <span className="text-slate-600">•</span>
-                            <span className="text-slate-500 text-[11px]">
+                          <div className="flex items-center gap-1.5">
+                            <IdentityAvatar iconKey={comment.author_avatar} size="xs" />
+                            <span className="font-semibold text-zinc-200">{comment.author_alias}</span>
+                            <span className="text-zinc-600">•</span>
+                            <span className="font-mono text-zinc-500 text-[11px] tabular-nums">
                               {new Date(comment.created_at).toLocaleTimeString('th-TH', {
                                 hour: '2-digit',
                                 minute: '2-digit',
@@ -713,54 +669,50 @@ export default function ThreadDetailPage({
                             </span>
                           </div>
 
-                          {/* Quoted action button */}
                           <button
                             onClick={() => handleQuoteClick(comment)}
-                            className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-cyan-400 transition-colors"
+                            className="inline-flex items-center gap-1 text-[11px] text-zinc-400 hover:text-zinc-200 transition-colors"
                           >
-                            <Quote className="w-3 h-3" />
-                            <span>อ้างอิงข้อความนี้</span>
+                            <Quote size={11} />
+                            <span>อ้างอิง</span>
                           </button>
                         </div>
 
-                        {/* Quoted Text if this comment replied to another */}
                         {comment.quote_text && (
-                          <div className="bg-slate-950/60 border-l-2 border-cyan-500/60 pl-3 py-1.5 rounded-r-lg text-xs space-y-0.5">
-                            <div className="text-[10px] text-cyan-400 font-semibold">
+                          <div className="bg-white/[0.02] border-l-2 border-white/[0.14] pl-2.5 py-1 text-xs">
+                            <div className="text-[10px] font-mono text-zinc-500">
                               อ้างอิงถึง {comment.quote_author || 'ความคิดเห็น'}:
                             </div>
-                            <div className="text-slate-400 italic line-clamp-2">
+                            <div className="text-zinc-400 italic text-[11px] line-clamp-2">
                               &ldquo;{comment.quote_text}&rdquo;
                             </div>
                           </div>
                         )}
 
-                        {/* Content */}
-                        <div className="text-xs sm:text-sm text-slate-200 leading-relaxed whitespace-pre-wrap">
+                        <div className="text-xs text-zinc-300 leading-relaxed whitespace-pre-wrap">
                           {comment.content}
                         </div>
 
-                        {/* Comment Footer: Vote and Report */}
-                        <div className="flex items-center justify-between pt-2 border-t border-slate-800/60 text-xs">
-                          <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded-lg p-0.5">
+                        <div className="flex items-center justify-between pt-1.5 border-t border-white/[0.04] text-xs">
+                          <div className="flex items-center bg-black/30 border border-white/[0.06] rounded p-0.5">
                             <button
                               onClick={() => handleCommentVote(comment.id, 'up')}
-                              className={`p-1 rounded transition-colors ${
+                              className={`p-0.5 rounded transition-colors active:scale-95 ${
                                 voteState.voted === 'up'
                                   ? 'text-emerald-400 bg-emerald-500/10'
-                                  : 'text-slate-400 hover:text-emerald-400'
+                                  : 'text-zinc-500 hover:text-zinc-200'
                               }`}
                             >
-                              <ChevronUp className="w-3.5 h-3.5" />
+                              <ChevronUp size={13} strokeWidth={2.5} />
                             </button>
 
                             <span
-                              className={`px-1 text-[11px] font-bold ${
+                              className={`px-1 text-[11px] font-mono font-semibold tabular-nums ${
                                 voteState.score > 0
                                   ? 'text-emerald-400'
                                   : voteState.score < 0
                                   ? 'text-rose-400'
-                                  : 'text-slate-400'
+                                  : 'text-zinc-400'
                               }`}
                             >
                               {voteState.score}
@@ -768,13 +720,13 @@ export default function ThreadDetailPage({
 
                             <button
                               onClick={() => handleCommentVote(comment.id, 'down')}
-                              className={`p-1 rounded transition-colors ${
+                              className={`p-0.5 rounded transition-colors active:scale-95 ${
                                 voteState.voted === 'down'
                                   ? 'text-rose-400 bg-rose-500/10'
-                                  : 'text-slate-400 hover:text-rose-400'
+                                  : 'text-zinc-500 hover:text-zinc-200'
                               }`}
                             >
-                              <ChevronDown className="w-3.5 h-3.5" />
+                              <ChevronDown size={13} strokeWidth={2.5} />
                             </button>
                           </div>
 
@@ -786,9 +738,9 @@ export default function ThreadDetailPage({
                                 title: comment.content,
                               })
                             }
-                            className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-rose-400 transition-colors"
+                            className="flex items-center gap-1 text-[11px] text-zinc-500 hover:text-rose-400 transition-colors"
                           >
-                            <Flag className="w-3 h-3" />
+                            <Flag size={11} />
                             <span>รายงาน</span>
                           </button>
                         </div>
@@ -802,7 +754,6 @@ export default function ThreadDetailPage({
         </div>
       )}
 
-      {/* Global Report Modal */}
       {reportTarget && (
         <ReportModal
           isOpen={true}

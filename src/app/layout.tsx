@@ -14,21 +14,21 @@ export default function RootLayout({
 }) {
   return (
     <html lang="th" className="dark">
-      <body className="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-emerald-500 selection:text-slate-950">
+      <body className="bg-[#090a0c] text-zinc-100 min-h-screen flex flex-col antialiased selection:bg-emerald-500 selection:text-zinc-950 font-sans">
         <Navbar />
         <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6">
           {children}
         </main>
         
         {/* Footer */}
-        <footer className="border-t border-slate-900 bg-slate-950/80 py-6 text-center text-xs text-slate-500">
-          <div className="max-w-6xl mx-auto px-4 space-y-2">
-            <div className="flex items-center justify-center gap-2 text-slate-400">
-              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-              <span>Zero-Logs & Zero-Cookies Guarantee • ระบบไม่บันทึก IP หรือข้อมูลส่วนบุคคลใดๆ ทั้งสิ้น</span>
+        <footer className="border-t border-white/[0.06] bg-[#090a0c] py-6 text-center text-xs text-zinc-500">
+          <div className="max-w-6xl mx-auto px-4 space-y-1.5">
+            <div className="flex items-center justify-center gap-2 font-mono text-[11px] text-zinc-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <span>ZERO-LOG ARCHITECTURE • NO IP ADDRESS LOGGED</span>
             </div>
-            <p className="text-[11px] text-slate-600">
-              เนื้อหาทั้งหมดจะถูกลบตามระยะเวลาที่กำหนด (TTL) และข้อความแชทสดจะถูกจำกัดที่ 100 ข้อความล่าสุดอัตโนมัติ
+            <p className="text-[11px] text-zinc-600">
+              เนื้อหาจะถูกทำลายตามระยะเวลาที่กำหนด (TTL) และห้องแชทสดจำกัดเพียง 100 ข้อความล่าสุด
             </p>
           </div>
         </footer>

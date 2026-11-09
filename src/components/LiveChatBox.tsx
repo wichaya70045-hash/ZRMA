@@ -7,26 +7,24 @@ import {
   Send,
   Dices,
   Flag,
-  AlertTriangle,
   Radio,
-  Clock,
-  Trash2,
-  Smile,
-  Shield,
   Eye,
-  EyeOff
+  EyeOff,
+  Shield,
+  Clock,
 } from 'lucide-react';
+import IdentityAvatar from './IdentityAvatar';
 import ReportModal from './ReportModal';
 
 interface LiveChatBoxProps {
-  roomId?: string; // 'global' or thread id
+  roomId?: string;
   title?: string;
   isCompact?: boolean;
 }
 
 export default function LiveChatBox({
   roomId = 'global',
-  title = 'ห้องสนทนาสดส่วนกลาง (Real-time)',
+  title = 'ห้องสนทนาสดส่วนกลาง',
   isCompact = false,
 }: LiveChatBoxProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -34,19 +32,17 @@ export default function LiveChatBox({
   const [identity, setIdentity] = useState<AnonymousIdentity | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
-  const [cooldown, setCooldown] = useState(0); // Cooldown countdown in seconds
+  const [cooldown, setCooldown] = useState(0);
   const [reportTarget, setReportTarget] = useState<ChatMessage | null>(null);
   const [revealedIds, setRevealedIds] = useState<Record<string, boolean>>({});
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Initialize or fetch identity from sessionStorage
   useEffect(() => {
     const id = getScopedIdentity(`chat_${roomId}`);
     setIdentity(id);
   }, [roomId]);
 
-  // Load initial messages
   const fetchMessages = async () => {
     try {
       const res = await fetch(`/api/chat?room=${encodeURIComponent(roomId)}`);
@@ -64,16 +60,13 @@ export default function LiveChatBox({
   useEffect(() => {
     fetchMessages();
 
-    // Connect to Server-Sent Events (SSE) for Real-Time live updates
     const eventSource = new EventSource(`/api/chat/stream?room=${encodeURIComponent(roomId)}`);
 
     eventSource.addEventListener('chat_message', (event) => {
       try {
         const newMsg: ChatMessage = JSON.parse(event.data);
         setMessages((prev) => {
-          // Avoid duplicates
           if (prev.some((m) => m.id === newMsg.id)) return prev;
-          // Keep strictly at most 100 messages in memory FIFO
           const updated = [...prev, newMsg];
           if (updated.length > 100) {
             return updated.slice(updated.length - 100);
@@ -101,12 +94,10 @@ export default function LiveChatBox({
     };
   }, [roomId]);
 
-  // Auto scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Cooldown countdown timer
   useEffect(() => {
     if (cooldown <= 0) return;
     const timer = setInterval(() => {
@@ -135,15 +126,14 @@ export default function LiveChatBox({
           room_id: roomId,
           content,
           author_alias: identity.alias,
-          author_avatar: identity.avatar,
+          author_avatar: identity.avatarIcon,
         }),
       });
 
       const data = await res.json();
       if (res.ok) {
         setInputText('');
-        // Enforce anti-spam 4-second client cooldown
-        setCooldown(4);
+        setCooldown(4); // anti-spam cooldown
       } else {
         alert(data.error || 'ไม่สามารถส่งข้อความได้');
       }
@@ -159,53 +149,51 @@ export default function LiveChatBox({
   };
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl flex flex-col h-full overflow-hidden shadow-xl">
-      {/* Header */}
-      <div className="px-4 py-3 bg-slate-950/70 border-b border-slate-800/80 flex items-center justify-between">
+    <div className="bg-[#101216] border border-white/[0.08] rounded-xl flex flex-col h-full overflow-hidden">
+      {/* Terminal-Grade Header */}
+      <div className="px-3.5 py-2.5 bg-black/40 border-b border-white/[0.06] flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="relative">
-            <Radio className="w-4 h-4 text-emerald-400" />
-            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-          </div>
+          <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
           <div>
-            <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
+            <h3 className="text-xs font-semibold text-zinc-100 flex items-center gap-1.5">
               <span>{title}</span>
             </h3>
-            <p className="text-[10px] text-slate-400">
-              ⚡ ถ่ายทอดสดแบบเรียลไทม์ • เก็บ 100 ข้อความล่าสุด (FIFO)
-            </p>
+            <span className="text-[10px] font-mono text-zinc-500 tabular-nums">
+              LIVE STREAM • FIFO 100
+            </span>
           </div>
         </div>
 
-        {/* Current Anonymous Identity & Reroll button */}
+        {/* Ephemeral Identity Indicator */}
         {identity && (
-          <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-xl text-xs">
-            <span className="text-sm">{identity.avatar}</span>
-            <span className="text-slate-300 font-medium max-w-[120px] truncate hidden sm:inline">
+          <div className="flex items-center gap-1.5 bg-white/[0.03] border border-white/[0.06] px-2 py-1 rounded-md text-xs">
+            <IdentityAvatar iconKey={identity.avatarIcon} size="xs" />
+            <span className="text-zinc-300 text-[11px] font-mono truncate max-w-[110px] hidden sm:inline">
               {identity.alias}
             </span>
             <button
               onClick={handleRerollIdentity}
-              className="p-1 text-slate-400 hover:text-emerald-400 hover:bg-slate-800 rounded-lg transition-colors ml-1"
-              title="สุ่มชื่อและตัวตนใหม่ทันที"
+              className="p-1 text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.06] rounded transition-colors active:scale-95"
+              title="สุ่มชื่อและตัวตนใหม่"
+              aria-label="Reroll anonymous identity"
             >
-              <Dices className="w-3.5 h-3.5" />
+              <Dices size={13} />
             </button>
           </div>
         )}
       </div>
 
-      {/* Messages Scroll Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[350px] max-h-[500px]">
+      {/* Message Feed */}
+      <div className="flex-1 overflow-y-auto p-3.5 space-y-2.5 min-h-[360px] max-h-[500px]">
         {isLoading ? (
-          <div className="flex items-center justify-center h-full text-xs text-slate-500">
-            กำลังเชื่อมต่อห้องแชทสด...
+          <div className="flex items-center justify-center h-full text-xs font-mono text-zinc-500">
+            CONNECTING STREAM...
           </div>
         ) : messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center p-6 space-y-2 text-slate-500">
-            <Shield className="w-8 h-8 text-emerald-500/40" />
-            <p className="text-xs">ยังไม่มีข้อความในห้องนี้</p>
-            <p className="text-[11px] text-slate-600">เป็นคนแรกที่เริ่มเปิดบทสนทนาแบบนิรนามได้เลย</p>
+          <div className="flex flex-col items-center justify-center h-full text-center p-6 space-y-1.5 text-zinc-500">
+            <Shield size={24} className="text-zinc-600 mb-1" />
+            <p className="text-xs font-medium text-zinc-400">ยังไม่มีข้อความในห้องนี้</p>
+            <p className="text-[11px] text-zinc-600">ข้อความทั้งหมดไม่ถูกบันทึก IP และจำกัด 100 ล่าสุด</p>
           </div>
         ) : (
           messages.map((msg) => {
@@ -215,38 +203,30 @@ export default function LiveChatBox({
             return (
               <div
                 key={msg.id}
-                className={`group flex items-start gap-2.5 ${isSelf ? 'flex-row-reverse' : ''}`}
+                className={`group flex items-start gap-2 ${isSelf ? 'flex-row-reverse' : ''}`}
               >
-                {/* Avatar */}
-                <div
-                  className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-sm border shadow-sm ${
-                    isSelf
-                      ? 'bg-emerald-950/40 border-emerald-700/50 text-emerald-300'
-                      : 'bg-slate-800/80 border-slate-700/50 text-slate-300'
-                  }`}
-                >
-                  {msg.author_avatar}
-                </div>
+                <IdentityAvatar iconKey={msg.author_avatar} size="xs" />
 
-                {/* Message Bubble */}
                 <div
-                  className={`max-w-[78%] rounded-2xl px-3 py-2 text-xs relative transition-all ${
+                  className={`max-w-[80%] rounded-lg px-3 py-2 text-xs relative transition-colors ${
                     isMsgHidden
-                      ? 'bg-rose-950/30 border border-rose-900/40 text-rose-300'
+                      ? 'bg-rose-950/20 border border-rose-900/40 text-rose-300'
                       : isSelf
-                      ? 'bg-emerald-600 text-slate-950 rounded-tr-none font-medium'
-                      : 'bg-slate-800/90 text-slate-200 border border-slate-700/70 rounded-tl-none'
+                      ? 'bg-zinc-800 text-zinc-100 border border-white/[0.08]'
+                      : 'bg-white/[0.03] text-zinc-200 border border-white/[0.06]'
                   }`}
                 >
-                  {/* Sender Alias & Time */}
+                  {/* Alias & Timestamp */}
                   <div
-                    className={`flex items-center gap-1.5 text-[10px] mb-1 font-semibold ${
-                      isSelf ? 'text-emerald-950' : 'text-slate-400'
+                    className={`flex items-center gap-1.5 text-[10px] mb-1 font-mono ${
+                      isSelf ? 'text-zinc-400' : 'text-zinc-500'
                     }`}
                   >
-                    <span>{msg.author_alias}</span>
+                    <span className="font-semibold text-zinc-300 truncate max-w-[120px]">
+                      {msg.author_alias}
+                    </span>
                     <span>•</span>
-                    <span>
+                    <span className="tabular-nums">
                       {new Date(msg.created_at).toLocaleTimeString('th-TH', {
                         hour: '2-digit',
                         minute: '2-digit',
@@ -254,18 +234,15 @@ export default function LiveChatBox({
                     </span>
                   </div>
 
-                  {/* Body Content */}
+                  {/* Content */}
                   {isMsgHidden ? (
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="italic text-[11px]">
-                        [ข้อความนี้ถูกซ่อนโดยอัตโนมัติ เนื่องจากถูกรายงานจากชุมชนครบ 5 ครั้ง]
-                      </span>
+                    <div className="flex items-center justify-between gap-2 text-[11px] text-rose-300">
+                      <span>[ข้อความถูกซ่อนเนื่องจากถูกรายงาน 5 ครั้ง]</span>
                       <button
                         onClick={() => toggleRevealHidden(msg.id)}
-                        className="p-1 hover:bg-rose-900/50 rounded"
-                        title="คลิกเพื่อดูเนื้อหาเดิม"
+                        className="p-0.5 hover:bg-white/[0.06] rounded"
                       >
-                        <Eye className="w-3 h-3" />
+                        <Eye size={12} />
                       </button>
                     </div>
                   ) : (
@@ -274,15 +251,15 @@ export default function LiveChatBox({
                     </div>
                   )}
 
-                  {/* Report action on hover */}
+                  {/* Report Button on Hover */}
                   {!isSelf && (
-                    <div className="absolute top-1 -right-7 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute top-1 -right-6 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => setReportTarget(msg)}
-                        className="p-1 text-slate-500 hover:text-rose-400 rounded transition-colors"
+                        className="p-1 text-zinc-500 hover:text-rose-400 rounded transition-colors"
                         title="รายงานข้อความนี้"
                       >
-                        <Flag className="w-3 h-3" />
+                        <Flag size={11} />
                       </button>
                     </div>
                   )}
@@ -294,10 +271,10 @@ export default function LiveChatBox({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input area */}
+      {/* Input Form */}
       <form
         onSubmit={handleSendMessage}
-        className="p-3 bg-slate-950/80 border-t border-slate-800/80 flex items-center gap-2"
+        className="p-2.5 bg-black/40 border-t border-white/[0.06] flex items-center gap-2"
       >
         <input
           type="text"
@@ -305,26 +282,24 @@ export default function LiveChatBox({
           onChange={(e) => setInputText(e.target.value)}
           placeholder={
             cooldown > 0
-              ? `⏳ หน่วงเวลาป้องกันสแปม: รออีก ${cooldown} วินาที...`
-              : 'พิมพ์ข้อความแบบนิรนาม (ส่งปุ๊บ สดปั๊บ)...'
+              ? `หน่วงเวลาป้องกันสแปม: รออีก ${cooldown}s...`
+              : 'พิมพ์ข้อความแบบนิรนาม...'
           }
           disabled={cooldown > 0 || isSending}
           maxLength={500}
-          className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500/80 focus:ring-1 focus:ring-emerald-500/80 disabled:opacity-60 transition-colors"
+          className="flex-1 bg-white/[0.03] border border-white/[0.08] focus:border-zinc-500 rounded-md px-3 py-1.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-600 disabled:opacity-50 transition-colors font-sans"
         />
 
         <button
           type="submit"
           disabled={!inputText.trim() || cooldown > 0 || isSending}
-          className="p-2.5 sm:px-4 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 disabled:hover:bg-emerald-500 text-slate-950 font-bold rounded-xl transition-all shadow-md shadow-emerald-500/20 flex items-center gap-1.5"
-          title="ส่งข้อความ"
+          className="btn-primary !py-1.5 !px-3 text-xs shrink-0"
         >
-          <Send className="w-4 h-4" />
-          <span className="hidden sm:inline text-xs">ส่ง</span>
+          <Send size={12} />
+          <span>ส่ง</span>
         </button>
       </form>
 
-      {/* Report Modal */}
       {reportTarget && (
         <ReportModal
           isOpen={true}

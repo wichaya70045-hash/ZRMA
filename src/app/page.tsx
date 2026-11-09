@@ -7,15 +7,12 @@ import ThreadCard from '@/components/ThreadCard';
 import CategoryFilter from '@/components/CategoryFilter';
 import LiveChatBox from '@/components/LiveChatBox';
 import {
-  ShieldAlert,
-  Flame,
   Search,
-  MessageSquare,
-  Sparkles,
-  RefreshCw,
-  PlusCircle,
+  Plus,
   Radio,
-  Clock
+  FileText,
+  Shield,
+  Layers,
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -51,7 +48,6 @@ export default function HomePage() {
     fetchThreads();
   }, [selectedCategory, selectedSort]);
 
-  // Connect to SSE for real-time thread notifications
   useEffect(() => {
     const eventSource = new EventSource('/api/chat/stream?room=global');
 
@@ -94,91 +90,84 @@ export default function HomePage() {
 
   return (
     <div className="space-y-6">
-      {/* Top Welcome / Privacy Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-950/60 via-slate-900 to-cyan-950/40 border border-emerald-800/30 p-4 sm:p-6 shadow-xl">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-md">
-                Privacy Guaranteed
-              </span>
-              <span className="text-xs text-slate-400">🛡️ No Sign-Up • Zero Logs • 100% Anonymous</span>
-            </div>
-            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-              พื้นที่ข่าวสาร & เสวนาแบบไร้ตัวตน
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
-              ไม่มีการเก็บ IP Address และประวัติการท่องเว็บ สุ่มชื่อใหม่ทุกกระทู้เพื่อป้องกันการแกะรอย พร้อมระบบทำลายข้อมูลอัตโนมัติ (TTL) 
-            </p>
-          </div>
+      
+      {/* Page Header (Single Focal Point, No Blurry Blobs) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/[0.08]">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+            บอร์ดข่าวและกระทู้สนทนา
+          </h1>
+          <p className="text-xs text-zinc-400 mt-1 max-w-xl leading-relaxed">
+            พื้นที่แลกเปลี่ยนข่าวสารแบบไม่ระบุตัวตน ปราศจากการเก็บ IP Address พร้อมระบบทำลายข้อมูลอัตโนมัติ (TTL)
+          </p>
+        </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            <Link
-              href="/new"
-              className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm shadow-lg shadow-emerald-500/20 transition-all hover:scale-105"
-            >
-              <PlusCircle className="w-4 h-4" />
-              <span>เปิดประเด็น / ตั้งกระทู้</span>
-            </Link>
-          </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <Link
+            href="/new"
+            className="btn-primary"
+          >
+            <Plus size={15} strokeWidth={2.5} />
+            <span>ตั้งกระทู้ใหม่</span>
+          </Link>
         </div>
       </div>
 
-      {/* Mobile Tab Switcher (กระทู้ vs แชทสด) */}
-      <div className="flex lg:hidden bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs">
+      {/* Mobile Segmented Switcher */}
+      <div className="flex lg:hidden bg-white/[0.03] p-1 rounded-lg border border-white/[0.06] text-xs">
         <button
           onClick={() => setActiveTabMobile('threads')}
-          className={`flex-1 py-2 rounded-lg font-bold transition-all ${
+          className={`flex-1 py-1.5 rounded font-medium transition-colors ${
             activeTabMobile === 'threads'
-              ? 'bg-emerald-500 text-slate-950 shadow'
-              : 'text-slate-400 hover:text-white'
+              ? 'bg-zinc-800 text-white font-semibold'
+              : 'text-zinc-400 hover:text-zinc-200'
           }`}
         >
-          📰 บอร์ดกระทู้ข่าว ({filteredThreads.length})
+          กระทู้ ({filteredThreads.length})
         </button>
         <button
           onClick={() => setActiveTabMobile('chat')}
-          className={`flex-1 py-2 rounded-lg font-bold flex items-center justify-center gap-1.5 transition-all ${
+          className={`flex-1 py-1.5 rounded font-medium flex items-center justify-center gap-1.5 transition-colors ${
             activeTabMobile === 'chat'
-              ? 'bg-emerald-500 text-slate-950 shadow'
-              : 'text-slate-400 hover:text-white'
+              ? 'bg-zinc-800 text-white font-semibold'
+              : 'text-zinc-400 hover:text-zinc-200'
           }`}
         >
-          <Radio className="w-3.5 h-3.5 text-cyan-400" />
-          <span>แชทสดส่วนกลาง (100 ข้อความ)</span>
+          <Radio size={12} className="text-emerald-400" />
+          <span>แชทสด</span>
         </button>
       </div>
 
-      {/* Main Grid Layout (2 Columns on Desktop) */}
+      {/* Main Grid (Asymmetric 8:4 split on desktop) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
-        {/* Left Column: Threads and Filters (8 cols on desktop) */}
+        {/* Left Column: Feed and Unified Control Bar */}
         <section
           className={`lg:col-span-7 xl:col-span-8 space-y-4 ${
             activeTabMobile === 'chat' ? 'hidden lg:block' : 'block'
           }`}
         >
-          {/* Search Bar */}
+          {/* Unified Search Control */}
           <div className="relative">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="ค้นหากระทู้, คำสำคัญ, หรือรหัสผู้เขียน..."
-              className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500/70"
+              className="w-full bg-[#101216] border border-white/[0.08] focus:border-zinc-500 rounded-lg pl-9 pr-8 py-2 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-600 transition-colors"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-white"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] font-mono text-zinc-500 hover:text-zinc-300"
               >
-                ล้าง
+                ESC
               </button>
             )}
           </div>
 
-          {/* Category Filter and Sorting */}
+          {/* Category Filter & Sorting */}
           <CategoryFilter
             selectedCategory={selectedCategory}
             onSelectCategory={setSelectedCategory}
@@ -188,39 +177,39 @@ export default function HomePage() {
 
           {/* Thread List */}
           {isLoading ? (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {[1, 2, 3].map((n) => (
                 <div
                   key={n}
-                  className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-5 animate-pulse space-y-3"
+                  className="bg-[#101216] border border-white/[0.06] rounded-xl p-4 animate-pulse space-y-2.5"
                 >
-                  <div className="h-4 bg-slate-800 rounded w-1/4"></div>
-                  <div className="h-6 bg-slate-800 rounded w-3/4"></div>
-                  <div className="h-4 bg-slate-800 rounded w-full"></div>
+                  <div className="h-3 bg-white/[0.06] rounded w-1/4"></div>
+                  <div className="h-4 bg-white/[0.06] rounded w-3/4"></div>
+                  <div className="h-3 bg-white/[0.06] rounded w-full"></div>
                 </div>
               ))}
             </div>
           ) : filteredThreads.length === 0 ? (
-            <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-8 text-center space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-slate-800/60 text-slate-400 flex items-center justify-center mx-auto">
-                <Search className="w-6 h-6" />
+            <div className="bg-[#101216] border border-white/[0.07] rounded-xl p-8 text-center space-y-3">
+              <div className="w-10 h-10 rounded-lg bg-white/[0.04] text-zinc-400 flex items-center justify-center mx-auto border border-white/[0.08]">
+                <FileText size={18} />
               </div>
-              <h3 className="text-base font-bold text-white">ไม่พบกระทู้ที่ตรงกับเงื่อนไข</h3>
-              <p className="text-xs text-slate-400 max-w-sm mx-auto">
+              <h3 className="text-sm font-semibold text-zinc-200">ไม่พบกระทู้ที่ตรงกับเงื่อนไข</h3>
+              <p className="text-xs text-zinc-500 max-w-sm mx-auto leading-relaxed">
                 อาจยังไม่มีกระทู้ในหมวดหมู่นี้ หรือกระทู้อาจหมดอายุและถูกลบทำลายไปแล้วตามนโยบายความเป็นส่วนตัว
               </p>
               <div className="pt-2">
                 <Link
                   href="/new"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl text-xs font-bold"
+                  className="btn-secondary text-xs"
                 >
-                  <PlusCircle className="w-4 h-4" />
-                  <span>สร้างกระทู้แรกเลย</span>
+                  <Plus size={13} />
+                  <span>สร้างกระทู้ใหม่</span>
                 </Link>
               </div>
             </div>
           ) : (
-            <div className="space-y-3.5">
+            <div className="space-y-3">
               {filteredThreads.map((thread) => (
                 <ThreadCard
                   key={thread.id}
@@ -236,22 +225,19 @@ export default function HomePage() {
           )}
         </section>
 
-        {/* Right Column: Sticky Live Chat (5 cols on desktop) */}
+        {/* Right Column: Terminal-Grade Live Chat */}
         <aside
-          className={`lg:col-span-5 xl:col-span-4 lg:sticky lg:top-20 space-y-4 ${
+          className={`lg:col-span-5 xl:col-span-4 lg:sticky lg:top-20 space-y-3 ${
             activeTabMobile === 'threads' ? 'hidden lg:block' : 'block'
           }`}
         >
           <LiveChatBox roomId="global" title="ห้องสนทนาสดส่วนกลาง" />
 
-          {/* Quick Privacy Tip Card */}
-          <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 text-xs text-slate-400 space-y-2 hidden lg:block">
-            <div className="flex items-center gap-2 text-emerald-400 font-semibold">
-              <ShieldAlert className="w-4 h-4" />
-              <span>ความปลอดภัยในการสนทนา</span>
-            </div>
-            <p className="text-[11px] leading-relaxed text-slate-300">
-              ข้อความในแชทสดจะถูกหมุนเวียนลบอัตโนมัติ (FIFO) โดยจำกัดสูงสุดไม่เกิน 100 ข้อความล่าสุดเสมอ เพื่อไม่ให้มีประวัติสนทนาตกค้างในระบบ
+          {/* Concise Telemetry Footer */}
+          <div className="p-3 bg-[#101216] border border-white/[0.06] rounded-xl text-xs text-zinc-400 flex items-center gap-2.5">
+            <Shield size={14} className="text-emerald-400 shrink-0" />
+            <p className="text-[11px] text-zinc-400 leading-relaxed">
+              สตรีมแชทสดแบบ FIFO 100 ข้อความล่าสุด ไม่บันทึกประวัติถาวร
             </p>
           </div>
         </aside>

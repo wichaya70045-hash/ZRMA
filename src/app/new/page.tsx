@@ -5,37 +5,42 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Category, CaptchaChallenge } from '@/types';
 import { getScopedIdentity, rerollScopedIdentity, AnonymousIdentity } from '@/lib/privacy';
+import IdentityAvatar from '@/components/IdentityAvatar';
 import {
-  ShieldCheck,
-  Dices,
-  Clock,
   ArrowLeft,
   Send,
   Link as LinkIcon,
   AlertCircle,
-  HelpCircle,
-  RefreshCw
+  RefreshCw,
+  Dices,
+  Clock,
+  Layers,
+  Terminal,
+  Landmark,
+  TrendingUp,
+  MessageSquare,
+  Atom,
+  ShieldCheck,
 } from 'lucide-react';
 
-const CATEGORIES: { key: Category; label: string; icon: string; desc: string }[] = [
-  { key: 'breaking', label: 'ข่าวด่วน (Breaking News)', icon: '🚨', desc: 'เหตุการณ์สำคัญ ข้อมูลสดใหม่ทันเหตุการณ์' },
-  { key: 'tech', label: 'เทคโนโลยี (Technology)', icon: '💻', desc: 'ไอที, AI, ความเป็นส่วนตัว, ซอฟต์แวร์' },
-  { key: 'society', label: 'สังคม & การเมือง (Society)', icon: '🏛️', desc: 'ประเด็นสังคม กฎหมาย นโยบายสาธารณะ' },
-  { key: 'finance', label: 'เศรษฐกิจ & การเงิน (Finance)', icon: '📈', desc: 'การลงทุน ตลาด คริปโทเคอร์เรนซี ธุรกิจ' },
-  { key: 'general', label: 'ทั่วไป & พูดคุย (General)', icon: '💬', desc: 'เรื่องราวทั่วไป แลกเปลี่ยนความเห็น ข้อคิด' },
-  { key: 'science', label: 'วิทยาศาสตร์ (Science)', icon: '🔬', desc: 'การค้นพบ อวกาศ สุขภาพ สิ่งแวดล้อม' },
+const CATEGORIES = [
+  { key: 'breaking' as Category, label: 'ข่าวด่วน', icon: AlertCircle, desc: 'เหตุการณ์สำคัญหรือข่าวด่วน' },
+  { key: 'tech' as Category, label: 'เทคโนโลยี', icon: Terminal, desc: 'ไอที, AI, ซอฟต์แวร์, ความเป็นส่วนตัว' },
+  { key: 'society' as Category, label: 'สังคม & การเมือง', icon: Landmark, desc: 'ประเด็นสังคมและนโยบายสาธารณะ' },
+  { key: 'finance' as Category, label: 'เศรษฐกิจ', icon: TrendingUp, desc: 'การเงิน ธุรกิจ และการลงทุน' },
+  { key: 'general' as Category, label: 'ทั่วไป', icon: MessageSquare, desc: 'แลกเปลี่ยนความคิดเห็นทั่วไป' },
+  { key: 'science' as Category, label: 'วิทยาศาสตร์', icon: Atom, desc: 'การค้นพบ อวกาศ และวิทยาศาสตร์' },
 ];
 
 const EXPIRY_OPTIONS = [
-  { hours: 24, label: '24 ชั่วโมง (1 วัน)', desc: 'เหมาะสำหรับข่าวด่วน เหตุการณ์เฉพาะหน้า' },
-  { hours: 72, label: '3 วัน (72 ชั่วโมง)', desc: 'เหมาะสำหรับประเด็นที่กำลังอยู่ในกระแส' },
-  { hours: 168, label: '7 วัน (1 สัปดาห์)', desc: 'เหมาะสำหรับบทความสาระหรือการแลกเปลี่ยนเชิงลึก' },
+  { hours: 24, label: '24 ชั่วโมง', desc: 'ข่าวด่วน เหตุการณ์เฉพาะหน้า' },
+  { hours: 72, label: '3 วัน', desc: 'ประเด็นที่อยู่ในกระแส' },
+  { hours: 168, label: '7 วัน', desc: 'สาระและการแลกเปลี่ยนเชิงลึก' },
 ];
 
 export default function NewThreadPage() {
   const router = useRouter();
 
-  // Form states
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState<Category>('general');
@@ -48,13 +53,11 @@ export default function NewThreadPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  // Fetch or generate scoped ephemeral identity for creating new threads
   useEffect(() => {
     const id = getScopedIdentity('create_thread_session');
     setIdentity(id);
   }, []);
 
-  // Fetch fresh CAPTCHA challenge
   const fetchCaptcha = async () => {
     try {
       const res = await fetch('/api/captcha');
@@ -106,7 +109,7 @@ export default function NewThreadPage() {
           category,
           source_url: sourceUrl.trim() || null,
           author_alias: identity?.alias || 'ผู้ไม่ประสงค์ออกนาม #????',
-          author_avatar: identity?.avatar || '🥷',
+          author_avatar: identity?.avatarIcon || 'shield',
           expires_hours: expiresHours,
           captcha_token: captchaData.token,
           captcha_answer: captchaAnswer.trim(),
@@ -115,11 +118,10 @@ export default function NewThreadPage() {
 
       const data = await res.json();
       if (res.ok && data.thread) {
-        // Navigate to the newly created thread
         router.push(`/thread/${data.thread.id}`);
       } else {
         setErrorMsg(data.error || 'เกิดข้อผิดพลาดในการสร้างกระทู้');
-        fetchCaptcha(); // reload captcha on error
+        fetchCaptcha();
       }
     } catch {
       setErrorMsg('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
@@ -130,88 +132,81 @@ export default function NewThreadPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      {/* Back button */}
+    <div className="max-w-2xl mx-auto space-y-5">
       <div>
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-white transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" />
-          <span>กลับหน้าบอร์ดหลัก</span>
+          <ArrowLeft size={13} />
+          <span>กลับหน้าบอร์ด</span>
         </Link>
       </div>
 
-      {/* Main Card */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-8 shadow-2xl relative overflow-hidden">
-        {/* Glow corner accent */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
-
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800/80">
+      <div className="bg-[#101216] border border-white/[0.08] rounded-xl p-5 sm:p-6 text-zinc-200">
+        
+        {/* Header with Ephemeral Identity Preview */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-white/[0.06]">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2 py-0.5 text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded">
-                Zero-Log Publishing
-              </span>
-              <span className="text-xs text-slate-400">🛡️ ไม่ระบุตัวตน</span>
-            </div>
-            <h1 className="text-xl sm:text-2xl font-black text-white">ตั้งกระทู้ข่าว / เปิดประเด็นใหม่</h1>
+            <h1 className="text-lg font-bold text-zinc-100">ตั้งกระทู้ใหม่</h1>
+            <p className="text-xs text-zinc-400 mt-0.5">
+              ไม่เก็บประวัติ IP • สุ่มรหัสผู้เขียนเฉพาะครั้งนี้
+            </p>
           </div>
 
-          {/* Ephemeral Identity Preview & Reroll Button */}
           {identity && (
-            <div className="flex items-center gap-2 bg-slate-950/80 border border-slate-800 px-3 py-2 rounded-2xl">
-              <span className="text-xl">{identity.avatar}</span>
+            <div className="flex items-center gap-2 bg-white/[0.03] border border-white/[0.06] px-2.5 py-1.5 rounded-lg self-start sm:self-auto">
+              <IdentityAvatar iconKey={identity.avatarIcon} size="xs" />
               <div>
-                <span className="text-[10px] text-slate-500 block uppercase font-bold">ชื่อที่ใช้โพสต์:</span>
-                <span className="text-xs font-bold text-slate-200">{identity.alias}</span>
+                <span className="text-[10px] text-zinc-500 uppercase block font-mono">ชื่อที่จะแสดง:</span>
+                <span className="text-xs font-semibold text-zinc-200">{identity.alias}</span>
               </div>
               <button
                 type="button"
                 onClick={handleRerollIdentity}
-                className="p-1.5 text-slate-400 hover:text-emerald-400 hover:bg-slate-800 rounded-xl transition-colors ml-1"
-                title="ทอยสุ่มชื่อใหม่"
+                className="p-1 text-zinc-500 hover:text-zinc-200 rounded hover:bg-white/[0.06] transition-colors ml-1 active:scale-95"
+                title="สุ่มชื่อใหม่"
               >
-                <Dices className="w-4 h-4" />
+                <Dices size={13} />
               </button>
             </div>
           )}
         </div>
 
-        {/* Error Alert */}
         {errorMsg && (
-          <div className="mt-4 p-3 bg-rose-950/40 border border-rose-800/60 rounded-xl text-xs text-rose-300 flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+          <div className="mt-4 p-3 bg-rose-950/20 border border-rose-900/40 rounded-lg text-xs text-rose-300 flex items-center gap-2">
+            <AlertCircle size={14} className="text-rose-400 shrink-0" />
             <span>{errorMsg}</span>
           </div>
         )}
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="mt-6 space-y-6 text-slate-200">
+        <form onSubmit={handleSubmit} className="mt-5 space-y-5">
           
-          {/* Category Selection */}
+          {/* Category */}
           <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
-              1. เลือกหมวดหมู่เนื้อหา *
+            <label className="text-xs font-mono uppercase text-zinc-400">
+              1. เลือกหมวดหมู่
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {CATEGORIES.map((cat) => {
+                const Icon = cat.icon;
                 const isSelected = category === cat.key;
                 return (
                   <button
                     key={cat.key}
                     type="button"
                     onClick={() => setCategory(cat.key)}
-                    className={`p-3 rounded-2xl border text-left transition-all ${
+                    className={`p-2.5 rounded-lg border text-left transition-colors ${
                       isSelected
-                        ? 'border-emerald-500/80 bg-emerald-500/10 shadow-lg shadow-emerald-500/10'
-                        : 'border-slate-800 bg-slate-950/50 hover:border-slate-700'
+                        ? 'border-emerald-500/60 bg-emerald-500/[0.06]'
+                        : 'border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12]'
                     }`}
                   >
-                    <div className="text-lg mb-1">{cat.icon}</div>
-                    <div className="text-xs font-bold text-white">{cat.label}</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5 line-clamp-1">{cat.desc}</div>
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <Icon size={14} className={isSelected ? 'text-emerald-400' : 'text-zinc-400'} />
+                      <span className="text-xs font-semibold text-zinc-100">{cat.label}</span>
+                    </div>
+                    <span className="text-[10px] text-zinc-500 line-clamp-1">{cat.desc}</span>
                   </button>
                 );
               })}
@@ -219,9 +214,9 @@ export default function NewThreadPage() {
           </div>
 
           {/* Title */}
-          <div className="space-y-2">
-            <label htmlFor="title" className="text-xs font-bold uppercase tracking-wider text-slate-400">
-              2. หัวข้อกระทู้ / พาดหัวข่าว *
+          <div className="space-y-1.5">
+            <label htmlFor="title" className="text-xs font-mono uppercase text-zinc-400">
+              2. หัวข้อกระทู้
             </label>
             <input
               id="title"
@@ -229,35 +224,35 @@ export default function NewThreadPage() {
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="ระบุหัวข้อที่น่าสนใจ ชัดเจน และตรงประเด็น..."
+              placeholder="ระบุหัวข้อให้ชัดเจนและตรงประเด็น..."
               maxLength={200}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
+              className="w-full bg-white/[0.02] border border-white/[0.08] focus:border-zinc-500 rounded-lg px-3 py-2 text-xs sm:text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-600 transition-colors font-sans"
             />
           </div>
 
-          {/* Source URL (Optional) */}
-          <div className="space-y-2">
+          {/* Source URL */}
+          <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label htmlFor="sourceUrl" className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                <LinkIcon className="w-3.5 h-3.5" />
-                <span>3. แหล่งข่าวต้นทาง (URL ลิงก์อ้างอิง) - ถ้ามี</span>
+              <label htmlFor="sourceUrl" className="text-xs font-mono uppercase text-zinc-400 flex items-center gap-1">
+                <LinkIcon size={11} />
+                <span>3. ลิงก์ข่าวต้นทาง (ไม่บังคับ)</span>
               </label>
-              <span className="text-[10px] text-slate-500">ใส่หรือไม่ใส่ก็ได้</span>
+              <span className="text-[10px] text-zinc-500 font-mono">OPTIONAL</span>
             </div>
             <input
               id="sourceUrl"
               type="url"
               value={sourceUrl}
               onChange={(e) => setSourceUrl(e.target.value)}
-              placeholder="https://example.com/news/1234"
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:border-emerald-500"
+              placeholder="https://example.com/news/..."
+              className="w-full bg-white/[0.02] border border-white/[0.08] focus:border-zinc-500 rounded-lg px-3 py-2 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-600 transition-colors font-mono"
             />
           </div>
 
-          {/* Content Body */}
-          <div className="space-y-2">
-            <label htmlFor="content" className="text-xs font-bold uppercase tracking-wider text-slate-400">
-              4. เนื้อหากระทู้ / รายละเอียดข่าว *
+          {/* Content */}
+          <div className="space-y-1.5">
+            <label htmlFor="content" className="text-xs font-mono uppercase text-zinc-400">
+              4. รายละเอียดเนื้อหา
             </label>
             <textarea
               id="content"
@@ -265,18 +260,18 @@ export default function NewThreadPage() {
               required
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="เขียนรายละเอียด ข้อคิดเห็น ข้อมูลเชิงลึก หรือเนื้อหาข่าวที่ต้องการแบ่งปัน..."
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs sm:text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 leading-relaxed transition-colors"
+              placeholder="เขียนรายละเอียด ข้อคิดเห็น หรือข้อมูลข่าวที่ต้องการแลกเปลี่ยน..."
+              className="w-full bg-white/[0.02] border border-white/[0.08] focus:border-zinc-500 rounded-lg p-3 text-xs sm:text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-600 leading-relaxed transition-colors font-sans"
             />
           </div>
 
-          {/* Auto-destruction / Expiry duration */}
+          {/* Auto-Destruction TTL */}
           <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-amber-400" />
-              <span>5. ระยะเวลาทำลายข้อมูลอัตโนมัติ (Self-Destruct TTL) *</span>
+            <label className="text-xs font-mono uppercase text-zinc-400 flex items-center gap-1">
+              <Clock size={12} className="text-zinc-400" />
+              <span>5. ระยะเวลาทำลายข้อมูลอัตโนมัติ (TTL)</span>
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-3 gap-2">
               {EXPIRY_OPTIONS.map((opt) => {
                 const isSelected = expiresHours === opt.hours;
                 return (
@@ -284,45 +279,41 @@ export default function NewThreadPage() {
                     key={opt.hours}
                     type="button"
                     onClick={() => setExpiresHours(opt.hours)}
-                    className={`p-3 rounded-2xl border text-left transition-all ${
+                    className={`p-2.5 rounded-lg border text-left transition-colors ${
                       isSelected
-                        ? 'border-amber-500/80 bg-amber-500/10 shadow-lg shadow-amber-500/10'
-                        : 'border-slate-800 bg-slate-950/50 hover:border-slate-700'
+                        ? 'border-emerald-500/60 bg-emerald-500/[0.06]'
+                        : 'border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12]'
                     }`}
                   >
-                    <div className="text-xs font-bold text-white">{opt.label}</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">{opt.desc}</div>
+                    <div className="text-xs font-semibold text-zinc-100">{opt.label}</div>
+                    <div className="text-[10px] text-zinc-500 mt-0.5">{opt.desc}</div>
                   </button>
                 );
               })}
             </div>
           </div>
 
-          {/* Anti-Spam Captcha (Stateless, Zero-IP) */}
-          <div className="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-3">
+          {/* Anti-Spam Captcha */}
+          <div className="p-3 bg-zinc-950/60 border border-white/[0.06] rounded-lg space-y-2">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                <span className="text-xs font-bold text-white">ระบบป้องกันสแปมไร้การติดตาม (Zero-Knowledge)</span>
+              <div className="flex items-center gap-1.5">
+                <ShieldCheck size={14} className="text-emerald-400" />
+                <span className="text-xs font-medium text-zinc-200">ยืนยันความปลอดภัย (Stateless Math)</span>
               </div>
               <button
                 type="button"
                 onClick={fetchCaptcha}
-                className="text-[11px] text-slate-400 hover:text-white flex items-center gap-1"
-                title="เปลี่ยนโจทย์คำถาม"
+                className="text-[11px] text-zinc-500 hover:text-zinc-300 flex items-center gap-1"
+                title="เปลี่ยนโจทย์"
               >
-                <RefreshCw className="w-3 h-3" />
+                <RefreshCw size={11} />
                 <span>เปลี่ยนโจทย์</span>
               </button>
             </div>
 
-            <p className="text-[11px] text-slate-400">
-              เราใช้การคำนวณทางคณิตศาสตร์แบบไร้สถานะแทนคุกกี้และการแบน IP เพื่อรักษาความเป็นส่วนตัวสูงสุดของคุณ
-            </p>
-
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-1">
-              <div className="px-3.5 py-2 bg-slate-900 border border-slate-700/80 rounded-xl text-xs sm:text-sm font-mono font-bold text-emerald-300">
-                {captchaData ? captchaData.question : 'กำลังโหลดโจทย์...'}
+            <div className="flex items-center gap-2 pt-1">
+              <div className="px-3 py-1.5 bg-white/[0.04] border border-white/[0.08] rounded-md text-xs font-mono font-bold text-emerald-400">
+                {captchaData ? captchaData.question : 'กำลังโหลด...'}
               </div>
 
               <input
@@ -330,17 +321,17 @@ export default function NewThreadPage() {
                 required
                 value={captchaAnswer}
                 onChange={(e) => setCaptchaAnswer(e.target.value)}
-                placeholder="พิมพ์คำตอบตัวเลข..."
-                className="w-full sm:w-48 bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                placeholder="คำตอบ..."
+                className="w-32 bg-white/[0.02] border border-white/[0.08] rounded-md px-3 py-1.5 text-xs text-white focus:outline-none focus:border-zinc-500 font-mono"
               />
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="pt-2 flex items-center justify-between gap-4">
+          {/* Submit Actions */}
+          <div className="pt-2 flex items-center justify-between">
             <Link
               href="/"
-              className="px-4 py-2.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
+              className="text-xs text-zinc-400 hover:text-zinc-200"
             >
               ยกเลิก
             </Link>
@@ -348,10 +339,10 @@ export default function NewThreadPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-slate-950 font-bold rounded-xl text-sm shadow-xl shadow-emerald-500/20 transition-all hover:scale-[1.02]"
+              className="btn-primary"
             >
-              <Send className="w-4 h-4" />
-              <span>{isSubmitting ? 'กำลังโพสต์...' : 'โพสต์กระทู้ทันที (ไร้ตัวตน)'}</span>
+              <Send size={13} />
+              <span>{isSubmitting ? 'กำลังโพสต์...' : 'โพสต์กระทู้ทันที'}</span>
             </button>
           </div>
 

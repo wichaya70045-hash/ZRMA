@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AlertTriangle, X, Flag, CheckCircle } from 'lucide-react';
+import { AlertCircle, X, Check, ShieldAlert } from 'lucide-react';
 import { ReportReason } from '@/types';
 
 interface ReportModalProps {
@@ -15,10 +15,10 @@ interface ReportModalProps {
 
 const REASONS: { key: ReportReason; label: string; desc: string }[] = [
   { key: 'spam', label: 'สแปมหรือโฆษณาหลอกลวง', desc: 'ข้อความซ้ำซาก ลิงก์ขายของ หรือโปรโมตที่ไม่เกี่ยวข้อง' },
-  { key: 'fake_news', label: 'ข้อมูลเท็จ / ข่าวปลอม', desc: 'จงใจบิดเบือนข้อมูลหรือสร้างความตื่นตระหนก' },
-  { key: 'illegal', label: 'เนื้อหาผิดกฎหมายหรืออันตราย', desc: 'สิ่งผิดกฎหมาย การละเมิดสิทธิ หรือความรุนแรง' },
-  { key: 'harassment', label: 'คุกคาม / Hate Speech', desc: 'กลั่นแกล้ง ละเมิดสิทธิผู้อื่น หรือใช้ถ้อยคำสร้างความเกลียดชัง' },
-  { key: 'other', label: 'อื่นๆ ที่ขัดต่อความสงบเรียบร้อย', desc: 'พฤติกรรมไม่เหมาะสมต่อชุมชน' },
+  { key: 'fake_news', label: 'ข้อมูลเท็จ / ข่าวปลอม', desc: 'จงใจบิดเบือนข้อมูลเพื่อสร้างความตื่นตระหนก' },
+  { key: 'illegal', label: 'เนื้อหาผิดกฎหมายหรืออันตราย', desc: 'สิ่งผิดกฎหมาย หรือการข่มขู่ทำร้าย' },
+  { key: 'harassment', label: 'คุกคาม / คำสร้างความเกลียดชัง', desc: 'กลั่นแกล้ง ละเมิดสิทธิผู้อื่น หรือ Hate Speech' },
+  { key: 'other', label: 'อื่นๆ ที่ขัดต่อความเรียบร้อย', desc: 'พฤติกรรมไม่เหมาะสมต่อชุมชน' },
 ];
 
 export default function ReportModal({
@@ -32,7 +32,6 @@ export default function ReportModal({
   const [selectedReason, setSelectedReason] = useState<ReportReason>('spam');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [message, setMessage] = useState('');
 
   if (!isOpen) return null;
 
@@ -52,7 +51,6 @@ export default function ReportModal({
       const data = await res.json();
       if (res.ok) {
         setSubmitted(true);
-        setMessage(data.message || 'ส่งรายงานเรียบร้อยแล้ว');
         if (onReportSuccess) {
           onReportSuccess(data.newReportCount, data.isHidden);
         }
@@ -67,28 +65,29 @@ export default function ReportModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative text-slate-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-150">
+      <div className="bg-[#101216] border border-white/[0.1] rounded-xl max-w-md w-full p-5 shadow-2xl relative text-zinc-200">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800"
+          className="absolute top-4 right-4 p-1.5 text-zinc-400 hover:text-white rounded-md hover:bg-white/[0.06] transition-colors"
+          aria-label="Close dialog"
         >
-          <X className="w-5 h-5" />
+          <X size={16} />
         </button>
 
         {submitted ? (
-          <div className="text-center py-6 space-y-3">
-            <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/30">
-              <CheckCircle className="w-6 h-6" />
+          <div className="text-center py-5 space-y-3">
+            <div className="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/20">
+              <Check size={18} strokeWidth={2.5} />
             </div>
-            <h3 className="text-lg font-bold text-white">รายงานได้รับการบันทึกแล้ว</h3>
-            <p className="text-xs text-slate-400 leading-relaxed max-w-xs mx-auto">
-              ระบบตรวจสอบแบบกระจายศูนย์: หากข้อความนี้ได้รับการรายงานจากชุมชนครบ 5 ครั้ง จะถูกซ่อนออกจากสายตาสาธารณะโดยอัตโนมัติ
+            <h3 className="text-sm font-semibold text-zinc-100">บันทึกรายงานแล้ว</h3>
+            <p className="text-xs text-zinc-400 leading-relaxed max-w-xs mx-auto">
+              ระบบตรวจสอบโดยชุมชน: หากข้อความนี้มีผู้รายงานครบ 5 ครั้ง จะถูกซ่อนอัตโนมัติทันที
             </p>
-            <div className="pt-3">
+            <div className="pt-2">
               <button
                 onClick={onClose}
-                className="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold"
+                className="btn-secondary text-xs"
               >
                 ปิดหน้าต่าง
               </button>
@@ -97,36 +96,37 @@ export default function ReportModal({
         ) : (
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
-                <Flag className="w-5 h-5" />
+              <div className="w-9 h-9 rounded-lg bg-rose-500/10 text-rose-400 flex items-center justify-center border border-rose-500/20 shrink-0">
+                <ShieldAlert size={18} />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white">รายงานข้อความไม่เหมาะสม</h3>
-                <p className="text-xs text-slate-400">
-                  {targetType === 'thread' ? 'กระทู้' : targetType === 'comment' ? 'ความคิดเห็น' : 'ข้อความแชท'}
-                  {targetTitle ? `: "${targetTitle.substring(0, 30)}..."` : ''}
+                <h3 className="text-sm font-semibold text-zinc-100">รายงานเนื้อหา</h3>
+                <p className="text-xs text-zinc-400 truncate max-w-[280px]">
+                  {targetTitle ? `"${targetTitle}"` : 'ข้อความที่ไม่เหมาะสม'}
                 </p>
               </div>
             </div>
 
-            <div className="p-3 bg-amber-950/20 border border-amber-800/40 rounded-xl text-xs text-amber-300 flex items-start gap-2">
-              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+            <div className="p-2.5 bg-zinc-950/60 border border-white/[0.06] rounded-lg text-xs text-zinc-400 flex items-start gap-2">
+              <AlertCircle size={14} className="text-zinc-400 shrink-0 mt-0.5" />
               <span>
-                เมื่อมีผู้รายงานครบ <strong>5 ครั้ง</strong> ระบบจะซ่อนข้อความนี้โดยอัตโนมัติทันที เพื่อความปลอดภัยของทุกคนในชุมชน
+                เมื่อรายงานครบ <strong className="text-zinc-200">5 ครั้ง</strong> ระบบจะซ่อนข้อความนี้จากสายตาสาธารณะโดยอัตโนมัติ
               </span>
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-slate-300">เลือกสาเหตุที่ต้องการรายงาน:</label>
+              <span className="text-[11px] font-mono uppercase text-zinc-500 block">
+                เลือกเหตุผลในการรายงาน:
+              </span>
               <div className="space-y-1.5">
                 {REASONS.map((r) => (
                   <label
                     key={r.key}
                     onClick={() => setSelectedReason(r.key)}
-                    className={`block p-2.5 rounded-xl border cursor-pointer transition-all ${
+                    className={`block p-2.5 rounded-lg border cursor-pointer transition-colors ${
                       selectedReason === r.key
-                        ? 'border-emerald-500/60 bg-emerald-500/10'
-                        : 'border-slate-800 bg-slate-950/40 hover:border-slate-700'
+                        ? 'border-emerald-500/50 bg-emerald-500/[0.04]'
+                        : 'border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12]'
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -135,21 +135,21 @@ export default function ReportModal({
                         name="reportReason"
                         checked={selectedReason === r.key}
                         onChange={() => setSelectedReason(r.key)}
-                        className="text-emerald-500 focus:ring-emerald-500 h-3.5 w-3.5"
+                        className="accent-emerald-500 h-3.5 w-3.5"
                       />
-                      <span className="text-xs font-medium text-slate-200">{r.label}</span>
+                      <span className="text-xs font-medium text-zinc-200">{r.label}</span>
                     </div>
-                    <p className="text-[11px] text-slate-400 ml-5.5 mt-0.5">{r.desc}</p>
+                    <p className="text-[11px] text-zinc-500 ml-5.5 mt-0.5">{r.desc}</p>
                   </label>
                 ))}
               </div>
             </div>
 
-            <div className="pt-2 flex justify-end gap-2">
+            <div className="pt-2 flex justify-end gap-2 border-t border-white/[0.06]">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-xs font-medium text-slate-400 hover:text-white rounded-xl hover:bg-slate-800"
+                className="btn-secondary text-xs"
               >
                 ยกเลิก
               </button>
@@ -157,9 +157,9 @@ export default function ReportModal({
                 type="button"
                 disabled={isSubmitting}
                 onClick={handleSubmit}
-                className="px-4 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 disabled:opacity-50 rounded-xl shadow-md transition-colors"
+                className="inline-flex items-center justify-center px-3.5 py-1.5 text-xs font-medium text-white bg-rose-600 hover:bg-rose-500 active:scale-[0.97] rounded-md transition-all disabled:opacity-50"
               >
-                {isSubmitting ? 'กำลังส่งรายงาน...' : 'ยืนยันรายงาน'}
+                {isSubmitting ? 'กำลังส่ง...' : 'ยืนยันรายงาน'}
               </button>
             </div>
           </div>
