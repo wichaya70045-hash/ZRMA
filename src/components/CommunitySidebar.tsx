@@ -160,7 +160,7 @@ export default function CommunitySidebar({
       {/* Dynamic Sub-communities list */}
       <div className="bg-[#101217] border border-white/[0.08] rounded-xl p-3.5 space-y-3">
         <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">
-          <h3 className="text-xs font-mono font-bold uppercase text-zinc-400 tracking-wider">
+          <h3 className="text-xs font-mono font-semibold text-zinc-300">
             ห้องชุมชน z/ ทั้งหมด
           </h3>
           <span className="text-[10px] font-mono text-zinc-500">

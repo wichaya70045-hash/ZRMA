@@ -11,9 +11,7 @@ import {
   Lock,
   EyeOff,
   Clock,
-  Search,
-  MessageSquare,
-  Users,
+  Ghost,
   Settings as SettingsIcon,
 } from 'lucide-react';
 import SettingsModal from './SettingsModal';
@@ -49,23 +47,6 @@ export default function Navbar() {
                 </div>
               </div>
             </Link>
-          </div>
-
-          {/* Center Search Input (Reddit Style) */}
-          <div className="flex-1 max-w-xl hidden md:block">
-            <div className="relative">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
-              <input
-                type="text"
-                readOnly
-                onClick={() => {
-                  const el = document.getElementById('main-search-input');
-                  el?.focus();
-                }}
-                placeholder="ค้นหาใน ZRMA Community..."
-                className="w-full bg-[#101217] border border-white/[0.08] hover:border-white/[0.14] rounded-full pl-9 pr-4 py-1.5 text-xs text-zinc-100 placeholder-zinc-500 cursor-pointer transition-colors"
-              />
-            </div>
           </div>
 
           {/* Right Actions */}
@@ -182,7 +163,7 @@ export default function Navbar() {
 
               <div className="p-3 bg-orange-950/20 rounded-lg border border-orange-500/30 space-y-1">
                 <div className="flex items-center gap-2 font-medium text-orange-300">
-                  <span className="text-xs">👻</span>
+                  <Ghost size={14} className="text-orange-400 shrink-0" />
                   <span>ห้องหายไปเมื่อไม่มีคน (Ghost Vanishing Lounges)</span>
                 </div>
                 <p className="text-zinc-400 text-[11px] pl-5 leading-relaxed">

@@ -602,7 +602,7 @@ export default function ThreadDetailPage({
                             />
                             <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] font-mono text-yellow-400 flex items-center gap-1 pointer-events-none">
                               <Film size={11} />
-                              <span>ATTACHED VIDEO</span>
+                              <span>วิดีโอ</span>
                             </div>
                           </div>
                         ) : isImage ? (
@@ -614,7 +614,7 @@ export default function ThreadDetailPage({
                             />
                             <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] font-mono text-zinc-300 flex items-center gap-1 pointer-events-none">
                               <ImageIcon size={11} />
-                              <span>ATTACHED IMAGE (CLICK TO OPEN)</span>
+                              <span>รูปภาพ</span>
                             </div>
                           </div>
                         ) : null}
@@ -830,7 +830,7 @@ export default function ThreadDetailPage({
               {/* Reddit Threaded Comments Tree */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between py-1 border-b border-white/[0.06] text-xs">
-                  <span className="font-mono uppercase text-zinc-400 font-semibold tabular-nums">
+                  <span className="font-mono text-zinc-400 font-semibold tabular-nums">
                     ความคิดเห็นแบบจัดลำดับ ({comments.length})
                   </span>
                   <span className="text-[11px] text-zinc-500">คลิกเส้นด้านซ้ายเพื่อย่อ/ขยายบทสนทนา</span>

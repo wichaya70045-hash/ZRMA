@@ -153,53 +153,17 @@ export default function HomePage() {
             activeTabMobile === 'chat' ? 'hidden lg:block' : 'block'
           }`}
         >
-          {/* Reddit-style Create Post Prompt Bar */}
-          <div className="bg-[#101217] border border-white/[0.08] hover:border-white/[0.14] rounded-xl p-2.5 flex items-center gap-2.5 shadow-sm transition-colors">
-            <div className="w-8 h-8 rounded-full bg-red-950/60 border border-red-500/30 flex items-center justify-center text-red-500 shrink-0">
-              <Shield size={16} />
-            </div>
-            <Link
-              href="/new"
-              className="flex-1 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] rounded-lg px-3 py-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
-            >
-              สร้างโพสต์ใหม่ใน z/{selectedCategory === 'all' ? 'all' : selectedCategory}...
-            </Link>
-            <Link
-              href="/new"
-              className="btn-primary !py-1.5 !px-3 text-xs shrink-0"
-            >
-              <Plus size={14} strokeWidth={2.5} />
-              <span>โพสต์</span>
-            </Link>
-          </div>
-
-          {/* Search Bar */}
-          <div className="relative">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
-            <input
-              id="main-search-input"
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="ค้นหาตามหัวข้อ, ข้อความ, หรือรหัสผู้เขียน..."
-              className="w-full bg-[#101217] border border-white/[0.08] focus:border-red-500 rounded-lg pl-9 pr-8 py-2 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-red-500 transition-colors"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] font-mono text-zinc-500 hover:text-zinc-300"
-              >
-                ESC
-              </button>
-            )}
-          </div>
-
-          {/* Subreddits & Reddit Sorting Tabs */}
+          {/* Unified Master Category & Filter Center */}
           <CategoryFilter
             selectedCategory={selectedCategory}
             onSelectCategory={setSelectedCategory}
             selectedSort={selectedSort}
             onSelectSort={(sort) => setSelectedSort(sort as RedditSort)}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            layout={settings.feedLayout}
+            onLayoutChange={(l) => updateSetting('feedLayout', l)}
+            threadCount={filteredThreads.length}
           />
 
           {/* Pinned Breaking News Wire Banner */}
@@ -208,48 +172,6 @@ export default function HomePage() {
               pinnedThread={filteredThreads.find((t) => t.is_pinned === 1 && t.category === 'breaking') || null}
             />
           )}
-
-          {/* Feed Toolbar: Results Count & View Layout Toggle */}
-          <div className="flex items-center justify-between px-1 py-1 text-xs text-zinc-400">
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[11px] text-zinc-500">
-                พบ {filteredThreads.length} โพสต์ใน z/{selectedCategory}
-              </span>
-              {settings.strictZeroTrace && (
-                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-red-950/60 text-red-400 border border-red-500/30 flex items-center gap-1">
-                  <Shield size={10} />
-                  <span>Strict Anon</span>
-                </span>
-              )}
-            </div>
-
-            <div className="flex items-center gap-1 bg-black/40 p-0.5 rounded-lg border border-white/[0.06]">
-              <button
-                type="button"
-                onClick={() => updateSetting('feedLayout', 'card')}
-                className={`p-1 rounded transition-colors ${
-                  settings.feedLayout === 'card'
-                    ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/30 shadow-sm'
-                    : 'text-zinc-500 hover:text-zinc-300'
-                }`}
-                title="มุมมองการ์ดเต็ม (Card View)"
-              >
-                <LayoutGrid size={13} />
-              </button>
-              <button
-                type="button"
-                onClick={() => updateSetting('feedLayout', 'compact')}
-                className={`p-1 rounded transition-colors ${
-                  settings.feedLayout === 'compact'
-                    ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/30 shadow-sm'
-                    : 'text-zinc-500 hover:text-zinc-300'
-                }`}
-                title="มุมมองกะทัดรัด (Compact View)"
-              >
-                <LayoutList size={13} />
-              </button>
-            </div>
-          </div>
 
           {/* Thread List */}
           {isLoading ? (
