@@ -303,7 +303,7 @@ export default function NewThreadPage() {
         </Link>
       </div>
 
-      <div className="bg-[#101217] border border-white/[0.08] rounded-xl p-4 sm:p-6 text-zinc-200 shadow-xl w-full max-w-full overflow-hidden">
+      <div className="bg-[#0e1015]/90 border border-white/[0.08] rounded-xl p-4 sm:p-6 text-zinc-200 shadow-xl backdrop-blur-sm w-full max-w-full overflow-hidden">
         
         {/* Header with Ephemeral Identity & Custom Name */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-white/[0.06]">

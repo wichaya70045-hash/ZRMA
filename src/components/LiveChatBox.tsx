@@ -317,7 +317,7 @@ export default function LiveChatBox({
       className={`rounded-2xl flex flex-col h-full w-full max-w-full overflow-hidden shadow-xl border transition-colors ${
         isGhost
           ? 'bg-[#0d0f14] border-orange-500/50 shadow-orange-950/20'
-          : 'bg-[#101217] border-white/[0.08]'
+          : 'bg-[#0e1015]/95 border-white/[0.08] backdrop-blur-md'
       }`}
     >
       {/* Ghost Room Warning Banner */}

@@ -188,8 +188,8 @@ export default function ThreadPoll({
                 >
                   {/* Visual Progress Bar Fill */}
                   <div
-                    className={`absolute inset-y-0 left-0 transition-all duration-500 opacity-20 ${
-                      isWinning ? 'bg-yellow-400' : 'bg-zinc-400'
+                    className={`absolute inset-y-0 left-0 transition-all duration-500 ${
+                      isWinning ? 'bg-gradient-to-r from-yellow-500/25 to-amber-500/20' : 'bg-white/[0.05]'
                     }`}
                     style={{ width: `${pct}%` }}
                   />

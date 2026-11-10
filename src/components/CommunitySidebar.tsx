@@ -85,18 +85,21 @@ export default function CommunitySidebar({
   return (
     <div className="space-y-4 w-full max-w-full overflow-hidden">
       {/* About Community Card (Reddit Style) */}
-      <div className="bg-[#101217] border border-white/[0.08] rounded-xl overflow-hidden shadow-lg">
+      <div className="bg-[#0e1015]/90 border border-white/[0.08] rounded-xl overflow-hidden shadow-lg backdrop-blur-sm">
         {/* Banner Top */}
-        <div className="h-10 bg-zinc-950 p-3 flex items-center justify-between border-b border-white/[0.06]">
+        <div className="h-10 bg-gradient-to-r from-red-950/40 via-black to-black p-3 flex items-center justify-between border-b border-white/[0.06]">
           <span className="text-[11px] font-mono font-semibold text-zinc-400">
             ข้อมูลชุมชน
           </span>
-          <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-60"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+          </span>
         </div>
 
         <div className="p-4 space-y-3.5">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-lg bg-red-950/60 border border-red-500/30 text-red-500 flex items-center justify-center font-bold text-sm shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-b from-red-600/20 to-red-950/60 border border-red-500/30 text-red-500 flex items-center justify-center font-bold text-sm shrink-0 shadow-[0_0_10px_rgba(239,68,68,0.2)]">
               <Shield size={18} />
             </div>
             <div>
@@ -112,7 +115,7 @@ export default function CommunitySidebar({
           </p>
 
           {/* Genuine Telemetry */}
-          <div className="grid grid-cols-2 gap-2 py-2 border-y border-white/[0.06]">
+          <div className="grid grid-cols-2 gap-2 py-2.5 border-y border-white/[0.06] bg-black/20 rounded-lg px-2">
             <div>
               <div className="text-xs font-mono font-bold text-zinc-100 tabular-nums">
                 {communities.length || 8} ห้อง
@@ -120,7 +123,7 @@ export default function CommunitySidebar({
               <div className="text-[10px] text-zinc-500">หมวดหมู่ z/ ทั้งหมด</div>
             </div>
             <div>
-              <div className="text-xs font-mono font-bold text-yellow-400 flex items-center gap-1 tabular-nums">
+              <div className="text-xs font-mono font-bold text-yellow-400 flex items-center gap-1.5 tabular-nums">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
                 <span>ZERO-LOG</span>
               </div>
@@ -158,7 +161,7 @@ export default function CommunitySidebar({
       </div>
 
       {/* Dynamic Sub-communities list */}
-      <div className="bg-[#101217] border border-white/[0.08] rounded-xl p-3.5 space-y-3">
+      <div className="bg-[#0e1015]/90 border border-white/[0.08] rounded-xl p-3.5 space-y-3 backdrop-blur-sm shadow-md">
         <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">
           <h3 className="text-xs font-mono font-semibold text-zinc-300">
             ห้องชุมชน z/ ทั้งหมด

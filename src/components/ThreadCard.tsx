@@ -357,10 +357,10 @@ export default function ThreadCard({
 
   return (
     <article
-      className={`w-full max-w-full overflow-hidden rounded-xl p-3 sm:p-4 transition-all relative group shadow-sm ${
+      className={`w-full max-w-full overflow-hidden rounded-xl p-3 sm:p-4.5 transition-all duration-200 relative group shadow-sm ${
         thread.is_pinned === 1
-          ? 'border border-red-500/40 border-l-4 border-l-red-500 bg-[#101217]'
-          : 'bg-[#101217] border border-white/[0.07] hover:border-white/[0.18]'
+          ? 'border border-red-500/40 border-l-4 border-l-red-500 bg-gradient-to-r from-red-950/20 via-[#0e1015] to-[#0e1015] shadow-[0_0_16px_rgba(239,68,68,0.1)]'
+          : 'bg-[#0e1015]/90 hover:bg-[#12151d] border border-white/[0.08] hover:border-white/[0.18] hover:shadow-xl hover:shadow-black/50'
       }`}
     >
       {/* Pinned Breaking News Header Ribbon */}
@@ -401,13 +401,13 @@ export default function ThreadCard({
       <div className={`flex gap-2.5 sm:gap-3.5 min-w-0 ${isHidden && !forceReveal ? 'opacity-30 blur-[1px]' : ''}`}>
         
         {/* Reddit Left-Hand Vote Column */}
-        <div className="flex flex-col items-center bg-black/40 border border-white/[0.06] rounded-lg p-1 self-start shrink-0">
+        <div className="flex flex-col items-center bg-black/50 border border-white/[0.07] rounded-lg p-1 self-start shrink-0 backdrop-blur-sm shadow-inner">
           <button
             onClick={() => handleVote('up')}
             disabled={isVoting}
-            className={`p-1 rounded transition-colors active:scale-95 ${
+            className={`p-1 rounded transition-all active:scale-95 ${
               userVote === 'up'
-                ? 'text-yellow-400 bg-yellow-500/15'
+                ? 'text-yellow-400 bg-yellow-500/20 shadow-[0_0_8px_rgba(250,204,21,0.25)]'
                 : 'text-zinc-500 hover:text-yellow-400 hover:bg-white/[0.04]'
             }`}
             title="Upvote"
@@ -431,9 +431,9 @@ export default function ThreadCard({
           <button
             onClick={() => handleVote('down')}
             disabled={isVoting}
-            className={`p-1 rounded transition-colors active:scale-95 ${
+            className={`p-1 rounded transition-all active:scale-95 ${
               userVote === 'down'
-                ? 'text-red-400 bg-red-500/15'
+                ? 'text-red-400 bg-red-500/20 shadow-[0_0_8px_rgba(239,68,68,0.25)]'
                 : 'text-zinc-500 hover:text-red-400 hover:bg-white/[0.04]'
             }`}
             title="Downvote"

@@ -49,7 +49,7 @@ export default function PinnedBreakingBanner({ pinnedThread }: PinnedBreakingBan
   return (
     <aside
       aria-label="Pinned Breaking News"
-      className="w-full max-w-full overflow-hidden rounded-xl border border-red-500/40 border-l-4 border-l-red-500 bg-[#101217] p-3.5 sm:p-4.5 shadow-sm transition-all"
+      className="w-full max-w-full overflow-hidden rounded-xl border border-red-500/40 border-l-4 border-l-red-500 bg-gradient-to-r from-red-950/25 via-[#0e1015] to-[#0e1015] p-3.5 sm:p-4.5 shadow-[0_0_20px_rgba(239,68,68,0.1)] transition-all backdrop-blur-sm"
     >
       {/* Top Header Wire */}
       <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 mb-3 border-b border-white/[0.06]">

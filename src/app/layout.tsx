@@ -33,16 +33,19 @@ export default function RootLayout({
           </main>
           
           {/* Footer */}
-          <footer className="border-t border-white/[0.06] bg-[#090a0d] py-6 text-center text-xs text-zinc-500 w-full overflow-hidden">
-            <div className="max-w-7xl mx-auto px-3 sm:px-4 space-y-1.5">
+          <footer className="border-t border-white/[0.08] bg-[#08090c]/90 py-8 text-center text-xs text-zinc-500 w-full overflow-hidden backdrop-blur-sm">
+            <div className="max-w-7xl mx-auto px-3 sm:px-4 space-y-2">
               <div className="flex items-center justify-center gap-2 font-mono text-[11px] text-zinc-400">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-                <span className="text-zinc-200 font-semibold">ZRMA Community</span>
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                </span>
+                <span className="text-zinc-200 font-bold tracking-wider">ZRMA COMMUNITY</span>
                 <span className="text-zinc-600">•</span>
-                <span className="text-zinc-400">Zero-Log Architecture</span>
+                <span className="text-yellow-400/90 font-medium">ZERO-LOG PRIVACY STANDARD</span>
               </div>
-              <p className="text-[11px] text-zinc-600">
-                โพสต์และข้อความจะถูกทำลายตามระยะเวลาที่กำหนด (TTL) และห้องแชทสดจำกัดเพียง 100 ข้อความล่าสุด
+              <p className="text-[11px] text-zinc-500 max-w-xl mx-auto leading-relaxed">
+                ระบบชุมชนนิรนามที่ไม่เก็บ IP Address • ข้อมูลถูกทำลายอัตโนมัติตามระยะเวลา (TTL) • ห้องแชทสดจำกัด 100 ข้อความล่าสุด
               </p>
             </div>
           </footer>

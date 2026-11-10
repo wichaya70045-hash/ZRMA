@@ -178,14 +178,14 @@ export default function BreakingNewsTicker() {
   return (
     <aside
       aria-label="Breaking News Ticker"
-      className="w-full bg-[#090b0e] border-b border-white/[0.07] text-xs select-none z-30 transition-all overflow-hidden"
+      className="w-full bg-gradient-to-r from-[#0d0f15] via-[#090b0e] to-[#0d0f15] border-b border-white/[0.08] text-xs select-none z-30 transition-all overflow-hidden shadow-inner"
     >
       <div className="max-w-7xl mx-auto px-3 sm:px-4 h-9 flex items-center justify-between gap-2.5 sm:gap-3.5 overflow-hidden">
         
         {/* Left Live Indicator Badge */}
         <Link
           href="/?category=breaking"
-          className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-red-950/80 border border-red-500/50 text-red-400 hover:border-red-400 hover:bg-red-950 transition-colors shrink-0 group focus-visible:outline-none"
+          className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-red-950/70 border border-red-500/40 text-red-400 hover:border-red-400 hover:bg-red-950 transition-all shadow-[0_0_8px_rgba(239,68,68,0.15)] shrink-0 group focus-visible:outline-none"
           title="ดูกระทู้ใน z/breaking ทั้งหมด"
         >
           <span className="relative flex h-2 w-2 shrink-0">

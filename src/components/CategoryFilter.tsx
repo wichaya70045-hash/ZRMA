@@ -76,17 +76,17 @@ export default function CategoryFilter({
   };
 
   return (
-    <div className="bg-[#101217] border border-white/[0.07] rounded-xl overflow-hidden shadow-sm w-full max-w-full">
+    <div className="bg-[#0e1015]/90 border border-white/[0.08] rounded-xl overflow-hidden shadow-lg w-full max-w-full backdrop-blur-sm">
       
       {/* 1. Subreddit Horizontal Navigation Pills */}
       <div className="px-3 pt-3 pb-2.5 flex items-center gap-1.5 overflow-x-auto scrollbar-none font-mono text-xs max-w-full">
         {/* z/all */}
         <button
           onClick={() => onSelectCategory('all')}
-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors border active:scale-95 ${
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all border active:scale-95 ${
             selectedCategory === 'all'
-              ? 'bg-yellow-400 text-zinc-950 border-yellow-400 font-bold shadow-sm'
-              : 'bg-white/[0.03] hover:bg-white/[0.06] text-zinc-400 hover:text-zinc-200 border-white/[0.06]'
+              ? 'bg-gradient-to-r from-yellow-400 to-amber-400 text-zinc-950 border-yellow-300 font-bold shadow-[0_0_12px_rgba(250,204,21,0.25)]'
+              : 'bg-white/[0.03] hover:bg-white/[0.07] text-zinc-400 hover:text-zinc-100 border-white/[0.06]'
           }`}
         >
           <Layers size={13} strokeWidth={selectedCategory === 'all' ? 2.5 : 1.75} />
@@ -99,19 +99,19 @@ export default function CategoryFilter({
           const IconComp = ICON_MAP[comm.icon] || Terminal;
           const isBreaking = comm.name === 'breaking';
 
-          let activeClasses = 'bg-yellow-400 text-zinc-950 border-yellow-400 font-bold shadow-sm';
+          let activeClasses = 'bg-gradient-to-r from-yellow-400 to-amber-400 text-zinc-950 border-yellow-300 font-bold shadow-[0_0_12px_rgba(250,204,21,0.25)]';
           if (isBreaking && isActive) {
-            activeClasses = 'bg-red-600 text-white border-red-500 font-bold shadow-sm';
+            activeClasses = 'bg-gradient-to-r from-red-600 to-red-700 text-white border-red-500 font-bold shadow-[0_0_12px_rgba(239,68,68,0.3)]';
           }
 
           return (
             <button
               key={comm.name}
               onClick={() => onSelectCategory(comm.name)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors border active:scale-95 ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all border active:scale-95 ${
                 isActive
                   ? activeClasses
-                  : 'bg-white/[0.03] hover:bg-white/[0.06] text-zinc-400 hover:text-zinc-200 border-white/[0.06]'
+                  : 'bg-white/[0.03] hover:bg-white/[0.07] text-zinc-400 hover:text-zinc-100 border-white/[0.06]'
               }`}
             >
               <IconComp

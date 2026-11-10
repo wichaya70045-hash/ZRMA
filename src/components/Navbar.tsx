@@ -31,18 +31,21 @@ export default function Navbar() {
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <Link
               href="/"
-              className="flex items-center gap-2 sm:gap-2.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 rounded-md"
+              className="flex items-center gap-2.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 rounded-md"
             >
-              <div className="w-8 h-8 rounded-lg bg-red-950/50 border border-red-500/40 flex items-center justify-center text-red-500 group-hover:border-red-500/70 group-hover:bg-red-950/70 transition-colors shadow-sm shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-b from-red-600/20 to-red-950/60 border border-red-500/40 flex items-center justify-center text-red-500 group-hover:border-red-500 group-hover:shadow-[0_0_12px_rgba(239,68,68,0.3)] transition-all shadow-sm shrink-0">
                 <Shield size={16} strokeWidth={2.4} />
               </div>
               <div className="flex flex-col">
                 <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-sm tracking-tight text-white group-hover:text-yellow-400 transition-colors">
-                    ZRMA Community
+                  <span className="font-extrabold text-sm tracking-tight text-white group-hover:text-yellow-400 transition-colors">
+                    ZRMA
                   </span>
-                  <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
-                    z/all
+                  <span className="font-mono text-[10px] text-zinc-400 font-medium hidden sm:inline">
+                    COMMUNITY
+                  </span>
+                  <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/25">
+                    ZERO-LOG
                   </span>
                 </div>
               </div>
@@ -74,11 +77,14 @@ export default function Navbar() {
 
             <Link
               href="/chat"
-              className="btn-secondary !py-1.5 !px-2.5 sm:!px-3 text-xs shrink-0"
+              className="btn-secondary !py-1.5 !px-2.5 sm:!px-3 text-xs shrink-0 group"
               title="ห้องสนทนาสดส่วนกลาง"
             >
-              <Radio size={13} className="text-yellow-400 shrink-0" />
-              <span className="hidden sm:inline">ห้องแชทสด</span>
+              <span className="relative flex h-2 w-2 shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-60"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-yellow-400"></span>
+              </span>
+              <span className="hidden sm:inline group-hover:text-yellow-400 transition-colors">ห้องแชทสด</span>
             </Link>
 
             <Link

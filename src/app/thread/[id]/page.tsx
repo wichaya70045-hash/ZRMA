@@ -475,7 +475,7 @@ export default function ThreadDetailPage({
         <div className="lg:col-span-8 space-y-4 min-w-0">
           
           {/* Main Post Card (Reddit Style) */}
-          <article className="w-full max-w-full overflow-hidden bg-[#101217] border border-white/[0.08] rounded-xl p-3.5 sm:p-5 text-zinc-200 shadow-xl">
+          <article className="w-full max-w-full overflow-hidden bg-[#0e1015]/90 border border-white/[0.08] rounded-xl p-3.5 sm:p-5 text-zinc-200 shadow-xl backdrop-blur-sm">
             {isThreadHidden && (
               <div className="bg-red-950/20 border border-red-900/40 rounded-lg p-2.5 mb-4 text-xs text-red-300 flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -494,7 +494,7 @@ export default function ThreadDetailPage({
             <div className={`flex gap-2.5 sm:gap-4 min-w-0 ${isThreadHidden ? 'opacity-30 blur-sm pointer-events-none' : ''}`}>
               
               {/* Reddit Upvote / Downvote column */}
-              <div className="flex flex-col items-center bg-black/40 border border-white/[0.06] rounded-lg p-1 self-start shrink-0">
+              <div className="flex flex-col items-center bg-black/50 border border-white/[0.07] rounded-lg p-1 self-start shrink-0 backdrop-blur-sm shadow-inner">
                 <button
                   onClick={() => handleThreadVote('up')}
                   className={`p-1 rounded transition-colors active:scale-95 ${
