@@ -419,6 +419,28 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 </label>
               </div>
 
+              {/* Show News Ticker */}
+              <div className="p-3.5 bg-black/40 rounded-xl border border-white/[0.06] flex items-center justify-between gap-4">
+                <div className="space-y-0.5">
+                  <div className="text-zinc-100 font-semibold text-xs flex items-center gap-1.5">
+                    <Radio size={14} className="text-red-400" />
+                    <span>แถบวิ่งข่าวด่วนเรียลไทม์ (Breaking News Ticker)</span>
+                  </div>
+                  <p className="text-zinc-400 text-[11px]">
+                    แสดงแถบพาดหัวข่าวด่วนและกระทู้มาแรงแบบมินิมอลใต้แถบนำทาง (Navbar)
+                  </p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={settings.showNewsTicker}
+                    onChange={(e) => updateSetting('showNewsTicker', e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-10 h-5 bg-white/[0.1] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-600"></div>
+                </label>
+              </div>
+
             </div>
           )}
 

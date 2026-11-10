@@ -1,7 +1,7 @@
 import { DatabaseSync } from 'node:sqlite';
 import path from 'path';
 import fs from 'fs';
-import { Thread, Comment, CommentNode, ChatMessage, Category, RedditSort, Community, MediaType, GhostRoom, PollData, PollOption } from '@/types';
+import { Thread, Comment, CommentNode, ChatMessage, Category, RedditSort, Community, MediaType, GhostRoom, PollData, PollOption, TickerItem } from '@/types';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 if (!fs.existsSync(DATA_DIR)) {
@@ -421,6 +421,52 @@ export function parsePoll(raw: any): PollData | null {
     }
   } catch {}
   return null;
+}
+
+export function getTickerItems(): TickerItem[] {
+  purgeExpiredData();
+  const database = getDatabase();
+
+  const rows = database.prepare(`
+    SELECT 
+      t.id,
+      t.title,
+      t.category,
+      t.is_pinned,
+      t.created_at,
+      (t.upvotes - t.downvotes) as score,
+      (SELECT COUNT(*) FROM comments c WHERE c.thread_id = t.id) as comment_count
+    FROM threads t
+    WHERE t.is_hidden = 0
+    ORDER BY 
+      t.is_pinned DESC,
+      CASE WHEN t.category = 'breaking' THEN 1 ELSE 0 END DESC,
+      (t.upvotes - t.downvotes) DESC,
+      t.created_at DESC
+    LIMIT 12
+  `).all() as any[];
+
+  return rows.map((r) => {
+    let badge: 'PINNED' | 'BREAKING' | 'RISING' | 'HOT' = 'HOT';
+    if (Number(r.is_pinned) === 1) {
+      badge = 'PINNED';
+    } else if (r.category === 'breaking') {
+      badge = 'BREAKING';
+    } else if (Number(r.score) >= 5 || Number(r.comment_count) >= 3) {
+      badge = 'RISING';
+    }
+
+    return {
+      id: r.id,
+      title: r.title,
+      category: r.category,
+      score: Number(r.score || 0),
+      comment_count: Number(r.comment_count || 0),
+      is_pinned: Number(r.is_pinned || 0),
+      created_at: r.created_at,
+      badge,
+    };
+  });
 }
 
 export function getThreads(category?: string, sort: RedditSort = 'hot'): Thread[] {

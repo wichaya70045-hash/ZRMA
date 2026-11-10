@@ -14,6 +14,7 @@ export interface AppSettings {
   defaultSort: 'hot' | 'breaking' | 'new' | 'top'; // Default feed sorting
   fontSize: 'normal' | 'comfortable'; // Standard (14px) vs Comfortable (16px)
   reduceMotion: boolean;      // Disable pulse & ping animations for performance
+  showNewsTicker: boolean;    // Show Breaking News Ticker bar under Navbar
 
   // Live Chat & Ghost Lounges
   chatSound: boolean;         // Play subtle chime on incoming chat message
@@ -34,6 +35,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   defaultSort: 'hot',
   fontSize: 'normal',
   reduceMotion: false,
+  showNewsTicker: true,
 
   chatSound: true,
   enterToSend: true,

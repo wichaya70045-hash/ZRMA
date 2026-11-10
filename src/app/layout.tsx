@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import Navbar from '@/components/Navbar';
+import BreakingNewsTicker from '@/components/BreakingNewsTicker';
 import { SettingsProvider } from '@/lib/settings';
 
 export const metadata: Metadata = {
@@ -26,6 +27,7 @@ export default function RootLayout({
       <body className="bg-[#090a0d] text-zinc-100 min-h-screen flex flex-col antialiased selection:bg-red-600 selection:text-white font-sans overflow-x-hidden w-full max-w-full">
         <SettingsProvider>
           <Navbar />
+          <BreakingNewsTicker />
           <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-4 py-3 sm:py-6 overflow-x-hidden">
             {children}
           </main>

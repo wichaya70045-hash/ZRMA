@@ -107,3 +107,14 @@ export interface GhostRoom {
   is_destroyed: number;
   created_at: string;
 }
+
+export interface TickerItem {
+  id: string;
+  title: string;
+  category: string;
+  score: number;
+  comment_count: number;
+  is_pinned: number;
+  created_at: string;
+  badge: 'PINNED' | 'BREAKING' | 'RISING' | 'HOT';
+}
