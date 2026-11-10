@@ -122,6 +122,13 @@ export function getDatabase(): DatabaseSync {
       );
 
       CREATE INDEX IF NOT EXISTS idx_ghost_rooms ON ghost_rooms(is_destroyed, last_active_at DESC);
+
+      CREATE TABLE IF NOT EXISTS used_captchas (
+        token_hash TEXT PRIMARY KEY,
+        expires_at INTEGER NOT NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_used_captchas_exp ON used_captchas(expires_at);
     `);
 
     // Migrations for columns in existing databases
@@ -374,12 +381,45 @@ function seedInitialData(database: DatabaseSync) {
   }
 }
 
+export function purgeExpiredCaptchas(): void {
+  try {
+    const database = getDatabase();
+    const now = Date.now();
+    database.prepare(`DELETE FROM used_captchas WHERE expires_at < ?`).run(now);
+  } catch (err) {
+    console.error('Error in purgeExpiredCaptchas:', err);
+  }
+}
+
+export function isCaptchaUsed(tokenHash: string): boolean {
+  try {
+    const database = getDatabase();
+    const row = database.prepare(`SELECT 1 FROM used_captchas WHERE token_hash = ?`).get(tokenHash);
+    return Boolean(row);
+  } catch {
+    return false;
+  }
+}
+
+export function markCaptchaUsed(tokenHash: string, expiresAt: number): void {
+  try {
+    const database = getDatabase();
+    database.prepare(`
+      INSERT OR REPLACE INTO used_captchas (token_hash, expires_at)
+      VALUES (?, ?)
+    `).run(tokenHash, expiresAt);
+  } catch (err) {
+    console.error('Error marking captcha used:', err);
+  }
+}
+
 export function purgeExpiredData(): void {
   try {
     const database = getDatabase();
     const nowIso = new Date().toISOString();
     database.prepare(`DELETE FROM threads WHERE expires_at <= ?`).run(nowIso);
     database.prepare(`DELETE FROM comments WHERE thread_id NOT IN (SELECT id FROM threads)`).run();
+    purgeExpiredCaptchas();
   } catch (err) {
     console.error('Error in purgeExpiredData:', err);
   }
@@ -731,20 +771,43 @@ export function deleteThread(id: string, edit_token?: string | null): { success:
   return { success: true };
 }
 
-export function voteThread(id: string, type: 'up' | 'down'): { upvotes: number; downvotes: number; score: number } | null {
+export function voteThread(
+  id: string,
+  type: 'up' | 'down' | 'cancel',
+  prevVote?: 'up' | 'down' | null
+): { upvotes: number; downvotes: number; score: number } | null {
   const database = getDatabase();
-  if (type === 'up') {
-    database.prepare(`UPDATE threads SET upvotes = upvotes + 1 WHERE id = ?`).run(id);
-  } else {
-    database.prepare(`UPDATE threads SET downvotes = downvotes + 1 WHERE id = ?`).run(id);
+  const existing = database.prepare(`SELECT upvotes, downvotes FROM threads WHERE id = ?`).get(id) as any;
+  if (!existing) return null;
+
+  let up = Number(existing.upvotes || 0);
+  let down = Number(existing.downvotes || 0);
+
+  if (type === 'cancel') {
+    if (prevVote === 'up') up = Math.max(0, up - 1);
+    else if (prevVote === 'down') down = Math.max(0, down - 1);
+  } else if (type === 'up') {
+    if (prevVote === 'down') {
+      down = Math.max(0, down - 1);
+      up += 1;
+    } else if (prevVote !== 'up') {
+      up += 1;
+    }
+  } else if (type === 'down') {
+    if (prevVote === 'up') {
+      up = Math.max(0, up - 1);
+      down += 1;
+    } else if (prevVote !== 'down') {
+      down += 1;
+    }
   }
 
-  const row = database.prepare(`SELECT upvotes, downvotes, (upvotes - downvotes) as score FROM threads WHERE id = ?`).get(id) as any;
-  if (!row) return null;
+  database.prepare(`UPDATE threads SET upvotes = ?, downvotes = ? WHERE id = ?`).run(up, down, id);
+
   return {
-    upvotes: Number(row.upvotes),
-    downvotes: Number(row.downvotes),
-    score: Number(row.score),
+    upvotes: up,
+    downvotes: down,
+    score: up - down,
   };
 }
 
@@ -828,20 +891,43 @@ export function createComment(data: {
   };
 }
 
-export function voteComment(id: string, type: 'up' | 'down'): { upvotes: number; downvotes: number; score: number } | null {
+export function voteComment(
+  id: string,
+  type: 'up' | 'down' | 'cancel',
+  prevVote?: 'up' | 'down' | null
+): { upvotes: number; downvotes: number; score: number } | null {
   const database = getDatabase();
-  if (type === 'up') {
-    database.prepare(`UPDATE comments SET upvotes = upvotes + 1 WHERE id = ?`).run(id);
-  } else {
-    database.prepare(`UPDATE comments SET downvotes = downvotes + 1 WHERE id = ?`).run(id);
+  const existing = database.prepare(`SELECT upvotes, downvotes FROM comments WHERE id = ?`).get(id) as any;
+  if (!existing) return null;
+
+  let up = Number(existing.upvotes || 0);
+  let down = Number(existing.downvotes || 0);
+
+  if (type === 'cancel') {
+    if (prevVote === 'up') up = Math.max(0, up - 1);
+    else if (prevVote === 'down') down = Math.max(0, down - 1);
+  } else if (type === 'up') {
+    if (prevVote === 'down') {
+      down = Math.max(0, down - 1);
+      up += 1;
+    } else if (prevVote !== 'up') {
+      up += 1;
+    }
+  } else if (type === 'down') {
+    if (prevVote === 'up') {
+      up = Math.max(0, up - 1);
+      down += 1;
+    } else if (prevVote !== 'down') {
+      down += 1;
+    }
   }
 
-  const row = database.prepare(`SELECT upvotes, downvotes, (upvotes - downvotes) as score FROM comments WHERE id = ?`).get(id) as any;
-  if (!row) return null;
+  database.prepare(`UPDATE comments SET upvotes = ?, downvotes = ? WHERE id = ?`).run(up, down, id);
+
   return {
-    upvotes: Number(row.upvotes),
-    downvotes: Number(row.downvotes),
-    score: Number(row.score),
+    upvotes: up,
+    downvotes: down,
+    score: up - down,
   };
 }
 

@@ -71,6 +71,16 @@ export default function LiveChatBox({
   const [isRoomDestroyed, setIsRoomDestroyed] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const identityRef = useRef<AnonymousIdentity | null>(null);
+  const customAliasRef = useRef<string>('');
+
+  useEffect(() => {
+    identityRef.current = identity;
+  }, [identity]);
+
+  useEffect(() => {
+    customAliasRef.current = customAlias;
+  }, [customAlias]);
 
   useEffect(() => {
     const id = getScopedIdentity(`chat_${roomId}`);
@@ -111,7 +121,8 @@ export default function LiveChatBox({
         });
 
         // Play chime if message came from another user
-        if (newMsg.author_alias !== identity?.alias) {
+        const currentEffectiveAlias = customAliasRef.current.trim() || identityRef.current?.alias;
+        if (newMsg.author_alias !== currentEffectiveAlias) {
           playChatChime();
         }
       } catch (err) {

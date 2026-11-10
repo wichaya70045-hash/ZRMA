@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { isCaptchaUsed, markCaptchaUsed } from './db';
 
 const SECRET_SALT = process.env.CAPTCHA_SECRET || 'zrma-ultra-privacy-secret-salt-3982';
 
@@ -70,7 +71,20 @@ export function verifyCaptcha(token: string, userAnswer: string | number): boole
     const expectedHmac = crypto.createHmac('sha256', SECRET_SALT).update(rawPayload).digest('hex');
 
     if (crypto.timingSafeEqual(Buffer.from(receivedHmac), Buffer.from(expectedHmac))) {
-      return parseInt(userAnswer.toString().trim(), 10) === parseInt(expectedAnswerStr, 10);
+      const isCorrect = parseInt(userAnswer.toString().trim(), 10) === parseInt(expectedAnswerStr, 10);
+      if (!isCorrect) {
+        return false;
+      }
+
+      // Check anti-replay: ensure single-use token
+      const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+      if (isCaptchaUsed(tokenHash)) {
+        return false;
+      }
+
+      // Mark token as consumed
+      markCaptchaUsed(tokenHash, expiresAt);
+      return true;
     }
     return false;
   } catch {

@@ -98,18 +98,26 @@ export default function ThreadCard({
 
   const handleVote = async (type: 'up' | 'down') => {
     if (isVoting) return;
-    if (userVote === type) return;
+
+    const isCancel = userVote === type;
+    const nextType: 'up' | 'down' | 'cancel' = isCancel ? 'cancel' : type;
+    const prevVote = userVote;
 
     setIsVoting(true);
-    const voteDelta = userVote === null ? (type === 'up' ? 1 : -1) : (type === 'up' ? 2 : -2);
+    const voteDelta = isCancel
+      ? (prevVote === 'up' ? -1 : 1)
+      : prevVote === null
+      ? (type === 'up' ? 1 : -1)
+      : (type === 'up' ? 2 : -2);
+
     setScore((prev) => prev + voteDelta);
-    setUserVote(type);
+    setUserVote(isCancel ? null : type);
 
     try {
       const res = await fetch(`/api/threads/${thread.id}/vote`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type }),
+        body: JSON.stringify({ type: nextType, prev_vote: prevVote }),
       });
       const data = await res.json();
       if (res.ok && data.score !== undefined) {
@@ -118,7 +126,7 @@ export default function ThreadCard({
       }
     } catch {
       setScore((prev) => prev - voteDelta);
-      setUserVote(null);
+      setUserVote(prevVote);
     } finally {
       setIsVoting(false);
     }

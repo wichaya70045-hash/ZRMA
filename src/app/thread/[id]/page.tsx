@@ -219,16 +219,25 @@ export default function ThreadDetailPage({
   };
 
   const handleThreadVote = async (type: 'up' | 'down') => {
-    if (threadVote === type || !thread) return;
-    const delta = threadVote === null ? (type === 'up' ? 1 : -1) : (type === 'up' ? 2 : -2);
+    if (!thread) return;
+    const isCancel = threadVote === type;
+    const nextType: 'up' | 'down' | 'cancel' = isCancel ? 'cancel' : type;
+    const prevVote = threadVote;
+
+    const delta = isCancel
+      ? (prevVote === 'up' ? -1 : 1)
+      : prevVote === null
+      ? (type === 'up' ? 1 : -1)
+      : (type === 'up' ? 2 : -2);
+
     setThreadScore((s) => s + delta);
-    setThreadVote(type);
+    setThreadVote(isCancel ? null : type);
 
     try {
       const res = await fetch(`/api/threads/${thread.id}/vote`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type }),
+        body: JSON.stringify({ type: nextType, prev_vote: prevVote }),
       });
       const data = await res.json();
       if (res.ok && data.score !== undefined) {
@@ -236,31 +245,38 @@ export default function ThreadDetailPage({
       }
     } catch {
       setThreadScore((s) => s - delta);
-      setThreadVote(null);
+      setThreadVote(prevVote);
     }
   };
 
   const handleCommentVote = async (commentId: string, type: 'up' | 'down') => {
     const current = commentVotes[commentId] || { score: 0, voted: null };
-    if (current.voted === type) return;
+    const isCancel = current.voted === type;
+    const nextType: 'up' | 'down' | 'cancel' = isCancel ? 'cancel' : type;
+    const prevVote = current.voted;
 
-    const delta = current.voted === null ? (type === 'up' ? 1 : -1) : (type === 'up' ? 2 : -2);
+    const delta = isCancel
+      ? (prevVote === 'up' ? -1 : 1)
+      : prevVote === null
+      ? (type === 'up' ? 1 : -1)
+      : (type === 'up' ? 2 : -2);
+
     setCommentVotes((prev) => ({
       ...prev,
-      [commentId]: { score: current.score + delta, voted: type },
+      [commentId]: { score: current.score + delta, voted: isCancel ? null : type },
     }));
 
     try {
       const res = await fetch(`/api/comments/${commentId}/vote`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type }),
+        body: JSON.stringify({ type: nextType, prev_vote: prevVote }),
       });
       const data = await res.json();
       if (res.ok && data.score !== undefined) {
         setCommentVotes((prev) => ({
           ...prev,
-          [commentId]: { score: data.score, voted: type },
+          [commentId]: { score: data.score, voted: isCancel ? null : type },
         }));
       }
     } catch {

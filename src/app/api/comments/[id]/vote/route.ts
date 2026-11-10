@@ -10,9 +10,10 @@ export async function POST(
   try {
     const { id } = await params;
     const body = await req.json();
-    const type = body.type === 'down' ? 'down' : 'up';
+    const type = body.type === 'down' ? 'down' : body.type === 'cancel' ? 'cancel' : 'up';
+    const prevVote = body.prev_vote || body.previous_vote || undefined;
 
-    const result = voteComment(id, type);
+    const result = voteComment(id, type, prevVote);
     if (!result) {
       return NextResponse.json({ error: 'Comment not found' }, { status: 404 });
     }
