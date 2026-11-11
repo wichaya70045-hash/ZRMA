@@ -28,6 +28,7 @@ import {
   Palette,
   User as UserIcon,
   ChevronDown,
+  Menu,
 } from 'lucide-react';
 import SettingsModal from './SettingsModal';
 import IdentityAvatar, { NAME_COLOR_CLASSES } from './IdentityAvatar';
@@ -35,7 +36,11 @@ import { useSettings } from '@/lib/settings';
 import { useAuth } from '@/lib/authContext';
 import { Thread, Community } from '@/types';
 
-export default function Navbar() {
+interface NavbarProps {
+  onToggleLeftSidebar?: () => void;
+}
+
+export default function Navbar({ onToggleLeftSidebar }: NavbarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
@@ -155,10 +160,21 @@ export default function Navbar() {
   return (
     <>
       <header className="sticky top-0 z-40 w-full border-b border-zinc-200 dark:border-white/[0.08] bg-white/90 dark:bg-[#090a0d]/95 backdrop-blur-md transition-colors">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 h-14 flex items-center justify-between gap-2 sm:gap-4">
+        <div className="max-w-[1440px] mx-auto px-3 sm:px-4 h-14 flex items-center justify-between gap-2 sm:gap-4">
           
-          {/* Left: Brand Identity + Quick Navigation Links */}
+          {/* Left: Mobile Sidebar Toggle + Brand Identity + Quick Navigation Links */}
           <div className="flex items-center gap-2 lg:gap-4 shrink-0">
+            {onToggleLeftSidebar && (
+              <button
+                type="button"
+                onClick={onToggleLeftSidebar}
+                className="lg:hidden p-1.5 rounded-lg text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/[0.06] border border-transparent hover:border-zinc-200 dark:hover:border-white/[0.08] transition-colors"
+                aria-label="เปิดแถบเมนูด้านซ้าย"
+                title="เมนูด้านซ้าย"
+              >
+                <Menu size={18} />
+              </button>
+            )}
             <Link
               href="/"
               className="flex items-center gap-2 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 rounded-md"

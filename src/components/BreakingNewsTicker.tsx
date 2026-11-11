@@ -180,7 +180,7 @@ export default function BreakingNewsTicker() {
       aria-label="Breaking News Ticker"
       className="w-full bg-zinc-50/95 dark:bg-gradient-to-r dark:from-[#0d0f15] dark:via-[#090b0e] dark:to-[#0d0f15] border-b border-zinc-200 dark:border-white/[0.08] text-xs select-none z-30 transition-all overflow-hidden shadow-sm dark:shadow-inner"
     >
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 h-9 flex items-center justify-between gap-2.5 sm:gap-3.5 overflow-hidden">
+      <div className="max-w-[1440px] mx-auto px-3 sm:px-4 h-9 flex items-center justify-between gap-2.5 sm:gap-3.5 overflow-hidden">
         
         {/* Left Live Indicator Badge */}
         <Link
