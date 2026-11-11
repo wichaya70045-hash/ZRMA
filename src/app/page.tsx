@@ -125,10 +125,17 @@ function HomeContent() {
   const filteredThreads = threads.filter((t) => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
+    const matchesJob = t.job
+      ? (t.job.skills || []).some((s) => s.toLowerCase().includes(q)) ||
+        Boolean(t.job.budget && t.job.budget.toLowerCase().includes(q)) ||
+        Boolean(t.job.work_mode && t.job.work_mode.toLowerCase().includes(q))
+      : false;
     return (
       t.title.toLowerCase().includes(q) ||
       t.content.toLowerCase().includes(q) ||
-      t.author_alias.toLowerCase().includes(q)
+      t.author_alias.toLowerCase().includes(q) ||
+      t.category.toLowerCase().includes(q) ||
+      matchesJob
     );
   });
 

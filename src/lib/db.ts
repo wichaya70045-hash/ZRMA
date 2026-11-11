@@ -720,8 +720,12 @@ export function getThreads(
 
   if (category && category !== 'all') {
     const cleanCat = category.replace(/^[zr]\//i, '');
-    query += ` AND t.category = ?`;
-    params.push(cleanCat);
+    if (cleanCat === 'jobs') {
+      query += ` AND (t.category = 'jobs' OR t.job_data IS NOT NULL)`;
+    } else {
+      query += ` AND t.category = ?`;
+      params.push(cleanCat);
+    }
   }
 
   if (jobFilter?.onlyJobs) {
@@ -881,8 +885,10 @@ export function toggleJobStatus(
     if (!isOwner && !hasToken) {
       return { success: false, error: 'คุณไม่มีสิทธิ์เปลี่ยนสถานะประกาศงานนี้' };
     }
-  } else if (existing.edit_token && edit_token && existing.edit_token !== edit_token) {
-    return { success: false, error: 'รหัสยืนยันการแก้ไขไม่ถูกต้อง' };
+  } else {
+    if (!existing.edit_token || !edit_token || existing.edit_token !== edit_token) {
+      return { success: false, error: 'รหัสยืนยันการแก้ไข (Edit Passcode) ไม่ถูกต้อง' };
+    }
   }
 
   const updatedJob: JobData = {
@@ -957,8 +963,10 @@ export function updateThread(id: string, data: {
     if (!isOwner && !hasToken) {
       return { success: false, error: 'คุณไม่มีสิทธิ์แก้ไขกระทู้นี้ กรุณาเข้าสู่ระบบด้วยบัญชีเจ้าของโพสต์หรือใช้รหัสยืนยัน' };
     }
-  } else if (existing.edit_token && data.edit_token && existing.edit_token !== data.edit_token) {
-    return { success: false, error: 'รหัสยืนยันการแก้ไข (Edit Passcode) ไม่ถูกต้อง' };
+  } else {
+    if (!existing.edit_token || !data.edit_token || existing.edit_token !== data.edit_token) {
+      return { success: false, error: 'รหัสยืนยันการแก้ไข (Edit Passcode) ไม่ถูกต้อง' };
+    }
   }
 
   const now = new Date().toISOString();
@@ -1005,8 +1013,10 @@ export function deleteThread(
     if (!isOwner && !hasToken) {
       return { success: false, error: 'คุณไม่มีสิทธิ์ลบกระทู้นี้ กรุณาเข้าสู่ระบบด้วยบัญชีเจ้าของโพสต์หรือใช้รหัสยืนยัน' };
     }
-  } else if (existing.edit_token && edit_token && existing.edit_token !== edit_token) {
-    return { success: false, error: 'รหัสยืนยันการลบ (Delete Passcode) ไม่ถูกต้อง' };
+  } else {
+    if (!existing.edit_token || !edit_token || existing.edit_token !== edit_token) {
+      return { success: false, error: 'รหัสยืนยันการลบ (Delete Passcode) ไม่ถูกต้อง' };
+    }
   }
 
   database.prepare(`DELETE FROM comments WHERE thread_id = ?`).run(id);
@@ -1298,10 +1308,16 @@ export function updateChatMessage(id: string, data: {
     if (!isOwner && !hasToken) {
       return { success: false, error: 'คุณไม่มีสิทธิ์แก้ไขข้อความนี้' };
     }
-  } else if (existing.edit_token && data.edit_token && existing.edit_token !== data.edit_token) {
+  } else if (existing.edit_token) {
+    if (!data.edit_token || existing.edit_token !== data.edit_token) {
+      return { success: false, error: 'คุณไม่มีสิทธิ์แก้ไขข้อความนี้ (รหัสยืนยันไม่ถูกต้อง)' };
+    }
+  } else if (data.author_alias) {
+    if (existing.author_alias !== data.author_alias) {
+      return { success: false, error: 'คุณสามารถแก้ไขได้เฉพาะข้อความของตัวเองเท่านั้น' };
+    }
+  } else {
     return { success: false, error: 'คุณไม่มีสิทธิ์แก้ไขข้อความนี้' };
-  } else if (!existing.edit_token && data.author_alias && existing.author_alias !== data.author_alias) {
-    return { success: false, error: 'คุณสามารถแก้ไขได้เฉพาะข้อความของตัวเองเท่านั้น' };
   }
 
   const now = new Date().toISOString();
@@ -1338,10 +1354,16 @@ export function deleteChatMessage(
     if (!isOwner && !hasToken) {
       return { success: false, error: 'คุณไม่มีสิทธิ์ลบข้อความนี้' };
     }
-  } else if (existing.edit_token && edit_token && existing.edit_token !== edit_token) {
+  } else if (existing.edit_token) {
+    if (!edit_token || existing.edit_token !== edit_token) {
+      return { success: false, error: 'คุณไม่มีสิทธิ์ลบข้อความนี้ (รหัสยืนยันไม่ถูกต้อง)' };
+    }
+  } else if (author_alias) {
+    if (existing.author_alias !== author_alias) {
+      return { success: false, error: 'คุณสามารถลบได้เฉพาะข้อความของตัวเองเท่านั้น' };
+    }
+  } else {
     return { success: false, error: 'คุณไม่มีสิทธิ์ลบข้อความนี้' };
-  } else if (!existing.edit_token && author_alias && existing.author_alias !== author_alias) {
-    return { success: false, error: 'คุณสามารถลบได้เฉพาะข้อความของตัวเองเท่านั้น' };
   }
 
   database.prepare(`DELETE FROM chat_messages WHERE id = ?`).run(id);
