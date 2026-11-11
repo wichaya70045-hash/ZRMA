@@ -461,8 +461,8 @@ export default function NewThreadPage() {
                   value={customAuthorAlias}
                   onChange={(e) => handleAliasChange(e.target.value)}
                   placeholder="u/ชื่อที่คุณต้องการ"
-                  maxLength={40}
-                  className="bg-transparent text-xs font-semibold text-zinc-900 dark:text-zinc-200 focus:outline-none focus:text-amber-600 dark:focus:text-yellow-400 font-mono w-28 sm:w-36"
+                  maxLength={60}
+                  className="bg-transparent text-xs font-semibold text-zinc-900 dark:text-zinc-200 focus:outline-none focus:text-amber-600 dark:focus:text-yellow-400 font-mono w-36 sm:w-60"
                 />
               </div>
               <button

@@ -4,6 +4,7 @@ import { getThreads, createThread } from '@/lib/db';
 import { verifyCaptcha } from '@/lib/captcha';
 import { getSessionUser } from '@/lib/auth';
 import { broadcastToRoom } from '@/lib/sse';
+import { generateRandomAlias } from '@/lib/privacy';
 import { Category, RedditSort, JobType, JobWorkMode, MarketCondition, MarketStatus, MarketDelivery } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -219,7 +220,7 @@ export async function POST(req: NextRequest) {
       market_data: marketDataString,
       author_alias: useAccountIdentity
         ? sessionUser!.display_name
-        : (author_alias ? author_alias.trim() : 'u/ผู้ไม่ประสงค์ออกนาม #????'),
+        : (author_alias ? author_alias.trim() : generateRandomAlias()),
       author_avatar: useAccountIdentity
         ? sessionUser!.avatar_icon
         : (author_avatar || 'terminal'),
