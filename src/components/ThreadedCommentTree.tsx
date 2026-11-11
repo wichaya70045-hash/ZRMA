@@ -84,19 +84,19 @@ function SingleCommentNode({
       {depth > 0 && (
         <div
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute left-0 top-0 bottom-0 w-[2px] bg-white/[0.08] hover:bg-yellow-400/80 cursor-pointer transition-colors"
+          className="absolute left-0 top-0 bottom-0 w-[2px] bg-zinc-200 dark:bg-white/[0.08] hover:bg-amber-500 dark:hover:bg-yellow-400/80 cursor-pointer transition-colors"
           title="คลิกเพื่อย่อ/ขยายบทสนทนานี้"
         />
       )}
 
-      <div className="bg-[#101217] border border-white/[0.06] rounded-xl p-3 my-2 text-xs text-zinc-200 w-full max-w-full overflow-hidden">
+      <div className="bg-white dark:bg-[#101217] border border-zinc-200 dark:border-white/[0.06] rounded-xl p-3 my-2 text-xs text-zinc-800 dark:text-zinc-200 w-full max-w-full overflow-hidden shadow-sm dark:shadow-none">
         
         {/* Comment Header */}
         <div className="flex items-center justify-between gap-2 mb-1.5">
           <div className="flex items-center gap-1.5">
             <IdentityAvatar iconKey={node.author_avatar} theme={isOP ? 'red' : 'zinc'} size="xs" />
             
-            <span className={`font-semibold ${isOP ? 'text-red-400 font-bold' : 'text-zinc-200'}`}>
+            <span className={`font-semibold ${isOP ? 'text-red-600 dark:text-red-400 font-bold' : 'text-zinc-900 dark:text-zinc-200'}`}>
               u/{node.author_alias.replace(/^u\//, '')}
             </span>
 
@@ -107,7 +107,7 @@ function SingleCommentNode({
               </span>
             )}
 
-            <span className="text-zinc-600">•</span>
+            <span className="text-zinc-300 dark:text-zinc-600">•</span>
 
             <span className="font-mono text-zinc-500 text-[11px] tabular-nums">
               {new Date(node.created_at).toLocaleTimeString('th-TH', {
@@ -120,7 +120,7 @@ function SingleCommentNode({
           {/* Collapse [-] button */}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-1 text-zinc-500 hover:text-zinc-300 rounded hover:bg-white/[0.04] transition-colors"
+            className="p-1 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300 rounded hover:bg-zinc-100 dark:hover:bg-white/[0.04] transition-colors"
             title={isCollapsed ? 'ขยายความเห็น' : 'ย่อความเห็น'}
           >
             {isCollapsed ? <Plus size={12} /> : <Minus size={12} />}
@@ -131,16 +131,16 @@ function SingleCommentNode({
         {isCollapsed ? (
           <div
             onClick={() => setIsCollapsed(false)}
-            className="text-[11px] text-zinc-500 italic cursor-pointer hover:text-zinc-400 py-0.5"
+            className="text-[11px] text-zinc-500 italic cursor-pointer hover:text-zinc-700 dark:hover:text-zinc-400 py-0.5"
           >
             [ซ่อนความเห็นของ {node.author_alias} และ {node.children.length} การตอบกลับ]
           </div>
         ) : isHidden ? (
-          <div className="bg-red-950/20 border border-red-900/40 rounded p-2 text-red-300 flex items-center justify-between">
+          <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 rounded p-2 text-red-700 dark:text-red-300 flex items-center justify-between">
             <span>ความคิดเห็นนี้ถูกซ่อนเนื่องจากถูกรายงาน 5 ครั้ง</span>
             <button
               onClick={() => setIsRevealed(true)}
-              className="px-2 py-0.5 bg-white/[0.06] rounded text-[11px]"
+              className="px-2 py-0.5 bg-white dark:bg-white/[0.06] rounded text-[11px] text-zinc-800 dark:text-zinc-200 border border-red-200 dark:border-transparent"
             >
               ดูเนื้อหา
             </button>
@@ -148,13 +148,13 @@ function SingleCommentNode({
         ) : (
           <>
             {/* Comment Body */}
-            <div className="text-zinc-300 leading-relaxed whitespace-pre-wrap py-1 text-xs sm:text-sm">
+            <div className="text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap py-1 text-xs sm:text-sm">
               {node.content}
             </div>
 
             {/* Media Attachment if present in comment */}
             {node.media_url && (
-              <div className="my-2 rounded-lg overflow-hidden border border-white/[0.08] max-w-sm">
+              <div className="my-2 rounded-lg overflow-hidden border border-zinc-200 dark:border-white/[0.08] max-w-sm">
                 <img
                   src={node.media_url}
                   alt="Comment attachment"
@@ -165,16 +165,16 @@ function SingleCommentNode({
             )}
 
             {/* Action Bar (Reddit Style: Vote, Reply, Report) */}
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-2 mt-1 border-t border-white/[0.04] text-xs">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-2 mt-1 border-t border-zinc-100 dark:border-white/[0.04] text-xs">
               
               {/* Up/Down Vote pill */}
-              <div className="flex items-center bg-black/40 border border-white/[0.06] rounded p-0.5">
+              <div className="flex items-center bg-zinc-100 dark:bg-black/40 border border-zinc-200 dark:border-white/[0.06] rounded p-0.5">
                 <button
                   onClick={() => onVote(node.id, 'up')}
                   className={`p-0.5 rounded transition-colors active:scale-95 ${
                     voteState.voted === 'up'
-                      ? 'text-yellow-400 bg-yellow-500/15'
-                      : 'text-zinc-500 hover:text-yellow-400'
+                      ? 'text-amber-600 dark:text-yellow-400 bg-amber-500/15 dark:bg-yellow-500/15'
+                      : 'text-zinc-500 hover:text-amber-600 dark:hover:text-yellow-400'
                   }`}
                   title="โหวตขึ้น"
                 >
@@ -184,10 +184,10 @@ function SingleCommentNode({
                 <span
                   className={`px-1 text-[11px] font-mono font-bold tabular-nums ${
                     voteState.score > 0
-                      ? 'text-yellow-400'
+                      ? 'text-amber-600 dark:text-yellow-400'
                       : voteState.score < 0
-                      ? 'text-red-400'
-                      : 'text-zinc-400'
+                      ? 'text-red-600 dark:text-red-400'
+                      : 'text-zinc-500 dark:text-zinc-400'
                   }`}
                 >
                   {voteState.score}
@@ -197,8 +197,8 @@ function SingleCommentNode({
                   onClick={() => onVote(node.id, 'down')}
                   className={`p-0.5 rounded transition-colors active:scale-95 ${
                     voteState.voted === 'down'
-                      ? 'text-red-400 bg-red-500/15'
-                      : 'text-zinc-500 hover:text-red-400'
+                      ? 'text-red-600 dark:text-red-400 bg-red-500/15'
+                      : 'text-zinc-500 hover:text-red-600 dark:hover:text-red-400'
                   }`}
                   title="โหวตลง"
                 >
@@ -210,7 +210,7 @@ function SingleCommentNode({
               <button
                 onClick={() => setShowReplyForm(!showReplyForm)}
                 className={`inline-flex items-center gap-1 text-[11px] transition-colors ${
-                  showReplyForm ? 'text-yellow-400' : 'text-zinc-400 hover:text-yellow-400'
+                  showReplyForm ? 'text-amber-600 dark:text-yellow-400' : 'text-zinc-600 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-yellow-400'
                 }`}
               >
                 <MessageSquare size={11} />
@@ -220,7 +220,7 @@ function SingleCommentNode({
               {/* Report button */}
               <button
                 onClick={() => onReport(node.id, node.content)}
-                className="inline-flex items-center gap-1 text-[11px] text-zinc-500 hover:text-red-400 transition-colors ml-auto"
+                className="inline-flex items-center gap-1 text-[11px] text-zinc-500 hover:text-red-600 dark:hover:text-red-400 transition-colors ml-auto"
                 title="รายงานข้อความ"
               >
                 <Flag size={11} />
@@ -230,11 +230,11 @@ function SingleCommentNode({
 
             {/* Inline Nested Reply Form */}
             {showReplyForm && (
-              <form onSubmit={handleSendReply} className="mt-2.5 pt-2.5 border-t border-white/[0.06] space-y-2">
-                <div className="flex items-center gap-1 text-[11px] text-zinc-400">
-                  <CornerDownRight size={12} className="text-yellow-400" />
+              <form onSubmit={handleSendReply} className="mt-2.5 pt-2.5 border-t border-zinc-200 dark:border-white/[0.06] space-y-2">
+                <div className="flex items-center gap-1 text-[11px] text-zinc-600 dark:text-zinc-400">
+                  <CornerDownRight size={12} className="text-amber-600 dark:text-yellow-400" />
                   <span>
-                    ตอบกลับ <strong className="text-zinc-200">u/{node.author_alias}</strong> (ในฐานะ: {currentIdentityAlias})
+                    ตอบกลับ <strong className="text-zinc-900 dark:text-zinc-200">u/{node.author_alias}</strong> (ในฐานะ: {currentIdentityAlias})
                   </span>
                 </div>
 
@@ -244,12 +244,12 @@ function SingleCommentNode({
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
                   placeholder="พิมพ์ข้อความตอบกลับแบบนิรนาม..."
-                  className="w-full bg-white/[0.02] border border-white/[0.08] focus:border-red-500 rounded-lg p-2 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                  className="w-full bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200 dark:border-white/[0.08] focus:border-red-500 rounded-lg p-2 text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-red-500"
                 />
 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 rounded text-xs font-mono font-bold">
+                    <span className="px-2 py-0.5 bg-amber-50 dark:bg-yellow-500/10 border border-amber-200 dark:border-yellow-500/20 text-amber-700 dark:text-yellow-400 rounded text-xs font-mono font-bold">
                       {captchaData ? captchaData.question : '...'}
                     </span>
                     <input
@@ -258,12 +258,12 @@ function SingleCommentNode({
                       value={replyCaptcha}
                       onChange={(e) => setReplyCaptcha(e.target.value)}
                       placeholder="คำตอบ..."
-                      className="w-20 bg-white/[0.02] border border-white/[0.08] rounded px-2 py-0.5 text-xs text-white focus:outline-none focus:border-yellow-400 font-mono"
+                      className="w-20 bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200 dark:border-white/[0.08] rounded px-2 py-0.5 text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-amber-500 dark:focus:border-yellow-400 font-mono"
                     />
                     <button
                       type="button"
                       onClick={onRefreshCaptcha}
-                      className="p-1 text-zinc-500 hover:text-yellow-400"
+                      className="p-1 text-zinc-500 hover:text-amber-600 dark:hover:text-yellow-400"
                       title="เปลี่ยนโจทย์"
                     >
                       <RefreshCw size={11} />
@@ -274,7 +274,7 @@ function SingleCommentNode({
                     <button
                       type="button"
                       onClick={() => setShowReplyForm(false)}
-                      className="px-2.5 py-1 text-xs text-zinc-400 hover:text-white"
+                      className="px-2.5 py-1 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
                     >
                       ยกเลิก
                     </button>

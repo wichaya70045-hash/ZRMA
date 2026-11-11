@@ -124,10 +124,10 @@ export default function BreakingNewsTicker() {
   // Minimized state: small radar pill that allows user to reopen ticker
   if (isDismissed) {
     return (
-      <div className="w-full bg-[#0a0c10]/95 border-b border-white/[0.04] py-1 px-3 sm:px-4 flex items-center justify-end">
+      <div className="w-full bg-zinc-50 dark:bg-[#0a0c10]/95 border-b border-zinc-200 dark:border-white/[0.04] py-1 px-3 sm:px-4 flex items-center justify-end">
         <button
           onClick={() => setIsDismissed(false)}
-          className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] text-[10px] font-mono text-zinc-400 hover:text-yellow-400 transition-colors"
+          className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-white dark:bg-white/[0.03] hover:bg-zinc-100 dark:hover:bg-white/[0.06] border border-zinc-200 dark:border-white/[0.08] text-[10px] font-mono text-zinc-600 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-yellow-400 transition-colors"
           title="เปิดแถบข่าวด่วนเรียลไทม์"
         >
           <span className="relative flex h-1.5 w-1.5 shrink-0">
@@ -178,14 +178,14 @@ export default function BreakingNewsTicker() {
   return (
     <aside
       aria-label="Breaking News Ticker"
-      className="w-full bg-gradient-to-r from-[#0d0f15] via-[#090b0e] to-[#0d0f15] border-b border-white/[0.08] text-xs select-none z-30 transition-all overflow-hidden shadow-inner"
+      className="w-full bg-zinc-50/95 dark:bg-gradient-to-r dark:from-[#0d0f15] dark:via-[#090b0e] dark:to-[#0d0f15] border-b border-zinc-200 dark:border-white/[0.08] text-xs select-none z-30 transition-all overflow-hidden shadow-sm dark:shadow-inner"
     >
       <div className="max-w-7xl mx-auto px-3 sm:px-4 h-9 flex items-center justify-between gap-2.5 sm:gap-3.5 overflow-hidden">
         
         {/* Left Live Indicator Badge */}
         <Link
           href="/?category=breaking"
-          className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-red-950/70 border border-red-500/40 text-red-400 hover:border-red-400 hover:bg-red-950 transition-all shadow-[0_0_8px_rgba(239,68,68,0.15)] shrink-0 group focus-visible:outline-none"
+          className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-red-50 dark:bg-red-950/70 border border-red-200 dark:border-red-500/40 text-red-600 dark:text-red-400 hover:border-red-400 hover:bg-red-100 dark:hover:bg-red-950 transition-all shadow-sm dark:shadow-[0_0_8px_rgba(239,68,68,0.15)] shrink-0 group focus-visible:outline-none"
           title="ดูกระทู้ใน z/breaking ทั้งหมด"
         >
           <span className="relative flex h-2 w-2 shrink-0">
@@ -196,7 +196,7 @@ export default function BreakingNewsTicker() {
             />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
           </span>
-          <Radio size={11} className="shrink-0 text-red-400 group-hover:scale-110 transition-transform" />
+          <Radio size={11} className="shrink-0 text-red-600 dark:text-red-400 group-hover:scale-110 transition-transform" />
           <span className="font-mono font-bold text-[10px] tracking-wider uppercase hidden sm:inline">
             BREAKING WIRE
           </span>
@@ -213,22 +213,22 @@ export default function BreakingNewsTicker() {
         >
           {/* Badge indicator */}
           {currentItem.badge === 'PINNED' ? (
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-red-900/60 text-red-300 border border-red-500/40 shrink-0">
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-red-100 dark:bg-red-900/60 text-red-700 dark:text-red-300 border border-red-300 dark:border-red-500/40 shrink-0">
               <Pin size={9} />
               <span>ปักหมุด</span>
             </span>
           ) : currentItem.badge === 'BREAKING' ? (
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-red-950/70 text-red-400 border border-red-500/30 shrink-0">
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-red-50 dark:bg-red-950/70 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/30 shrink-0">
               <Radio size={9} />
               <span>ข่าวด่วน</span>
             </span>
           ) : currentItem.badge === 'RISING' ? (
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-orange-950/70 text-orange-400 border border-orange-500/30 shrink-0">
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-orange-50 dark:bg-orange-950/70 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-500/30 shrink-0">
               <Zap size={9} />
               <span>มาแรง</span>
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-yellow-950/60 text-yellow-400 border border-yellow-500/30 shrink-0">
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-amber-50 dark:bg-yellow-950/60 text-amber-700 dark:text-yellow-400 border border-amber-200 dark:border-yellow-500/30 shrink-0">
               <Flame size={9} />
               <span>ฮิต</span>
             </span>
@@ -237,18 +237,18 @@ export default function BreakingNewsTicker() {
           {/* Category slug */}
           <Link
             href={`/?category=${currentItem.category.replace(/^[zr]\//i, '')}`}
-            className="font-mono text-[10px] text-zinc-400 hover:text-yellow-400 font-semibold shrink-0 hidden md:inline"
+            className="font-mono text-[10px] text-zinc-500 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-yellow-400 font-semibold shrink-0 hidden md:inline"
           >
             z/{currentItem.category.replace(/^[zr]\//i, '')}
           </Link>
 
-          <span className="text-zinc-600 hidden md:inline">•</span>
+          <span className="text-zinc-300 dark:text-zinc-600 hidden md:inline">•</span>
 
           {/* Clickable Headline */}
           <Link
             href={`/thread/${currentItem.id}`}
             key={currentItem.id}
-            className="font-medium text-xs text-zinc-200 hover:text-yellow-400 truncate flex-1 min-w-0 transition-colors animate-in fade-in duration-300"
+            className="font-medium text-xs text-zinc-800 dark:text-zinc-200 hover:text-red-600 dark:hover:text-yellow-400 truncate flex-1 min-w-0 transition-colors animate-in fade-in duration-300"
             title={currentItem.title}
           >
             {currentItem.title}
@@ -261,9 +261,9 @@ export default function BreakingNewsTicker() {
         </div>
 
         {/* Right Navigation & Controls */}
-        <div className="flex items-center gap-1 shrink-0 text-zinc-400">
+        <div className="flex items-center gap-1 shrink-0 text-zinc-500 dark:text-zinc-400">
           {/* Index Counter */}
-          <span className="font-mono text-[10px] text-zinc-500 tabular-nums px-1 hidden sm:inline">
+          <span className="font-mono text-[10px] text-zinc-400 dark:text-zinc-500 tabular-nums px-1 hidden sm:inline">
             {currentIndex + 1}/{items.length}
           </span>
 
@@ -271,8 +271,8 @@ export default function BreakingNewsTicker() {
           <button
             type="button"
             onClick={togglePause}
-            className={`p-1 rounded hover:bg-white/[0.06] transition-colors ${
-              isPaused ? 'text-yellow-400 bg-yellow-400/10' : 'text-zinc-400 hover:text-white'
+            className={`p-1 rounded hover:bg-zinc-200/60 dark:hover:bg-white/[0.06] transition-colors ${
+              isPaused ? 'text-amber-600 dark:text-yellow-400 bg-amber-500/10 dark:bg-yellow-400/10' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
             }`}
             title={isPaused ? 'เล่นต่อ (Auto-play)' : 'หยุดชั่วคราว (Pause)'}
             aria-label="Pause or play ticker"
@@ -284,7 +284,7 @@ export default function BreakingNewsTicker() {
           <button
             type="button"
             onClick={handlePrev}
-            className="p-1 text-zinc-400 hover:text-white rounded hover:bg-white/[0.06] transition-colors"
+            className="p-1 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded hover:bg-zinc-200/60 dark:hover:bg-white/[0.06] transition-colors"
             title="ข่าวก่อนหน้า"
             aria-label="Previous headline"
           >
@@ -295,7 +295,7 @@ export default function BreakingNewsTicker() {
           <button
             type="button"
             onClick={handleNext}
-            className="p-1 text-zinc-400 hover:text-white rounded hover:bg-white/[0.06] transition-colors"
+            className="p-1 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded hover:bg-zinc-200/60 dark:hover:bg-white/[0.06] transition-colors"
             title="ข่าวถัดไป"
             aria-label="Next headline"
           >
@@ -306,7 +306,7 @@ export default function BreakingNewsTicker() {
           <button
             type="button"
             onClick={() => setIsDismissed(true)}
-            className="p-1 text-zinc-500 hover:text-red-400 rounded hover:bg-white/[0.06] transition-colors ml-0.5"
+            className="p-1 text-zinc-400 dark:text-zinc-500 hover:text-red-600 dark:hover:text-red-400 rounded hover:bg-zinc-200/60 dark:hover:bg-white/[0.06] transition-colors ml-0.5"
             title="ซ่อนแถบข่าวด่วน"
             aria-label="Dismiss news ticker"
           >

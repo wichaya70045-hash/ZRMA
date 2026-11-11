@@ -74,54 +74,54 @@ export default function DeleteThreadModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150 overflow-y-auto">
-      <div className="bg-[#101217] border border-red-500/30 rounded-2xl max-w-md w-full max-w-full p-4 sm:p-6 shadow-2xl relative text-zinc-200 my-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/50 dark:bg-black/80 backdrop-blur-sm animate-in fade-in duration-150 overflow-y-auto">
+      <div className="bg-white dark:bg-[#101217] border border-red-300 dark:border-red-500/30 rounded-2xl max-w-md w-full max-w-full p-4 sm:p-6 shadow-2xl relative text-zinc-800 dark:text-zinc-200 my-auto">
         
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-white/[0.08] mb-4">
+        <div className="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-white/[0.08] mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-red-950/60 text-red-400 border border-red-500/30 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/30 flex items-center justify-center">
               <Trash2 size={16} />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-zinc-100">ยืนยันการลบโพสต์</h2>
-              <p className="text-[11px] text-zinc-400">การลบนี้จะทำลายกระทู้และความคิดเห็นทั้งหมดถาวร</p>
+              <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">ยืนยันการลบโพสต์</h2>
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400">การลบนี้จะทำลายกระทู้และความคิดเห็นทั้งหมดถาวร</p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="p-1.5 text-zinc-400 hover:text-white rounded-lg hover:bg-white/[0.06] transition-colors"
+            className="p-1.5 text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-lg hover:bg-zinc-100 dark:hover:bg-white/[0.06] transition-colors"
           >
             <X size={16} />
           </button>
         </div>
 
         {errorMsg && (
-          <div className="mb-4 p-2.5 bg-red-950/40 border border-red-500/30 rounded-lg text-xs text-red-300 flex items-center gap-2">
-            <AlertTriangle size={14} className="text-red-400 shrink-0" />
+          <div className="mb-4 p-2.5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-500/30 rounded-lg text-xs text-red-700 dark:text-red-300 flex items-center gap-2">
+            <AlertTriangle size={14} className="text-red-600 dark:text-red-400 shrink-0" />
             <span>{errorMsg}</span>
           </div>
         )}
 
         <form onSubmit={handleDelete} className="space-y-4 text-xs">
-          <div className="p-3 bg-red-950/20 border border-red-900/40 rounded-xl space-y-1">
-            <span className="font-semibold text-zinc-200 block truncate">
+          <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 rounded-xl space-y-1">
+            <span className="font-semibold text-zinc-900 dark:text-zinc-200 block truncate">
               "{thread.title}"
             </span>
-            <p className="text-[11px] text-zinc-400 leading-relaxed">
+            <p className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed">
               เมื่อกดลบ ข้อมูลจะถูกถอดถอนออกจากฐานข้อมูลทันที 100% ไม่สามารถกู้คืนได้
             </p>
           </div>
 
-          <div className="p-3 bg-black/40 border border-white/[0.06] rounded-xl space-y-1.5">
+          <div className="p-3 bg-zinc-50 dark:bg-black/40 border border-zinc-200 dark:border-white/[0.06] rounded-xl space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-[11px] font-medium text-zinc-300 flex items-center gap-1.5">
-                <Key size={12} className="text-yellow-400" />
+              <label className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+                <Key size={12} className="text-amber-600 dark:text-yellow-400" />
                 <span>รหัสลับยืนยันการลบ (Passcode)</span>
               </label>
               {hasStoredToken && (
-                <span className="text-[10px] text-green-400 font-mono">
+                <span className="text-[10px] text-emerald-600 dark:text-green-400 font-mono">
                   ✓ ตรวจพบรหัสผ่านในเครื่อง
                 </span>
               )}
@@ -132,7 +132,7 @@ export default function DeleteThreadModal({
               value={passcode}
               onChange={(e) => setPasscode(e.target.value)}
               placeholder="รหัส PIN หรือ Passcode..."
-              className="w-full bg-white/[0.03] border border-white/[0.08] focus:border-red-500 rounded-lg px-3 py-1.5 text-xs text-red-400 font-mono focus:outline-none"
+              className="w-full bg-white dark:bg-white/[0.03] border border-zinc-300 dark:border-white/[0.08] focus:border-red-500 rounded-lg px-3 py-1.5 text-xs text-red-600 dark:text-red-400 font-mono focus:outline-none"
             />
           </div>
 
@@ -140,7 +140,7 @@ export default function DeleteThreadModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-3.5 py-1.5 rounded-lg border border-white/[0.08] text-zinc-400 hover:text-white hover:bg-white/[0.04] text-xs transition-colors"
+              className="px-3.5 py-1.5 rounded-lg border border-zinc-200 dark:border-white/[0.08] text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/[0.04] text-xs transition-colors"
             >
               ยกเลิก
             </button>

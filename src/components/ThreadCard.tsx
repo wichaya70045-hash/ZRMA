@@ -175,17 +175,17 @@ export default function ThreadCard({
       <article
         className={`w-full max-w-full overflow-hidden rounded-lg px-2.5 sm:px-3 py-2.5 transition-all relative group shadow-sm flex items-center gap-2 sm:gap-3.5 ${
           thread.is_pinned === 1
-            ? 'border border-red-500/40 border-l-4 border-l-red-500 bg-[#101217]'
-            : 'bg-[#101217] border border-white/[0.06] hover:border-white/[0.15]'
+            ? 'border border-red-300 dark:border-red-500/40 border-l-4 border-l-red-600 dark:border-l-red-500 bg-red-50/40 dark:bg-[#101217]'
+            : 'bg-white dark:bg-[#101217] border border-zinc-200 dark:border-white/[0.06] hover:border-zinc-300 dark:hover:border-white/[0.15]'
         }`}
       >
         {/* Upvote & Score Compact Pill */}
-        <div className="flex items-center gap-1 bg-black/50 border border-white/[0.08] rounded px-1.5 py-0.5 shrink-0">
+        <div className="flex items-center gap-1 bg-zinc-100 dark:bg-black/50 border border-zinc-200 dark:border-white/[0.08] rounded px-1.5 py-0.5 shrink-0">
           <button
             onClick={() => handleVote('up')}
             disabled={isVoting}
             className={`p-0.5 rounded transition-colors ${
-              userVote === 'up' ? 'text-yellow-400' : 'text-zinc-500 hover:text-yellow-400'
+              userVote === 'up' ? 'text-amber-600 dark:text-yellow-400' : 'text-zinc-500 hover:text-amber-600 dark:hover:text-yellow-400'
             }`}
             title="Upvote"
           >
@@ -193,7 +193,7 @@ export default function ThreadCard({
           </button>
           <span
             className={`text-xs font-mono font-bold tabular-nums min-w-[1.2rem] text-center ${
-              score > 0 ? 'text-yellow-400' : score < 0 ? 'text-red-400' : 'text-zinc-400'
+              score > 0 ? 'text-amber-600 dark:text-yellow-400' : score < 0 ? 'text-red-600 dark:text-red-400' : 'text-zinc-500 dark:text-zinc-400'
             }`}
           >
             {score}
@@ -202,7 +202,7 @@ export default function ThreadCard({
             onClick={() => handleVote('down')}
             disabled={isVoting}
             className={`p-0.5 rounded transition-colors ${
-              userVote === 'down' ? 'text-red-400' : 'text-zinc-500 hover:text-red-400'
+              userVote === 'down' ? 'text-red-600 dark:text-red-400' : 'text-zinc-500 hover:text-red-600 dark:hover:text-red-400'
             }`}
             title="Downvote"
           >
@@ -214,11 +214,11 @@ export default function ThreadCard({
         {thread.media_url && (
           <div
             onClick={() => setIsMediaRevealed(true)}
-            className="w-10 h-10 rounded-md bg-black/60 border border-white/[0.08] overflow-hidden shrink-0 flex items-center justify-center relative cursor-pointer group/thumb"
+            className="w-10 h-10 rounded-md bg-zinc-100 dark:bg-black/60 border border-zinc-200 dark:border-white/[0.08] overflow-hidden shrink-0 flex items-center justify-center relative cursor-pointer group/thumb"
             title="คลิกเพื่อดูรูปภาพ"
           >
             {isVideo ? (
-              <Film size={15} className="text-yellow-400" />
+              <Film size={15} className="text-amber-600 dark:text-yellow-400" />
             ) : isImage ? (
               <img
                 src={thread.media_url}
@@ -237,33 +237,33 @@ export default function ThreadCard({
         <div className="flex-1 min-w-0 overflow-hidden">
           <div className="flex items-center gap-1.5 flex-wrap">
             {thread.is_pinned === 1 && (
-              <span className="text-[9px] font-mono font-bold text-red-400 bg-red-950/60 px-1 py-0.2 rounded border border-red-500/30 flex items-center gap-1">
+              <span className="text-[9px] font-mono font-bold text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-950/60 px-1 py-0.2 rounded border border-red-200 dark:border-red-500/30 flex items-center gap-1">
                 <Pin size={9} />
                 <span>PIN</span>
               </span>
             )}
             <Link
               href={`/?category=${cleanCategory}`}
-              className="font-mono font-bold text-[11px] text-yellow-400 hover:underline shrink-0"
+              className="font-mono font-bold text-[11px] text-amber-700 dark:text-yellow-400 hover:underline shrink-0"
             >
               {subredditName}
             </Link>
-            <span className="text-zinc-600 text-[10px]">•</span>
+            <span className="text-zinc-300 dark:text-zinc-600 text-[10px]">•</span>
             <Link
               href={`/thread/${thread.id}`}
-              className={`font-semibold text-zinc-100 hover:text-white truncate max-w-full focus-visible:underline ${
+              className={`font-semibold text-zinc-900 dark:text-zinc-100 hover:text-red-600 dark:hover:text-white truncate max-w-full focus-visible:underline ${
                 settings.fontSize === 'comfortable' ? 'text-sm' : 'text-xs'
               }`}
             >
               {thread.title}
             </Link>
             {thread.flair && (
-              <span className="px-1 py-0.2 rounded text-[9px] font-semibold border text-yellow-400 bg-yellow-500/10 border-yellow-500/25">
+              <span className="px-1 py-0.2 rounded text-[9px] font-semibold border text-amber-700 dark:text-yellow-400 bg-amber-50 dark:bg-yellow-500/10 border-amber-200 dark:border-yellow-500/25">
                 {thread.flair}
               </span>
             )}
             {thread.poll && (
-              <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-yellow-500/10 text-yellow-400 border border-yellow-500/25 flex items-center gap-1 shrink-0">
+              <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-amber-50 dark:bg-yellow-500/10 text-amber-700 dark:text-yellow-400 border border-amber-200 dark:border-yellow-500/25 flex items-center gap-1 shrink-0">
                 <BarChart2 size={9} />
                 <span>โพล ({thread.poll.total_votes || 0})</span>
               </span>
@@ -273,7 +273,7 @@ export default function ThreadCard({
                 href={thread.source_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[10px] font-mono text-zinc-500 hover:text-yellow-400 hidden sm:inline-flex items-center gap-0.5"
+                className="text-[10px] font-mono text-zinc-500 hover:text-amber-600 dark:hover:text-yellow-400 hidden sm:inline-flex items-center gap-0.5"
               >
                 <ExternalLink size={9} />
                 <span>{thread.source_url.replace(/^https?:\/\/(www\.)?/, '').slice(0, 18)}</span>
@@ -292,7 +292,7 @@ export default function ThreadCard({
               </>
             )}
             <span>•</span>
-            <Link href={`/thread/${thread.id}`} className="hover:text-yellow-400 flex items-center gap-1">
+            <Link href={`/thread/${thread.id}`} className="hover:text-amber-600 dark:hover:text-yellow-400 flex items-center gap-1">
               <MessageSquare size={10} />
               <span>{thread.comment_count || 0} คอมเมนต์</span>
             </Link>
@@ -302,7 +302,7 @@ export default function ThreadCard({
                 <button
                   type="button"
                   onClick={() => setShowEditModal(true)}
-                  className="hover:text-yellow-400 text-zinc-500 transition-colors p-0.5"
+                  className="hover:text-amber-600 dark:hover:text-yellow-400 text-zinc-500 transition-colors p-0.5"
                   title="แก้ไขโพสต์"
                 >
                   <Edit3 size={11} />
@@ -310,14 +310,14 @@ export default function ThreadCard({
                 <button
                   type="button"
                   onClick={() => setShowDeleteModal(true)}
-                  className="hover:text-red-400 text-zinc-500 transition-colors p-0.5"
+                  className="hover:text-red-600 dark:hover:text-red-400 text-zinc-500 transition-colors p-0.5"
                   title="ลบโพสต์"
                 >
                   <Trash2 size={11} />
                 </button>
               </>
             )}
-            <span className="ml-auto text-orange-400 flex items-center gap-1">
+            <span className="ml-auto text-orange-600 dark:text-orange-400 flex items-center gap-1">
               <Clock size={10} />
               <span>{getRemainingTime()}</span>
             </span>
@@ -359,23 +359,23 @@ export default function ThreadCard({
     <article
       className={`w-full max-w-full overflow-hidden rounded-xl p-3 sm:p-4.5 transition-all duration-200 relative group shadow-sm ${
         thread.is_pinned === 1
-          ? 'border border-red-500/40 border-l-4 border-l-red-500 bg-gradient-to-r from-red-950/20 via-[#0e1015] to-[#0e1015] shadow-[0_0_16px_rgba(239,68,68,0.1)]'
-          : 'bg-[#0e1015]/90 hover:bg-[#12151d] border border-white/[0.08] hover:border-white/[0.18] hover:shadow-xl hover:shadow-black/50'
+          ? 'border border-red-300 dark:border-red-500/40 border-l-4 border-l-red-600 dark:border-l-red-500 bg-gradient-to-r from-red-50 via-white to-white dark:from-red-950/20 dark:via-[#0e1015] dark:to-[#0e1015] dark:shadow-[0_0_16px_rgba(239,68,68,0.1)]'
+          : 'bg-white dark:bg-[#0e1015]/90 hover:bg-zinc-50/70 dark:hover:bg-[#12151d] border border-zinc-200 dark:border-white/[0.08] hover:border-zinc-300 dark:hover:border-white/[0.18] hover:shadow-md dark:hover:shadow-xl dark:hover:shadow-black/50'
       }`}
     >
       {/* Pinned Breaking News Header Ribbon */}
       {thread.is_pinned === 1 && (
-        <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/[0.06] text-xs">
+        <div className="flex items-center gap-2 mb-3 pb-2 border-b border-red-200/70 dark:border-white/[0.06] text-xs">
           <span className="relative flex h-2 w-2">
             <span className={`absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75 ${settings.reduceMotion ? '' : 'animate-ping'}`}></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
           </span>
-          <span className="text-[11px] font-mono font-bold text-red-400 flex items-center gap-1.5">
+          <span className="text-[11px] font-mono font-bold text-red-600 dark:text-red-400 flex items-center gap-1.5">
             <Pin size={11} />
             <span>ข่าวด่วนปักหมุด</span>
           </span>
           {thread.source_url && (
-            <span className="ml-auto text-[10px] font-mono text-zinc-400 bg-white/[0.03] px-2 py-0.5 rounded border border-white/[0.08] flex items-center gap-1">
+            <span className="ml-auto text-[10px] font-mono text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-white/[0.03] px-2 py-0.5 rounded border border-zinc-200 dark:border-white/[0.08] flex items-center gap-1">
               <span>แหล่งข่าวอ้างอิง</span>
             </span>
           )}
@@ -383,14 +383,14 @@ export default function ThreadCard({
       )}
       {/* Hidden Banner */}
       {isHidden && !forceReveal && (
-        <div className="bg-red-950/25 border border-red-900/40 rounded-lg p-2.5 mb-3 text-xs text-red-300 flex items-center justify-between">
+        <div className="bg-red-50 dark:bg-red-950/25 border border-red-200 dark:border-red-900/40 rounded-lg p-2.5 mb-3 text-xs text-red-700 dark:text-red-300 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <AlertTriangle size={14} className="text-red-400 shrink-0" />
+            <AlertTriangle size={14} className="text-red-600 dark:text-red-400 shrink-0" />
             <span>กระทู้นี้ถูกซ่อนอัตโนมัติเนื่องจากมีผู้รายงานครบ 5 ครั้ง</span>
           </div>
           <button
             onClick={() => setForceReveal(true)}
-            className="flex items-center gap-1 px-2 py-1 bg-white/[0.06] hover:bg-white/[0.1] rounded text-[11px] text-zinc-200 transition-colors"
+            className="flex items-center gap-1 px-2 py-1 bg-white dark:bg-white/[0.06] hover:bg-zinc-100 dark:hover:bg-white/[0.1] rounded border border-red-200 dark:border-transparent text-[11px] text-zinc-800 dark:text-zinc-200 transition-colors"
           >
             <Eye size={12} />
             <span>ดูเนื้อหา</span>
@@ -401,14 +401,14 @@ export default function ThreadCard({
       <div className={`flex gap-2.5 sm:gap-3.5 min-w-0 ${isHidden && !forceReveal ? 'opacity-30 blur-[1px]' : ''}`}>
         
         {/* Reddit Left-Hand Vote Column */}
-        <div className="flex flex-col items-center bg-black/50 border border-white/[0.07] rounded-lg p-1 self-start shrink-0 backdrop-blur-sm shadow-inner">
+        <div className="flex flex-col items-center bg-zinc-100 dark:bg-black/50 border border-zinc-200 dark:border-white/[0.07] rounded-lg p-1 self-start shrink-0 backdrop-blur-sm shadow-inner">
           <button
             onClick={() => handleVote('up')}
             disabled={isVoting}
             className={`p-1 rounded transition-all active:scale-95 ${
               userVote === 'up'
-                ? 'text-yellow-400 bg-yellow-500/20 shadow-[0_0_8px_rgba(250,204,21,0.25)]'
-                : 'text-zinc-500 hover:text-yellow-400 hover:bg-white/[0.04]'
+                ? 'text-amber-600 dark:text-yellow-400 bg-amber-500/15 dark:bg-yellow-500/20 shadow-[0_0_8px_rgba(250,204,21,0.2)]'
+                : 'text-zinc-500 hover:text-amber-600 dark:hover:text-yellow-400 hover:bg-zinc-200/70 dark:hover:bg-white/[0.04]'
             }`}
             title="Upvote"
             aria-label="Upvote"
@@ -419,10 +419,10 @@ export default function ThreadCard({
           <span
             className={`text-xs font-mono font-bold tabular-nums my-0.5 ${
               score > 0
-                ? 'text-yellow-400'
+                ? 'text-amber-600 dark:text-yellow-400'
                 : score < 0
-                ? 'text-red-400'
-                : 'text-zinc-400'
+                ? 'text-red-600 dark:text-red-400'
+                : 'text-zinc-500 dark:text-zinc-400'
             }`}
           >
             {score}
@@ -433,8 +433,8 @@ export default function ThreadCard({
             disabled={isVoting}
             className={`p-1 rounded transition-all active:scale-95 ${
               userVote === 'down'
-                ? 'text-red-400 bg-red-500/20 shadow-[0_0_8px_rgba(239,68,68,0.25)]'
-                : 'text-zinc-500 hover:text-red-400 hover:bg-white/[0.04]'
+                ? 'text-red-600 dark:text-red-400 bg-red-500/15 dark:bg-red-500/20 shadow-[0_0_8px_rgba(239,68,68,0.2)]'
+                : 'text-zinc-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-zinc-200/70 dark:hover:bg-white/[0.04]'
             }`}
             title="Downvote"
             aria-label="Downvote"
@@ -450,19 +450,19 @@ export default function ThreadCard({
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1.5 text-xs">
             <Link
               href={`/?category=${cleanCategory}`}
-              className="font-mono font-bold text-xs text-yellow-400 hover:underline"
+              className="font-mono font-bold text-xs text-amber-700 dark:text-yellow-400 hover:underline"
             >
               {subredditName}
             </Link>
 
-            <span className="text-zinc-600">•</span>
+            <span className="text-zinc-300 dark:text-zinc-600">•</span>
 
-            <div className="flex items-center gap-1 text-zinc-400 font-mono text-[11px]">
+            <div className="flex items-center gap-1 text-zinc-600 dark:text-zinc-400 font-mono text-[11px]">
               <IdentityAvatar iconKey={thread.author_avatar} theme="red" size="xs" />
               <span>u/{cleanAlias}</span>
             </div>
 
-            <span className="text-zinc-600">•</span>
+            <span className="text-zinc-300 dark:text-zinc-600">•</span>
 
             <span className="font-mono text-zinc-500 text-[11px] tabular-nums">
               {getTimeAgo()}
@@ -470,7 +470,7 @@ export default function ThreadCard({
 
             {thread.is_edited === 1 && (
               <>
-                <span className="text-zinc-600">•</span>
+                <span className="text-zinc-300 dark:text-zinc-600">•</span>
                 <span className="text-[10px] text-zinc-500 italic font-mono">
                   (แก้ไขแล้ว)
                 </span>
@@ -479,21 +479,21 @@ export default function ThreadCard({
 
             {/* Flair tag if provided */}
             {thread.flair && (
-              <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold border text-yellow-400 bg-yellow-500/10 border-yellow-500/25 ml-1">
+              <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold border text-amber-700 dark:text-yellow-400 bg-amber-50 dark:bg-yellow-500/10 border-amber-200 dark:border-yellow-500/25 ml-1">
                 {thread.flair}
               </span>
             )}
 
             {/* Expiration badge (Touch of Orange) */}
-            <div className="flex items-center gap-1 font-mono text-[10px] text-orange-400 ml-auto bg-orange-500/10 px-2 py-0.5 rounded border border-orange-500/20 tabular-nums">
-              <Clock size={11} className="text-orange-400" />
+            <div className="flex items-center gap-1 font-mono text-[10px] text-orange-600 dark:text-orange-400 ml-auto bg-orange-50 dark:bg-orange-500/10 px-2 py-0.5 rounded border border-orange-200 dark:border-orange-500/20 tabular-nums">
+              <Clock size={11} className="text-orange-600 dark:text-orange-400" />
               <span>{getRemainingTime()}</span>
             </div>
           </div>
 
           {/* Post Title */}
           <Link href={`/thread/${thread.id}`} className="block group/link focus-visible:outline-none focus-visible:underline">
-            <h2 className={`font-semibold text-zinc-100 group-hover/link:text-white transition-colors line-clamp-2 leading-snug mb-1.5 ${
+            <h2 className={`font-semibold text-zinc-900 dark:text-zinc-100 group-hover/link:text-red-600 dark:group-hover/link:text-white transition-colors line-clamp-2 leading-snug mb-1.5 ${
               settings.fontSize === 'comfortable' ? 'text-base sm:text-lg' : 'text-sm sm:text-base'
             }`}>
               {thread.title}
@@ -502,7 +502,7 @@ export default function ThreadCard({
 
           {/* Post Snippet */}
           {thread.content && (
-            <p className={`text-zinc-400 line-clamp-2 leading-relaxed mb-2.5 ${
+            <p className={`text-zinc-600 dark:text-zinc-400 line-clamp-2 leading-relaxed mb-2.5 ${
               settings.fontSize === 'comfortable' ? 'text-sm' : 'text-xs'
             }`}>
               {thread.content}
@@ -511,7 +511,7 @@ export default function ThreadCard({
 
           {/* Media Preview: Image or Video with Auto-Blur Support */}
           {thread.media_url && (
-            <div className="mb-3 rounded-lg overflow-hidden border border-white/[0.08] bg-black/40 relative">
+            <div className="mb-3 rounded-lg overflow-hidden border border-zinc-200 dark:border-white/[0.08] bg-zinc-100 dark:bg-black/40 relative">
               {settings.blurMedia && !isMediaRevealed ? (
                 <div className="relative group/blur">
                   <div className="filter blur-xl scale-110 pointer-events-none select-none max-h-80 overflow-hidden opacity-40">
@@ -603,9 +603,9 @@ export default function ThreadCard({
                 href={thread.source_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-[11px] text-zinc-400 hover:text-yellow-400 bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.06] hover:border-yellow-500/25 px-2.5 py-1 rounded-md transition-colors"
+                className="inline-flex items-center gap-1.5 text-[11px] text-zinc-600 dark:text-zinc-400 hover:text-amber-700 dark:hover:text-yellow-400 bg-zinc-100 dark:bg-white/[0.02] hover:bg-zinc-200/70 dark:hover:bg-white/[0.05] border border-zinc-200 dark:border-white/[0.06] hover:border-amber-400/50 dark:hover:border-yellow-500/25 px-2.5 py-1 rounded-md transition-colors"
               >
-                <ExternalLink size={12} className="text-yellow-400" />
+                <ExternalLink size={12} className="text-amber-600 dark:text-yellow-400" />
                 <span className="truncate max-w-xs font-mono">
                   {thread.source_url.replace(/^https?:\/\/(www\.)?/, '')}
                 </span>
@@ -614,10 +614,10 @@ export default function ThreadCard({
           )}
 
           {/* Reddit Action Bar: Comments, Share, Save, Report */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3.5 pt-2 border-t border-white/[0.04] text-xs">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3.5 pt-2 border-t border-zinc-200/70 dark:border-white/[0.04] text-xs">
             <Link
               href={`/thread/${thread.id}`}
-              className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-yellow-400 transition-colors p-1 rounded hover:bg-white/[0.03] shrink-0"
+              className="inline-flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-yellow-400 transition-colors p-1 rounded hover:bg-zinc-100 dark:hover:bg-white/[0.03] shrink-0"
             >
               <MessageSquare size={14} className="shrink-0" />
               <span className="font-mono text-[11px] tabular-nums font-semibold">
@@ -627,16 +627,16 @@ export default function ThreadCard({
 
             <button
               onClick={handleShare}
-              className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-yellow-400 transition-colors p-1 rounded hover:bg-white/[0.03] shrink-0"
+              className="inline-flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-yellow-400 transition-colors p-1 rounded hover:bg-zinc-100 dark:hover:bg-white/[0.03] shrink-0"
             >
-              {copiedLink ? <Check size={14} className="text-yellow-400 shrink-0" /> : <Share2 size={14} className="shrink-0" />}
+              {copiedLink ? <Check size={14} className="text-amber-600 dark:text-yellow-400 shrink-0" /> : <Share2 size={14} className="shrink-0" />}
               <span className="text-[11px]">{copiedLink ? 'คัดลอกแล้ว' : 'แชร์'}</span>
             </button>
 
             <button
               onClick={handleToggleSave}
-              className={`inline-flex items-center gap-1.5 transition-colors p-1 rounded hover:bg-white/[0.03] shrink-0 ${
-                isSaved ? 'text-yellow-400 font-semibold' : 'text-zinc-400 hover:text-yellow-400'
+              className={`inline-flex items-center gap-1.5 transition-colors p-1 rounded hover:bg-zinc-100 dark:hover:bg-white/[0.03] shrink-0 ${
+                isSaved ? 'text-amber-600 dark:text-yellow-400 font-semibold' : 'text-zinc-600 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-yellow-400'
               }`}
             >
               <Bookmark size={14} className="shrink-0" />
@@ -648,7 +648,7 @@ export default function ThreadCard({
                 <button
                   type="button"
                   onClick={() => setShowEditModal(true)}
-                  className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-yellow-400 transition-colors p-1 rounded hover:bg-white/[0.03] shrink-0"
+                  className="inline-flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-yellow-400 transition-colors p-1 rounded hover:bg-zinc-100 dark:hover:bg-white/[0.03] shrink-0"
                   title="แก้ไขโพสต์นี้"
                 >
                   <Edit3 size={13} className="shrink-0" />
@@ -658,7 +658,7 @@ export default function ThreadCard({
                 <button
                   type="button"
                   onClick={() => setShowDeleteModal(true)}
-                  className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-red-400 transition-colors p-1 rounded hover:bg-white/[0.03] shrink-0"
+                  className="inline-flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-1 rounded hover:bg-zinc-100 dark:hover:bg-white/[0.03] shrink-0"
                   title="ลบโพสต์นี้"
                 >
                   <Trash2 size={13} className="shrink-0" />
@@ -671,7 +671,7 @@ export default function ThreadCard({
               {forceReveal && isHidden && (
                 <button
                   onClick={() => setForceReveal(false)}
-                  className="flex items-center gap-1 text-[11px] text-zinc-500 hover:text-zinc-300"
+                  className="flex items-center gap-1 text-[11px] text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300"
                 >
                   <EyeOff size={12} />
                   <span>ซ่อนกลับ</span>
@@ -680,7 +680,7 @@ export default function ThreadCard({
 
               <button
                 onClick={() => setShowReportModal(true)}
-                className="flex items-center gap-1 text-[11px] text-zinc-500 hover:text-red-400 transition-colors p-1"
+                className="flex items-center gap-1 text-[11px] text-zinc-500 hover:text-red-600 dark:hover:text-red-400 transition-colors p-1"
                 title="รายงานข้อความ"
               >
                 <Flag size={12} />

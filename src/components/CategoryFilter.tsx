@@ -76,7 +76,7 @@ export default function CategoryFilter({
   };
 
   return (
-    <div className="bg-[#0e1015]/90 border border-white/[0.08] rounded-xl overflow-hidden shadow-lg w-full max-w-full backdrop-blur-sm">
+    <div className="bg-white dark:bg-[#0e1015]/90 border border-zinc-200 dark:border-white/[0.08] rounded-xl overflow-hidden shadow-sm dark:shadow-lg w-full max-w-full backdrop-blur-sm">
       
       {/* 1. Subreddit Horizontal Navigation Pills */}
       <div className="px-3 pt-3 pb-2.5 flex items-center gap-1.5 overflow-x-auto scrollbar-none font-mono text-xs max-w-full">
@@ -85,8 +85,8 @@ export default function CategoryFilter({
           onClick={() => onSelectCategory('all')}
           className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all border active:scale-95 ${
             selectedCategory === 'all'
-              ? 'bg-gradient-to-r from-yellow-400 to-amber-400 text-zinc-950 border-yellow-300 font-bold shadow-[0_0_12px_rgba(250,204,21,0.25)]'
-              : 'bg-white/[0.03] hover:bg-white/[0.07] text-zinc-400 hover:text-zinc-100 border-white/[0.06]'
+              ? 'bg-gradient-to-r from-yellow-400 to-amber-400 text-zinc-950 border-amber-400 dark:border-yellow-300 font-bold shadow-[0_0_12px_rgba(250,204,21,0.25)]'
+              : 'bg-zinc-100 dark:bg-white/[0.03] hover:bg-zinc-200/70 dark:hover:bg-white/[0.07] text-zinc-700 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-100 border-zinc-200 dark:border-white/[0.06]'
           }`}
         >
           <Layers size={13} strokeWidth={selectedCategory === 'all' ? 2.5 : 1.75} />
@@ -99,7 +99,7 @@ export default function CategoryFilter({
           const IconComp = ICON_MAP[comm.icon] || Terminal;
           const isBreaking = comm.name === 'breaking';
 
-          let activeClasses = 'bg-gradient-to-r from-yellow-400 to-amber-400 text-zinc-950 border-yellow-300 font-bold shadow-[0_0_12px_rgba(250,204,21,0.25)]';
+          let activeClasses = 'bg-gradient-to-r from-yellow-400 to-amber-400 text-zinc-950 border-amber-400 dark:border-yellow-300 font-bold shadow-[0_0_12px_rgba(250,204,21,0.25)]';
           if (isBreaking && isActive) {
             activeClasses = 'bg-gradient-to-r from-red-600 to-red-700 text-white border-red-500 font-bold shadow-[0_0_12px_rgba(239,68,68,0.3)]';
           }
@@ -111,7 +111,7 @@ export default function CategoryFilter({
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all border active:scale-95 ${
                 isActive
                   ? activeClasses
-                  : 'bg-white/[0.03] hover:bg-white/[0.07] text-zinc-400 hover:text-zinc-100 border-white/[0.06]'
+                  : 'bg-zinc-100 dark:bg-white/[0.03] hover:bg-zinc-200/70 dark:hover:bg-white/[0.07] text-zinc-700 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-100 border-zinc-200 dark:border-white/[0.06]'
               }`}
             >
               <IconComp
@@ -121,8 +121,8 @@ export default function CategoryFilter({
                   isActive
                     ? ''
                     : isBreaking
-                    ? 'text-red-400'
-                    : 'text-zinc-400'
+                    ? 'text-red-600 dark:text-red-400'
+                    : 'text-zinc-500 dark:text-zinc-400'
                 }
               />
               <span>z/{comm.name}</span>
@@ -133,7 +133,7 @@ export default function CategoryFilter({
         {/* Create new z/ button */}
         <button
           onClick={() => setIsModalOpen(true)}
-          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors border border-dashed border-white/20 hover:border-yellow-400 text-zinc-400 hover:text-yellow-400 hover:bg-yellow-400/[0.05]"
+          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors border border-dashed border-zinc-300 dark:border-white/20 hover:border-amber-500 dark:hover:border-yellow-400 text-zinc-600 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-yellow-400 hover:bg-amber-500/[0.06] dark:hover:bg-yellow-400/[0.05]"
           title="สร้างห้อง z/ ใหม่"
         >
           <Plus size={13} />
@@ -142,7 +142,7 @@ export default function CategoryFilter({
       </div>
 
       {/* 2. Unified Controls Bar: Sort + Search + View Layout */}
-      <div className="px-3 py-2 border-t border-white/[0.06] bg-black/20 flex flex-wrap items-center justify-between gap-2.5 text-xs w-full">
+      <div className="px-3 py-2 border-t border-zinc-200 dark:border-white/[0.06] bg-zinc-50/80 dark:bg-black/20 flex flex-wrap items-center justify-between gap-2.5 text-xs w-full">
         
         {/* Left: Reddit Sorting Tabs */}
         <div className="flex items-center gap-1 overflow-x-auto max-w-full pb-0.5 sm:pb-0 scrollbar-none">
@@ -150,11 +150,11 @@ export default function CategoryFilter({
             onClick={() => onSelectSort('hot')}
             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold transition-colors shrink-0 ${
               selectedSort === 'hot'
-                ? 'bg-orange-500/15 text-orange-400 border border-orange-500/30'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.03]'
+                ? 'bg-orange-500/15 text-orange-600 dark:text-orange-400 border border-orange-500/30'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-200/60 dark:hover:bg-white/[0.03]'
             }`}
           >
-            <Flame size={13} className={selectedSort === 'hot' ? 'text-orange-400' : ''} />
+            <Flame size={13} className={selectedSort === 'hot' ? 'text-orange-600 dark:text-orange-400' : ''} />
             <span>Hot</span>
           </button>
 
@@ -163,7 +163,7 @@ export default function CategoryFilter({
             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold transition-colors shrink-0 ${
               selectedSort === 'new'
                 ? 'bg-yellow-400 text-zinc-950 font-bold'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.03]'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-200/60 dark:hover:bg-white/[0.03]'
             }`}
           >
             <Sparkles size={13} />
@@ -174,11 +174,11 @@ export default function CategoryFilter({
             onClick={() => onSelectSort('top')}
             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold transition-colors shrink-0 ${
               selectedSort === 'top'
-                ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/30'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.03]'
+                ? 'bg-amber-500/15 dark:bg-yellow-500/15 text-amber-700 dark:text-yellow-400 border border-amber-500/30 dark:border-yellow-500/30'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-200/60 dark:hover:bg-white/[0.03]'
             }`}
           >
-            <Award size={13} className={selectedSort === 'top' ? 'text-yellow-400' : ''} />
+            <Award size={13} className={selectedSort === 'top' ? 'text-amber-600 dark:text-yellow-400' : ''} />
             <span>Top</span>
           </button>
 
@@ -186,11 +186,11 @@ export default function CategoryFilter({
             onClick={() => onSelectSort('rising')}
             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold transition-colors shrink-0 ${
               selectedSort === 'rising'
-                ? 'bg-red-500/15 text-red-400 border border-red-500/30'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.03]'
+                ? 'bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-200/60 dark:hover:bg-white/[0.03]'
             }`}
           >
-            <Zap size={13} className={selectedSort === 'rising' ? 'text-red-400' : ''} />
+            <Zap size={13} className={selectedSort === 'rising' ? 'text-red-600 dark:text-red-400' : ''} />
             <span>Rising</span>
           </button>
         </div>
@@ -198,18 +198,18 @@ export default function CategoryFilter({
         {/* Center/Right: Integrated Minimal Search Input */}
         {onSearchChange && (
           <div className="relative flex-1 min-w-[120px] sm:min-w-[140px] max-w-xs order-last sm:order-none w-full sm:w-auto">
-            <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-500" />
+            <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder="ค้นหาในฟีด..."
-              className="w-full bg-[#141721] border border-white/[0.08] focus:border-red-500/50 rounded-lg pl-7 pr-6 py-1 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none transition-colors"
+              className="w-full bg-white dark:bg-[#141721] border border-zinc-200 dark:border-white/[0.08] focus:border-red-500/50 rounded-lg pl-7 pr-6 py-1 text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none transition-colors"
             />
             {searchQuery && (
               <button
                 onClick={() => onSearchChange('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
               >
                 <X size={11} />
               </button>
@@ -226,14 +226,14 @@ export default function CategoryFilter({
           )}
 
           {onLayoutChange && (
-            <div className="flex items-center gap-0.5 bg-black/40 p-0.5 rounded-lg border border-white/[0.06]">
+            <div className="flex items-center gap-0.5 bg-zinc-200/60 dark:bg-black/40 p-0.5 rounded-lg border border-zinc-200 dark:border-white/[0.06]">
               <button
                 type="button"
                 onClick={() => onLayoutChange('card')}
                 className={`p-1 rounded transition-colors ${
                   layout === 'card'
-                    ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/30'
-                    : 'text-zinc-500 hover:text-zinc-300'
+                    ? 'bg-white dark:bg-yellow-500/15 text-amber-600 dark:text-yellow-400 border border-zinc-200 dark:border-yellow-500/30 shadow-sm dark:shadow-none'
+                    : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
                 }`}
                 title="มุมมองการ์ด (Card View)"
               >
@@ -244,8 +244,8 @@ export default function CategoryFilter({
                 onClick={() => onLayoutChange('compact')}
                 className={`p-1 rounded transition-colors ${
                   layout === 'compact'
-                    ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/30'
-                    : 'text-zinc-500 hover:text-zinc-300'
+                    ? 'bg-white dark:bg-yellow-500/15 text-amber-600 dark:text-yellow-400 border border-zinc-200 dark:border-yellow-500/30 shadow-sm dark:shadow-none'
+                    : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
                 }`}
                 title="มุมมองกะทัดรัด (Compact View)"
               >

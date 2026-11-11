@@ -76,24 +76,24 @@ export default function ThreadPoll({
   const hasVoted = votedOptionId !== null;
 
   return (
-    <div className="w-full my-3 bg-black/40 border border-white/[0.08] hover:border-white/[0.12] rounded-xl p-3.5 sm:p-4 text-xs transition-colors shadow-sm">
+    <div className="w-full my-3 bg-zinc-50 dark:bg-black/40 border border-zinc-200 dark:border-white/[0.08] hover:border-zinc-300 dark:hover:border-white/[0.12] rounded-xl p-3.5 sm:p-4 text-xs transition-colors shadow-sm">
       {/* Poll Header */}
-      <div className="flex items-center justify-between gap-2 pb-2.5 mb-3 border-b border-white/[0.06]">
+      <div className="flex items-center justify-between gap-2 pb-2.5 mb-3 border-b border-zinc-200 dark:border-white/[0.06]">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-md bg-yellow-500/10 text-yellow-400 border border-yellow-500/25 flex items-center justify-center shrink-0">
+          <div className="w-6 h-6 rounded-md bg-amber-500/15 dark:bg-yellow-500/10 text-amber-600 dark:text-yellow-400 border border-amber-500/30 dark:border-yellow-500/25 flex items-center justify-center shrink-0">
             <BarChart2 size={13} />
           </div>
-          <span className="font-mono font-bold text-yellow-400 text-xs tracking-wide">
+          <span className="font-mono font-bold text-amber-700 dark:text-yellow-400 text-xs tracking-wide">
             โพลสำรวจความคิดเห็น (Poll)
           </span>
         </div>
 
-        <div className="flex items-center gap-2 font-mono text-[11px] text-zinc-400 tabular-nums">
-          <span className="px-2 py-0.5 rounded bg-white/[0.03] border border-white/[0.06]">
+        <div className="flex items-center gap-2 font-mono text-[11px] text-zinc-600 dark:text-zinc-400 tabular-nums">
+          <span className="px-2 py-0.5 rounded bg-white dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.06]">
             {poll.total_votes || 0} โหวต
           </span>
           {poll.closed && (
-            <span className="px-1.5 py-0.5 rounded bg-red-950/60 text-red-400 border border-red-500/30 font-semibold">
+            <span className="px-1.5 py-0.5 rounded bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-500/30 font-semibold">
               ปิดโหวตแล้ว
             </span>
           )}
@@ -102,14 +102,14 @@ export default function ThreadPoll({
 
       {/* Poll Question (if provided) */}
       {poll.question && (
-        <p className="font-semibold text-zinc-100 text-xs sm:text-sm mb-3 leading-snug">
+        <p className="font-semibold text-zinc-900 dark:text-zinc-100 text-xs sm:text-sm mb-3 leading-snug">
           {poll.question}
         </p>
       )}
 
       {errorMsg && (
-        <div className="mb-3 p-2 bg-red-950/40 border border-red-500/30 rounded-lg text-xs text-red-300 flex items-center gap-1.5">
-          <AlertCircle size={13} className="text-red-400 shrink-0" />
+        <div className="mb-3 p-2 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-500/30 rounded-lg text-xs text-red-700 dark:text-red-300 flex items-center gap-1.5">
+          <AlertCircle size={13} className="text-red-600 dark:text-red-400 shrink-0" />
           <span>{errorMsg}</span>
         </div>
       )}
@@ -127,18 +127,18 @@ export default function ThreadPoll({
                   onClick={() => setSelectedOptionId(option.id)}
                   className={`w-full text-left p-2.5 rounded-lg border transition-all flex items-center gap-2.5 active:scale-[0.99] ${
                     isSelected
-                      ? 'border-yellow-400 bg-yellow-500/10 text-yellow-300 shadow-sm'
-                      : 'border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] text-zinc-200 hover:border-white/[0.12]'
+                      ? 'border-amber-500 dark:border-yellow-400 bg-amber-50 dark:bg-yellow-500/10 text-amber-900 dark:text-yellow-300 shadow-sm'
+                      : 'border-zinc-200 dark:border-white/[0.06] bg-white dark:bg-white/[0.02] hover:bg-zinc-100 dark:hover:bg-white/[0.04] text-zinc-800 dark:text-zinc-200 hover:border-zinc-300 dark:hover:border-white/[0.12]'
                   }`}
                 >
                   <div
                     className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
                       isSelected
-                        ? 'border-yellow-400 bg-yellow-400 text-zinc-950'
-                        : 'border-zinc-500'
+                        ? 'border-amber-500 bg-amber-500 dark:border-yellow-400 dark:bg-yellow-400 text-white dark:text-zinc-950'
+                        : 'border-zinc-400 dark:border-zinc-500'
                     }`}
                   >
-                    {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-zinc-950" />}
+                    {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-zinc-950" />}
                   </div>
                   <span className="font-medium text-xs break-words">{option.text}</span>
                 </button>
@@ -150,7 +150,7 @@ export default function ThreadPoll({
             <button
               type="button"
               onClick={() => setShowResults(true)}
-              className="text-[11px] text-zinc-500 hover:text-zinc-300 flex items-center gap-1 px-1 py-0.5 rounded transition-colors"
+              className="text-[11px] text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300 flex items-center gap-1 px-1 py-0.5 rounded transition-colors"
             >
               <Eye size={12} />
               <span>ดูผลโหวต</span>
@@ -182,14 +182,14 @@ export default function ThreadPoll({
                   key={option.id}
                   className={`relative overflow-hidden rounded-lg border p-2.5 transition-all ${
                     isUserChoice
-                      ? 'border-yellow-500/40 bg-yellow-500/[0.06]'
-                      : 'border-white/[0.06] bg-white/[0.02]'
+                      ? 'border-amber-400 dark:border-yellow-500/40 bg-amber-50/70 dark:bg-yellow-500/[0.06]'
+                      : 'border-zinc-200 dark:border-white/[0.06] bg-white dark:bg-white/[0.02]'
                   }`}
                 >
                   {/* Visual Progress Bar Fill */}
                   <div
                     className={`absolute inset-y-0 left-0 transition-all duration-500 ${
-                      isWinning ? 'bg-gradient-to-r from-yellow-500/25 to-amber-500/20' : 'bg-white/[0.05]'
+                      isWinning ? 'bg-gradient-to-r from-amber-500/20 to-yellow-500/20 dark:from-yellow-500/25 dark:to-amber-500/20' : 'bg-zinc-200/70 dark:bg-white/[0.05]'
                     }`}
                     style={{ width: `${pct}%` }}
                   />
@@ -198,20 +198,20 @@ export default function ThreadPoll({
                   <div className="relative flex items-center justify-between gap-3 text-xs">
                     <div className="flex items-center gap-2 min-w-0">
                       {isUserChoice && (
-                        <CheckCircle2 size={13} className="text-yellow-400 shrink-0" />
+                        <CheckCircle2 size={13} className="text-amber-600 dark:text-yellow-400 shrink-0" />
                       )}
-                      <span className={`font-medium break-words ${isWinning ? 'text-zinc-100 font-semibold' : 'text-zinc-300'}`}>
+                      <span className={`font-medium break-words ${isWinning ? 'text-zinc-950 dark:text-zinc-100 font-semibold' : 'text-zinc-700 dark:text-zinc-300'}`}>
                         {option.text}
                       </span>
                       {isUserChoice && (
-                        <span className="text-[10px] font-mono font-bold text-yellow-400 bg-yellow-500/15 px-1.5 py-0.2 rounded border border-yellow-500/25 shrink-0">
+                        <span className="text-[10px] font-mono font-bold text-amber-700 dark:text-yellow-400 bg-amber-100 dark:bg-yellow-500/15 px-1.5 py-0.2 rounded border border-amber-300 dark:border-yellow-500/25 shrink-0">
                           ที่คุณเลือก
                         </span>
                       )}
                     </div>
 
                     <div className="font-mono text-xs tabular-nums text-right shrink-0">
-                      <span className={`font-bold ${isWinning ? 'text-yellow-400' : 'text-zinc-300'}`}>
+                      <span className={`font-bold ${isWinning ? 'text-amber-700 dark:text-yellow-400' : 'text-zinc-700 dark:text-zinc-300'}`}>
                         {pct}%
                       </span>
                       <span className="text-zinc-500 text-[10px] ml-1.5">
@@ -234,7 +234,7 @@ export default function ThreadPoll({
               <button
                 type="button"
                 onClick={() => setShowResults(false)}
-                className="text-yellow-400 hover:underline flex items-center gap-0.5"
+                className="text-amber-600 dark:text-yellow-400 hover:underline flex items-center gap-0.5"
               >
                 <span>กลับไปโหวต</span>
                 <ChevronRight size={11} />

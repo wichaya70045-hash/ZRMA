@@ -22,6 +22,7 @@ export interface AppSettings {
   autoScrollChat: boolean;    // Auto-scroll chat to latest message
 
   // Theme & Appearance
+  themeMode: 'dark' | 'light' | 'system'; // Dark, Light, or System preference
   accentTheme: 'crimson' | 'amber' | 'stealth'; // Crimson (Default), Amber Gold, Stealth Noir
 }
 
@@ -41,6 +42,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   enterToSend: true,
   autoScrollChat: true,
 
+  themeMode: 'dark',
   accentTheme: 'crimson',
 };
 
@@ -48,7 +50,9 @@ const SETTINGS_STORAGE_KEY = 'zrma_user_settings_v1';
 
 interface SettingsContextType {
   settings: AppSettings;
+  resolvedTheme: 'dark' | 'light';
   updateSetting: <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => void;
+  toggleThemeMode: () => void;
   resetSettings: () => void;
   executePanicWipe: () => void;
   playChatChime: () => void;
@@ -59,6 +63,7 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
+  const [resolvedTheme, setResolvedTheme] = useState<'dark' | 'light'>('dark');
   const [isReady, setIsReady] = useState(false);
 
   // Load settings from localStorage
@@ -87,6 +92,12 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       }
       return next;
     });
+  };
+
+  // Instant 1-click toggle between Dark and Light
+  const toggleThemeMode = () => {
+    const nextMode = resolvedTheme === 'dark' ? 'light' : 'dark';
+    updateSetting('themeMode', nextMode);
   };
 
   // Reset to default configuration
@@ -182,10 +193,36 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [settings.autoClearOnExit]);
 
-  // Apply styling data attributes to root element
+  // Apply styling data attributes and Dark/Light theme class to root element
   useEffect(() => {
     if (typeof document === 'undefined') return;
     const root = document.documentElement;
+
+    const applyTheme = () => {
+      let resolved: 'dark' | 'light' = 'dark';
+      if (settings.themeMode === 'light') {
+        resolved = 'light';
+      } else if (settings.themeMode === 'system') {
+        resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+
+      setResolvedTheme(resolved);
+      root.classList.remove('dark', 'light');
+      root.classList.add(resolved);
+      root.setAttribute('data-theme-mode', resolved);
+      root.style.colorScheme = resolved;
+    };
+
+    applyTheme();
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleMediaChange = () => {
+      if (settings.themeMode === 'system') {
+        applyTheme();
+      }
+    };
+
+    mediaQuery.addEventListener('change', handleMediaChange);
 
     // Accent theme attribute
     root.setAttribute('data-accent-theme', settings.accentTheme);
@@ -199,13 +236,19 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     } else {
       root.classList.remove('reduce-motion');
     }
-  }, [settings.accentTheme, settings.fontSize, settings.reduceMotion]);
+
+    return () => {
+      mediaQuery.removeEventListener('change', handleMediaChange);
+    };
+  }, [settings.themeMode, settings.accentTheme, settings.fontSize, settings.reduceMotion]);
 
   return (
     <SettingsContext.Provider
       value={{
         settings,
+        resolvedTheme,
         updateSetting,
+        toggleThemeMode,
         resetSettings,
         executePanicWipe,
         playChatChime,

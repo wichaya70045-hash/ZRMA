@@ -296,29 +296,29 @@ export default function NewThreadPage() {
       <div>
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-yellow-400 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-yellow-400 transition-colors"
         >
           <ArrowLeft size={13} />
           <span>กลับหน้าบอร์ด</span>
         </Link>
       </div>
 
-      <div className="bg-[#0e1015]/90 border border-white/[0.08] rounded-xl p-4 sm:p-6 text-zinc-200 shadow-xl backdrop-blur-sm w-full max-w-full overflow-hidden">
+      <div className="bg-white dark:bg-[#0e1015]/90 border border-zinc-200 dark:border-white/[0.08] rounded-xl p-4 sm:p-6 text-zinc-800 dark:text-zinc-200 shadow-sm dark:shadow-xl backdrop-blur-sm w-full max-w-full overflow-hidden">
         
         {/* Header with Ephemeral Identity & Custom Name */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-white/[0.06]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-zinc-200 dark:border-white/[0.06]">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-              <span className="text-[11px] font-mono text-zinc-400 font-medium">
+              <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400 font-medium">
                 โพสต์นิรนาม • Zero-Log
               </span>
             </div>
-            <h1 className="text-lg font-bold text-zinc-100">สร้างกระทู้ใหม่</h1>
+            <h1 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">สร้างกระทู้ใหม่</h1>
           </div>
 
           {/* Editable Display Name Box */}
-          <div className="flex items-center gap-2 bg-black/40 border border-white/[0.08] px-3 py-1.5 rounded-lg self-start sm:self-auto max-w-full overflow-hidden">
+          <div className="flex items-center gap-2 bg-zinc-50 dark:bg-black/40 border border-zinc-200 dark:border-white/[0.08] px-3 py-1.5 rounded-lg self-start sm:self-auto max-w-full overflow-hidden">
             {identity && <IdentityAvatar iconKey={identity.avatarIcon} theme="red" size="xs" />}
             <div className="min-w-0">
               <span className="text-[10px] text-zinc-500 uppercase block font-mono">ชื่อที่จะแสดง (u/):</span>
@@ -328,13 +328,13 @@ export default function NewThreadPage() {
                 onChange={(e) => handleAliasChange(e.target.value)}
                 placeholder="u/ชื่อที่คุณต้องการ"
                 maxLength={40}
-                className="bg-transparent text-xs font-semibold text-zinc-200 focus:outline-none focus:text-yellow-400 font-mono w-28 sm:w-36"
+                className="bg-transparent text-xs font-semibold text-zinc-900 dark:text-zinc-200 focus:outline-none focus:text-amber-600 dark:focus:text-yellow-400 font-mono w-28 sm:w-36"
               />
             </div>
             <button
               type="button"
               onClick={handleRerollIdentity}
-              className="p-1 text-zinc-500 hover:text-yellow-400 rounded hover:bg-white/[0.06] transition-colors ml-1 active:scale-95 shrink-0"
+              className="p-1 text-zinc-500 hover:text-amber-600 dark:hover:text-yellow-400 rounded hover:bg-zinc-200/70 dark:hover:bg-white/[0.06] transition-colors ml-1 active:scale-95 shrink-0"
               title="สุ่มชื่อใหม่ (Random Reroll)"
             >
               <Dices size={14} />
@@ -343,8 +343,8 @@ export default function NewThreadPage() {
         </div>
 
         {errorMsg && (
-          <div className="mt-4 p-3 bg-red-950/20 border border-red-900/40 rounded-lg text-xs text-red-300 flex items-center gap-2">
-            <AlertCircle size={14} className="text-red-400 shrink-0" />
+          <div className="mt-4 p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 rounded-lg text-xs text-red-700 dark:text-red-300 flex items-center gap-2">
+            <AlertCircle size={14} className="text-red-600 dark:text-red-400 shrink-0" />
             <span>{errorMsg}</span>
           </div>
         )}
@@ -354,13 +354,13 @@ export default function NewThreadPage() {
           {/* Subreddit / Community Selector (z/...) */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-mono uppercase text-zinc-400">
+              <label className="text-xs font-mono uppercase text-zinc-600 dark:text-zinc-400">
                 1. เลือกห้องชุมชน (Subreddit)
               </label>
               <button
                 type="button"
                 onClick={() => setIsCreateCommModalOpen(true)}
-                className="text-[11px] font-mono text-yellow-400 hover:underline flex items-center gap-1"
+                className="text-[11px] font-mono text-amber-600 dark:text-yellow-400 hover:underline flex items-center gap-1"
               >
                 <Plus size={11} />
                 <span>สร้างห้อง z/ ใหม่</span>
@@ -381,13 +381,13 @@ export default function NewThreadPage() {
                     }}
                     className={`p-2.5 rounded-lg border text-left transition-colors active:scale-95 ${
                       isSelected
-                        ? 'border-red-500/70 bg-red-500/[0.08] shadow-sm'
-                        : 'border-white/[0.06] bg-white/[0.02] hover:border-yellow-500/30'
+                        ? 'border-red-500/70 bg-red-50 dark:bg-red-500/[0.08] shadow-sm'
+                        : 'border-zinc-200 dark:border-white/[0.06] bg-zinc-50 dark:bg-white/[0.02] hover:border-amber-400/50 dark:hover:border-yellow-500/30'
                     }`}
                   >
                     <div className="flex items-center gap-1.5 mb-0.5">
-                      <IconComp size={14} className={isSelected ? 'text-red-400' : 'text-zinc-400'} />
-                      <span className="text-xs font-mono font-bold text-zinc-100">z/{comm.name}</span>
+                      <IconComp size={14} className={isSelected ? 'text-red-600 dark:text-red-400' : 'text-zinc-500 dark:text-zinc-400'} />
+                      <span className="text-xs font-mono font-bold text-zinc-900 dark:text-zinc-100">z/{comm.name}</span>
                     </div>
                     <span className="text-[10px] text-zinc-500 line-clamp-1">{comm.description}</span>
                   </button>
@@ -397,7 +397,7 @@ export default function NewThreadPage() {
 
             {/* Custom Subreddit Input option */}
             <div className="pt-1">
-              <div className="flex items-center bg-black/40 border border-white/[0.08] focus-within:border-red-500 rounded-lg px-3 py-1.5 text-xs">
+              <div className="flex items-center bg-zinc-50 dark:bg-black/40 border border-zinc-200 dark:border-white/[0.08] focus-within:border-red-500 rounded-lg px-3 py-1.5 text-xs">
                 <span className="text-zinc-500 font-mono font-bold mr-1">หรือพิมพ์ชื่อห้องเอง: z/</span>
                 <input
                   type="text"
@@ -405,24 +405,24 @@ export default function NewThreadPage() {
                   onChange={(e) => setCustomCategory(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
                   placeholder="เช่น crypto, ai, gaming, memes"
                   maxLength={30}
-                  className="bg-transparent text-zinc-100 focus:outline-none w-full font-mono"
+                  className="bg-transparent text-zinc-900 dark:text-zinc-100 focus:outline-none w-full font-mono"
                 />
               </div>
             </div>
 
             {/* Pinned Breaking Wire Toggle */}
             {(category === 'breaking' || customCategory.toLowerCase() === 'breaking') && (
-              <div className="p-3 bg-red-950/40 border border-red-500/50 rounded-xl flex items-center justify-between gap-3 animate-in fade-in duration-200">
+              <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-500/50 rounded-xl flex items-center justify-between gap-3 animate-in fade-in duration-200">
                 <div className="flex items-center gap-2.5">
                   <span className="relative flex h-2.5 w-2.5 shrink-0">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
                   </span>
                   <div>
-                    <div className="text-xs font-bold text-red-300 flex items-center gap-1">
+                    <div className="text-xs font-bold text-red-700 dark:text-red-300 flex items-center gap-1">
                       <span>📌 ปักหมุดข่าวด่วนพิเศษ (Pin Breaking Live Wire)</span>
                     </div>
-                    <div className="text-[10px] text-zinc-400">
+                    <div className="text-[10px] text-zinc-600 dark:text-zinc-400">
                       จะถูกปักหมุดบนสุดของ z/breaking พร้อมระบุแหล่งที่มาและเวลาอัปเดตแบบเรียลไทม์
                     </div>
                   </div>
@@ -434,7 +434,7 @@ export default function NewThreadPage() {
                     onChange={(e) => setIsPinned(e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="w-9 h-5 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-600"></div>
+                  <div className="w-9 h-5 bg-zinc-300 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-600"></div>
                 </label>
               </div>
             )}
@@ -442,7 +442,7 @@ export default function NewThreadPage() {
 
           {/* Title */}
           <div className="space-y-1.5">
-            <label htmlFor="title" className="text-xs font-mono uppercase text-zinc-400">
+            <label htmlFor="title" className="text-xs font-mono uppercase text-zinc-600 dark:text-zinc-400">
               2. หัวข้อโพสต์ (Title)
             </label>
             <input
@@ -453,15 +453,15 @@ export default function NewThreadPage() {
               onChange={(e) => setTitle(e.target.value)}
               placeholder="ระบุหัวข้อให้ชัดเจนและตรงประเด็น..."
               maxLength={200}
-              className="w-full bg-white/[0.02] border border-white/[0.08] focus:border-red-500 rounded-lg px-3 py-2 text-xs sm:text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-red-500 transition-colors font-sans"
+              className="w-full bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200 dark:border-white/[0.08] focus:border-red-500 rounded-lg px-3 py-2 text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-red-500 transition-colors font-sans"
             />
           </div>
 
           {/* Post Flair (Optional) */}
           <div className="space-y-1.5">
-            <label htmlFor="flair" className="text-xs font-mono uppercase text-zinc-400 flex items-center justify-between">
+            <label htmlFor="flair" className="text-xs font-mono uppercase text-zinc-600 dark:text-zinc-400 flex items-center justify-between">
               <span>แท็กโพสต์ / Flair (ไม่บังคับ)</span>
-              <span className="text-[10px] text-zinc-500">OPTIONAL</span>
+              <span className="text-[10px] text-zinc-400 dark:text-zinc-500">OPTIONAL</span>
             </label>
             <div className="flex flex-wrap gap-1.5">
               {['ข่าวด่วน', 'เสวนา', 'ข้อสงสัย', 'วิเคราะห์', 'มีม/บันเทิง', 'สาระ'].map((tag) => (
@@ -472,7 +472,7 @@ export default function NewThreadPage() {
                   className={`px-2.5 py-1 rounded text-xs font-medium border transition-colors ${
                     flair === tag
                       ? 'bg-yellow-400 text-zinc-950 border-yellow-400 font-bold'
-                      : 'bg-white/[0.02] text-zinc-400 border-white/[0.08] hover:border-yellow-500/30'
+                      : 'bg-zinc-100 dark:bg-white/[0.02] text-zinc-700 dark:text-zinc-400 border-zinc-200 dark:border-white/[0.08] hover:border-amber-400 dark:hover:border-yellow-500/30'
                   }`}
                 >
                   {tag}
@@ -484,8 +484,8 @@ export default function NewThreadPage() {
           {/* Media Attachment: Image or Video */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-mono uppercase text-zinc-400 flex items-center gap-1.5">
-                <ImageIcon size={13} className="text-yellow-400" />
+              <label className="text-xs font-mono uppercase text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">
+                <ImageIcon size={13} className="text-amber-600 dark:text-yellow-400" />
                 <span>3. แนบรูปภาพ หรือ วิดีโอ (Media Attachment)</span>
               </label>
               <div className="flex items-center gap-1 text-[11px] font-mono">
@@ -493,17 +493,17 @@ export default function NewThreadPage() {
                   type="button"
                   onClick={() => setMediaTab('upload')}
                   className={`px-2 py-0.5 rounded transition-colors ${
-                    mediaTab === 'upload' ? 'bg-white/[0.1] text-yellow-400 font-bold' : 'text-zinc-500 hover:text-zinc-300'
+                    mediaTab === 'upload' ? 'bg-zinc-200 dark:bg-white/[0.1] text-amber-700 dark:text-yellow-400 font-bold' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
                   }`}
                 >
                   อัปโหลดไฟล์
                 </button>
-                <span className="text-zinc-600">|</span>
+                <span className="text-zinc-300 dark:text-zinc-600">|</span>
                 <button
                   type="button"
                   onClick={() => setMediaTab('url')}
                   className={`px-2 py-0.5 rounded transition-colors ${
-                    mediaTab === 'url' ? 'bg-white/[0.1] text-yellow-400 font-bold' : 'text-zinc-500 hover:text-zinc-300'
+                    mediaTab === 'url' ? 'bg-zinc-200 dark:bg-white/[0.1] text-amber-700 dark:text-yellow-400 font-bold' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
                   }`}
                 >
                   ใส่ลิงก์ URL
@@ -513,7 +513,7 @@ export default function NewThreadPage() {
 
             {/* Media Preview if attached */}
             {mediaUrl ? (
-              <div className="relative rounded-lg overflow-hidden border border-yellow-500/30 bg-black/60 p-2">
+              <div className="relative rounded-lg overflow-hidden border border-amber-400/50 dark:border-yellow-500/30 bg-zinc-100 dark:bg-black/60 p-2">
                 {mediaType === 'video' ? (
                   <video
                     src={mediaUrl}
@@ -528,15 +528,15 @@ export default function NewThreadPage() {
                     className="w-full max-h-72 rounded object-contain bg-black"
                   />
                 )}
-                <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/[0.08] text-xs">
-                  <div className="flex items-center gap-1.5 text-zinc-400 font-mono text-[11px]">
-                    {mediaType === 'video' ? <Film size={12} className="text-yellow-400" /> : <ImageIcon size={12} className="text-yellow-400" />}
+                <div className="flex items-center justify-between mt-2 pt-2 border-t border-zinc-200 dark:border-white/[0.08] text-xs">
+                  <div className="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400 font-mono text-[11px]">
+                    {mediaType === 'video' ? <Film size={12} className="text-amber-600 dark:text-yellow-400" /> : <ImageIcon size={12} className="text-amber-600 dark:text-yellow-400" />}
                     <span className="truncate max-w-xs">{mediaUrl}</span>
                   </div>
                   <button
                     type="button"
                     onClick={handleRemoveMedia}
-                    className="text-red-400 hover:text-red-300 flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded hover:bg-red-950/30 transition-colors"
+                    className="text-red-600 dark:text-red-400 hover:text-red-500 dark:hover:text-red-300 flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
                   >
                     <X size={12} />
                     <span>ลบสื่อ</span>
@@ -546,7 +546,7 @@ export default function NewThreadPage() {
             ) : mediaTab === 'upload' ? (
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-white/[0.12] hover:border-yellow-400/50 bg-white/[0.01] hover:bg-white/[0.03] rounded-xl p-6 text-center cursor-pointer transition-colors space-y-2"
+                className="border-2 border-dashed border-zinc-300 dark:border-white/[0.12] hover:border-amber-500 dark:hover:border-yellow-400/50 bg-zinc-50 dark:bg-white/[0.01] hover:bg-zinc-100 dark:hover:bg-white/[0.03] rounded-xl p-6 text-center cursor-pointer transition-colors space-y-2"
               >
                 <input
                   ref={fileInputRef}
@@ -555,10 +555,10 @@ export default function NewThreadPage() {
                   onChange={handleFileUpload}
                   className="hidden"
                 />
-                <div className="w-10 h-10 rounded-full bg-yellow-400/10 text-yellow-400 flex items-center justify-center mx-auto border border-yellow-400/20">
+                <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-yellow-400/10 text-amber-600 dark:text-yellow-400 flex items-center justify-center mx-auto border border-amber-200 dark:border-yellow-400/20">
                   <UploadCloud size={20} />
                 </div>
-                <div className="text-xs text-zinc-200 font-medium">
+                <div className="text-xs text-zinc-800 dark:text-zinc-200 font-medium">
                   {isUploading ? 'กำลังอัปโหลดไฟล์...' : 'คลิกเพื่อเลือกไฟล์รูปภาพ หรือ วิดีโอ'}
                 </div>
                 <div className="text-[10px] text-zinc-500 font-mono">
@@ -572,7 +572,7 @@ export default function NewThreadPage() {
                   value={urlInput}
                   onChange={(e) => setUrlInput(e.target.value)}
                   placeholder="https://example.com/image.jpg หรือ video.mp4"
-                  className="flex-1 bg-white/[0.02] border border-white/[0.08] focus:border-yellow-400 rounded-lg px-3 py-2 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none font-mono"
+                  className="flex-1 bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200 dark:border-white/[0.08] focus:border-amber-500 dark:focus:border-yellow-400 rounded-lg px-3 py-2 text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none font-mono"
                 />
                 <button
                   type="button"
@@ -586,18 +586,18 @@ export default function NewThreadPage() {
             )}
 
             {uploadError && (
-              <p className="text-xs text-red-400 mt-1">{uploadError}</p>
+              <p className="text-xs text-red-600 dark:text-red-400 mt-1">{uploadError}</p>
             )}
           </div>
 
           {/* Source URL */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label htmlFor="sourceUrl" className="text-xs font-mono uppercase text-zinc-400 flex items-center gap-1">
+              <label htmlFor="sourceUrl" className="text-xs font-mono uppercase text-zinc-600 dark:text-zinc-400 flex items-center gap-1">
                 <LinkIcon size={11} />
                 <span>4. ลิงก์ข่าวต้นทาง (ไม่บังคับ)</span>
               </label>
-              <span className="text-[10px] text-zinc-500 font-mono">OPTIONAL</span>
+              <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-mono">OPTIONAL</span>
             </div>
             <input
               id="sourceUrl"
@@ -605,17 +605,17 @@ export default function NewThreadPage() {
               value={sourceUrl}
               onChange={(e) => setSourceUrl(e.target.value)}
               placeholder="https://example.com/news/..."
-              className="w-full bg-white/[0.02] border border-white/[0.08] focus:border-yellow-400 rounded-lg px-3 py-2 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-yellow-400 transition-colors font-mono"
+              className="w-full bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200 dark:border-white/[0.08] focus:border-amber-500 dark:focus:border-yellow-400 rounded-lg px-3 py-2 text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-amber-500 dark:focus:ring-yellow-400 transition-colors font-mono"
             />
           </div>
 
           {/* Content */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label htmlFor="content" className="text-xs font-mono uppercase text-zinc-400">
+              <label htmlFor="content" className="text-xs font-mono uppercase text-zinc-600 dark:text-zinc-400">
                 5. รายละเอียดเนื้อหา (Body)
               </label>
-              <span className="text-[10px] text-zinc-500 font-mono">OPTIONAL</span>
+              <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-mono">OPTIONAL</span>
             </div>
             <textarea
               id="content"
@@ -623,22 +623,22 @@ export default function NewThreadPage() {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="เขียนรายละเอียด ข้อคิดเห็น ข้อมูลข่าว หรือคำถาม (ไม่บังคับ)..."
-              className="w-full bg-white/[0.02] border border-white/[0.08] focus:border-red-500 rounded-lg p-3 text-xs sm:text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-red-500 leading-relaxed transition-colors font-sans"
+              className="w-full bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200 dark:border-white/[0.08] focus:border-red-500 rounded-lg p-3 text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-red-500 leading-relaxed transition-colors font-sans"
             />
           </div>
 
           {/* 6. Community Poll Options (เปิดโหวตในโพสต์) */}
-          <div className="p-3.5 bg-black/40 border border-white/[0.08] hover:border-white/[0.14] rounded-xl space-y-3 transition-colors">
+          <div className="p-3.5 bg-zinc-50 dark:bg-black/40 border border-zinc-200 dark:border-white/[0.08] hover:border-zinc-300 dark:hover:border-white/[0.14] rounded-xl space-y-3 transition-colors">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-yellow-500/10 text-yellow-400 border border-yellow-500/25 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-yellow-500/10 text-amber-600 dark:text-yellow-400 border border-amber-200 dark:border-yellow-500/25 flex items-center justify-center shrink-0">
                   <BarChart2 size={16} />
                 </div>
                 <div>
-                  <span className="text-xs font-semibold text-zinc-100 block">
+                  <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 block">
                     6. เปิดโพลสำรวจความคิดเห็น (Community Poll)
                   </span>
-                  <span className="text-[10px] text-zinc-400">
+                  <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
                     ให้สมาชิกในชุมชนเข้ามาลงคะแนนโหวตแบบไม่ระบุตัวตน (Zero-Log Anonymity)
                   </span>
                 </div>
@@ -651,14 +651,14 @@ export default function NewThreadPage() {
                   onChange={(e) => setHasPoll(e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-9 h-5 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-yellow-400"></div>
+                <div className="w-9 h-5 bg-zinc-300 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-yellow-400"></div>
               </label>
             </div>
 
             {hasPoll && (
-              <div className="space-y-3 pt-3 border-t border-white/[0.06] animate-in fade-in duration-200">
+              <div className="space-y-3 pt-3 border-t border-zinc-200 dark:border-white/[0.06] animate-in fade-in duration-200">
                 <div>
-                  <label className="text-[11px] font-mono text-zinc-400 block mb-1">
+                  <label className="text-[11px] font-mono text-zinc-600 dark:text-zinc-400 block mb-1">
                     คำถามหรือหัวข้อโหวต (ไม่บังคับ - หากเว้นว่างจะใช้หัวข้อกระทู้):
                   </label>
                   <input
@@ -667,12 +667,12 @@ export default function NewThreadPage() {
                     onChange={(e) => setPollQuestion(e.target.value)}
                     placeholder="เช่น คุณเห็นด้วยกับเรื่องนี้หรือไม่?"
                     maxLength={150}
-                    className="w-full bg-white/[0.02] border border-white/[0.08] focus:border-yellow-400 rounded-lg px-3 py-1.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none font-sans"
+                    className="w-full bg-white dark:bg-white/[0.02] border border-zinc-200 dark:border-white/[0.08] focus:border-amber-500 dark:focus:border-yellow-400 rounded-lg px-3 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none font-sans"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[11px] font-mono text-zinc-400 block">
+                  <label className="text-[11px] font-mono text-zinc-600 dark:text-zinc-400 block">
                     ตัวเลือกสำหรับการโหวต (อย่างน้อย 2 ตัวเลือก, สูงสุด 8 ตัวเลือก):
                   </label>
 
@@ -688,13 +688,13 @@ export default function NewThreadPage() {
                         onChange={(e) => handlePollOptionChange(idx, e.target.value)}
                         placeholder={`ระบุตัวเลือกที่ ${idx + 1}...`}
                         maxLength={80}
-                        className="flex-1 bg-white/[0.02] border border-white/[0.08] focus:border-yellow-400 rounded-lg px-3 py-1.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none font-sans"
+                        className="flex-1 bg-white dark:bg-white/[0.02] border border-zinc-200 dark:border-white/[0.08] focus:border-amber-500 dark:focus:border-yellow-400 rounded-lg px-3 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none font-sans"
                       />
                       {pollOptions.length > 2 && (
                         <button
                           type="button"
                           onClick={() => handleRemovePollOption(idx)}
-                          className="p-1.5 text-zinc-500 hover:text-red-400 rounded hover:bg-white/[0.04] transition-colors shrink-0"
+                          className="p-1.5 text-zinc-500 hover:text-red-600 dark:hover:text-red-400 rounded hover:bg-zinc-200/60 dark:hover:bg-white/[0.04] transition-colors shrink-0"
                           title="ลบตัวเลือกนี้"
                         >
                           <Trash2 size={13} />
@@ -707,7 +707,7 @@ export default function NewThreadPage() {
                     <button
                       type="button"
                       onClick={handleAddPollOption}
-                      className="mt-1 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-white/20 hover:border-yellow-400 text-xs text-zinc-400 hover:text-yellow-400 hover:bg-yellow-400/[0.05] transition-colors"
+                      className="mt-1 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-zinc-300 dark:border-white/20 hover:border-amber-500 dark:hover:border-yellow-400 text-xs text-zinc-600 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-yellow-400 hover:bg-amber-50 dark:hover:bg-yellow-400/[0.05] transition-colors"
                     >
                       <Plus size={12} />
                       <span>+ เพิ่มตัวเลือก</span>
@@ -720,8 +720,8 @@ export default function NewThreadPage() {
 
           {/* Auto-Destruction TTL (Touch of Orange) */}
           <div className="space-y-2">
-            <label className="text-xs font-mono text-zinc-400 flex items-center gap-1">
-              <Clock size={12} className="text-orange-400" />
+            <label className="text-xs font-mono text-zinc-600 dark:text-zinc-400 flex items-center gap-1">
+              <Clock size={12} className="text-orange-600 dark:text-orange-400" />
               <span>7. ระยะเวลาทำลายข้อมูลอัตโนมัติ (TTL)</span>
             </label>
             <div className="grid grid-cols-3 gap-2">
@@ -734,11 +734,11 @@ export default function NewThreadPage() {
                     onClick={() => setExpiresHours(opt.hours)}
                     className={`p-2.5 rounded-lg border text-left transition-colors active:scale-95 ${
                       isSelected
-                        ? 'border-orange-500/70 bg-orange-500/[0.08] shadow-sm'
-                        : 'border-white/[0.06] bg-white/[0.02] hover:border-orange-500/30'
+                        ? 'border-orange-500/70 bg-orange-50 dark:bg-orange-500/[0.08] shadow-sm'
+                        : 'border-zinc-200 dark:border-white/[0.06] bg-zinc-50 dark:bg-white/[0.02] hover:border-orange-400 dark:hover:border-orange-500/30'
                     }`}
                   >
-                    <div className="text-xs font-semibold text-zinc-100">{opt.label}</div>
+                    <div className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">{opt.label}</div>
                     <div className="text-[10px] text-zinc-500 mt-0.5">{opt.desc}</div>
                   </button>
                 );
@@ -747,16 +747,16 @@ export default function NewThreadPage() {
           </div>
 
           {/* Edit/Delete Secret Passcode (Zero-Log Authentication) */}
-          <div className="p-3 bg-black/40 border border-white/[0.06] rounded-lg space-y-2">
+          <div className="p-3 bg-zinc-50 dark:bg-black/40 border border-zinc-200 dark:border-white/[0.06] rounded-lg space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
-                <Key size={14} className="text-yellow-400" />
-                <span className="text-xs font-medium text-zinc-200">8. รหัสลับสำหรับแก้ไขหรือลบโพสต์ (Edit Passcode)</span>
+                <Key size={14} className="text-amber-600 dark:text-yellow-400" />
+                <span className="text-xs font-medium text-zinc-800 dark:text-zinc-200">8. รหัสลับสำหรับแก้ไขหรือลบโพสต์ (Edit Passcode)</span>
               </div>
               <button
                 type="button"
                 onClick={() => setEditPasscode(Math.floor(100000 + Math.random() * 900000).toString())}
-                className="text-[11px] text-zinc-500 hover:text-yellow-400 flex items-center gap-1"
+                className="text-[11px] text-zinc-500 hover:text-amber-600 dark:hover:text-yellow-400 flex items-center gap-1"
                 title="สุ่มรหัส PIN ใหม่"
               >
                 <Dices size={11} />
@@ -771,7 +771,7 @@ export default function NewThreadPage() {
                 value={editPasscode}
                 onChange={(e) => setEditPasscode(e.target.value)}
                 placeholder="ตั้งรหัสลับ 4-6 หลัก หรือตัวอักษร..."
-                className="w-full sm:w-56 bg-white/[0.02] border border-white/[0.08] focus:border-yellow-400 rounded-md px-3 py-1.5 text-xs text-yellow-400 font-mono font-bold focus:outline-none shrink-0"
+                className="w-full sm:w-56 bg-white dark:bg-white/[0.02] border border-zinc-300 dark:border-white/[0.08] focus:border-amber-500 dark:focus:border-yellow-400 rounded-md px-3 py-1.5 text-xs text-amber-700 dark:text-yellow-400 font-mono font-bold focus:outline-none shrink-0"
               />
               <span className="text-[11px] text-zinc-500">
                 (ระบบจะจำในเครื่องนี้อัตโนมัติ ไม่ต้องกรอกซ้ำเวลาแก้ไขหรือลบ)
@@ -780,16 +780,16 @@ export default function NewThreadPage() {
           </div>
 
           {/* Anti-Spam Captcha (Yellow Highlight) */}
-          <div className="p-3 bg-black/40 border border-white/[0.06] rounded-lg space-y-2">
+          <div className="p-3 bg-zinc-50 dark:bg-black/40 border border-zinc-200 dark:border-white/[0.06] rounded-lg space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
-                <ShieldCheck size={14} className="text-yellow-400" />
-                <span className="text-xs font-medium text-zinc-200">ยืนยันความปลอดภัย (Stateless Math)</span>
+                <ShieldCheck size={14} className="text-amber-600 dark:text-yellow-400" />
+                <span className="text-xs font-medium text-zinc-800 dark:text-zinc-200">ยืนยันความปลอดภัย (Stateless Math)</span>
               </div>
               <button
                 type="button"
                 onClick={fetchCaptcha}
-                className="text-[11px] text-zinc-500 hover:text-yellow-400 flex items-center gap-1"
+                className="text-[11px] text-zinc-500 hover:text-amber-600 dark:hover:text-yellow-400 flex items-center gap-1"
                 title="เปลี่ยนโจทย์"
               >
                 <RefreshCw size={11} />
@@ -798,7 +798,7 @@ export default function NewThreadPage() {
             </div>
 
             <div className="flex items-center gap-2 pt-1">
-              <div className="px-3 py-1.5 bg-yellow-500/10 border border-yellow-500/25 rounded-md text-xs font-mono font-bold text-yellow-400">
+              <div className="px-3 py-1.5 bg-amber-50 dark:bg-yellow-500/10 border border-amber-200 dark:border-yellow-500/25 rounded-md text-xs font-mono font-bold text-amber-700 dark:text-yellow-400">
                 {captchaData ? captchaData.question : 'กำลังโหลด...'}
               </div>
 
@@ -808,7 +808,7 @@ export default function NewThreadPage() {
                 value={captchaAnswer}
                 onChange={(e) => setCaptchaAnswer(e.target.value)}
                 placeholder="คำตอบ..."
-                className="w-32 bg-white/[0.02] border border-white/[0.08] rounded-md px-3 py-1.5 text-xs text-white focus:outline-none focus:border-yellow-400 font-mono"
+                className="w-32 bg-white dark:bg-white/[0.02] border border-zinc-300 dark:border-white/[0.08] rounded-md px-3 py-1.5 text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-amber-500 dark:focus:border-yellow-400 font-mono"
               />
             </div>
           </div>
@@ -817,7 +817,7 @@ export default function NewThreadPage() {
           <div className="pt-2 flex items-center justify-between">
             <Link
               href="/"
-              className="text-xs text-zinc-400 hover:text-zinc-200"
+              className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
             >
               ยกเลิก
             </Link>

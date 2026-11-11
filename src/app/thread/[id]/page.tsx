@@ -397,11 +397,11 @@ export default function ThreadDetailPage({
   if (errorMsg || !thread) {
     return (
       <div className="max-w-md mx-auto py-12 text-center space-y-3">
-        <div className="w-10 h-10 bg-red-950/20 border border-red-900/40 text-red-400 rounded-lg flex items-center justify-center mx-auto">
+        <div className="w-10 h-10 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 rounded-lg flex items-center justify-center mx-auto">
           <AlertTriangle size={18} />
         </div>
-        <h2 className="text-sm font-semibold text-zinc-100">ไม่พบโพสต์นี้</h2>
-        <p className="text-xs text-zinc-400 leading-relaxed">
+        <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">ไม่พบโพสต์นี้</h2>
+        <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
           {errorMsg || 'กระทู้อาจหมดอายุและถูกลบทำลายโดยอัตโนมัติ (Self-Destruct)'}
         </p>
         <Link
@@ -434,20 +434,20 @@ export default function ThreadDetailPage({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 w-full">
         <Link
           href={`/?category=${cleanCategory}`}
-          className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-yellow-400 transition-colors font-mono shrink-0"
+          className="inline-flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-yellow-400 transition-colors font-mono shrink-0"
         >
           <ArrowLeft size={13} />
           <span>กลับไปที่ {subredditName}</span>
         </Link>
 
         {/* View Switcher: Comments vs Live Chat */}
-        <div className="inline-flex items-center bg-black/40 border border-white/[0.06] p-0.5 rounded-lg text-xs self-start sm:self-auto overflow-x-auto max-w-full">
+        <div className="inline-flex items-center bg-zinc-200/70 dark:bg-black/40 border border-zinc-300/70 dark:border-white/[0.06] p-0.5 rounded-lg text-xs self-start sm:self-auto overflow-x-auto max-w-full">
           <button
             onClick={() => setActiveView('comments')}
             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md transition-colors shrink-0 ${
               activeView === 'comments'
                 ? 'bg-red-600 text-white font-medium shadow-sm'
-                : 'text-zinc-400 hover:text-zinc-200'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
             }`}
           >
             <MessageSquare size={13} />
@@ -459,10 +459,10 @@ export default function ThreadDetailPage({
             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md transition-colors shrink-0 ${
               activeView === 'livechat'
                 ? 'bg-yellow-400 text-zinc-950 font-bold shadow-sm'
-                : 'text-zinc-400 hover:text-zinc-200'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
             }`}
           >
-            <Radio size={13} className={activeView === 'livechat' ? 'text-zinc-950' : 'text-yellow-400'} />
+            <Radio size={13} className={activeView === 'livechat' ? 'text-zinc-950' : 'text-amber-600 dark:text-yellow-400'} />
             <span>ห้องแชทสดประจำข่าว</span>
           </button>
         </div>
@@ -475,16 +475,16 @@ export default function ThreadDetailPage({
         <div className="lg:col-span-8 space-y-4 min-w-0">
           
           {/* Main Post Card (Reddit Style) */}
-          <article className="w-full max-w-full overflow-hidden bg-[#0e1015]/90 border border-white/[0.08] rounded-xl p-3.5 sm:p-5 text-zinc-200 shadow-xl backdrop-blur-sm">
+          <article className="w-full max-w-full overflow-hidden bg-white dark:bg-[#0e1015]/90 border border-zinc-200 dark:border-white/[0.08] rounded-xl p-3.5 sm:p-5 text-zinc-800 dark:text-zinc-200 shadow-sm dark:shadow-xl backdrop-blur-sm">
             {isThreadHidden && (
-              <div className="bg-red-950/20 border border-red-900/40 rounded-lg p-2.5 mb-4 text-xs text-red-300 flex items-center justify-between">
+              <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 rounded-lg p-2.5 mb-4 text-xs text-red-700 dark:text-red-300 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <AlertTriangle size={14} className="text-red-400" />
+                  <AlertTriangle size={14} className="text-red-600 dark:text-red-400" />
                   <span>โพสต์นี้ถูกซ่อนอัตโนมัติเนื่องจากมีผู้รายงานครบ 5 ครั้ง</span>
                 </div>
                 <button
                   onClick={() => setRevealedIds((prev) => ({ ...prev, [thread.id]: true }))}
-                  className="px-2 py-0.5 bg-white/[0.06] rounded text-[11px] text-zinc-200"
+                  className="px-2 py-0.5 bg-white dark:bg-white/[0.06] rounded border border-red-200 dark:border-transparent text-[11px] text-zinc-800 dark:text-zinc-200"
                 >
                   แสดงเนื้อหา
                 </button>
@@ -494,13 +494,13 @@ export default function ThreadDetailPage({
             <div className={`flex gap-2.5 sm:gap-4 min-w-0 ${isThreadHidden ? 'opacity-30 blur-sm pointer-events-none' : ''}`}>
               
               {/* Reddit Upvote / Downvote column */}
-              <div className="flex flex-col items-center bg-black/50 border border-white/[0.07] rounded-lg p-1 self-start shrink-0 backdrop-blur-sm shadow-inner">
+              <div className="flex flex-col items-center bg-zinc-100 dark:bg-black/50 border border-zinc-200 dark:border-white/[0.07] rounded-lg p-1 self-start shrink-0 backdrop-blur-sm shadow-inner">
                 <button
                   onClick={() => handleThreadVote('up')}
                   className={`p-1 rounded transition-colors active:scale-95 ${
                     threadVote === 'up'
-                      ? 'text-yellow-400 bg-yellow-500/15'
-                      : 'text-zinc-500 hover:text-yellow-400'
+                      ? 'text-amber-600 dark:text-yellow-400 bg-amber-500/15 dark:bg-yellow-500/15'
+                      : 'text-zinc-500 hover:text-amber-600 dark:hover:text-yellow-400'
                   }`}
                   title="Upvote"
                 >
@@ -510,10 +510,10 @@ export default function ThreadDetailPage({
                 <span
                   className={`text-xs font-mono font-bold tabular-nums my-0.5 ${
                     threadScore > 0
-                      ? 'text-yellow-400'
+                      ? 'text-amber-600 dark:text-yellow-400'
                       : threadScore < 0
-                      ? 'text-red-400'
-                      : 'text-zinc-400'
+                      ? 'text-red-600 dark:text-red-400'
+                      : 'text-zinc-500 dark:text-zinc-400'
                   }`}
                 >
                   {threadScore}
@@ -523,8 +523,8 @@ export default function ThreadDetailPage({
                   onClick={() => handleThreadVote('down')}
                   className={`p-1 rounded transition-colors active:scale-95 ${
                     threadVote === 'down'
-                      ? 'text-red-400 bg-red-500/15'
-                      : 'text-zinc-500 hover:text-red-400'
+                      ? 'text-red-600 dark:text-red-400 bg-red-500/15'
+                      : 'text-zinc-500 hover:text-red-600 dark:hover:text-red-400'
                   }`}
                   title="Downvote"
                 >
@@ -539,14 +539,14 @@ export default function ThreadDetailPage({
                 <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2 text-xs">
                   <Link
                     href={`/?category=${cleanCategory}`}
-                    className="font-mono font-bold text-yellow-400 hover:underline"
+                    className="font-mono font-bold text-amber-700 dark:text-yellow-400 hover:underline"
                   >
                     {subredditName}
                   </Link>
 
-                  <span className="text-zinc-600">•</span>
+                  <span className="text-zinc-300 dark:text-zinc-600">•</span>
 
-                  <div className="flex items-center gap-1 text-zinc-400 font-mono text-[11px]">
+                  <div className="flex items-center gap-1 text-zinc-600 dark:text-zinc-400 font-mono text-[11px]">
                     <IdentityAvatar iconKey={thread.author_avatar} theme="red" size="xs" />
                     <span>u/{cleanAuthorAlias}</span>
                     <span className="px-1.5 py-0.2 rounded text-[10px] font-mono font-bold bg-red-600 text-white ml-0.5">
@@ -554,7 +554,7 @@ export default function ThreadDetailPage({
                     </span>
                   </div>
 
-                  <span className="text-zinc-600">•</span>
+                  <span className="text-zinc-300 dark:text-zinc-600">•</span>
 
                   <span className="font-mono text-zinc-500 text-[11px] tabular-nums">
                     {new Date(thread.created_at).toLocaleString('th-TH', {
@@ -565,7 +565,7 @@ export default function ThreadDetailPage({
 
                   {thread.is_edited === 1 && (
                     <>
-                      <span className="text-zinc-600">•</span>
+                      <span className="text-zinc-300 dark:text-zinc-600">•</span>
                       <span className="font-mono text-zinc-500 text-[11px] italic">
                         (แก้ไขแล้ว)
                       </span>
@@ -573,14 +573,14 @@ export default function ThreadDetailPage({
                   )}
 
                   {thread.flair && (
-                    <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold border text-yellow-400 bg-yellow-500/10 border-yellow-500/25 ml-1">
+                    <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold border text-amber-700 dark:text-yellow-400 bg-amber-50 dark:bg-yellow-500/10 border-amber-200 dark:border-yellow-500/25 ml-1">
                       {thread.flair}
                     </span>
                   )}
 
                   {/* Expiration badge */}
-                  <div className="flex items-center gap-1 font-mono text-[10px] text-orange-400 ml-auto bg-orange-500/10 px-2 py-0.5 rounded border border-orange-500/20 tabular-nums">
-                    <Clock size={11} className="text-orange-400" />
+                  <div className="flex items-center gap-1 font-mono text-[10px] text-orange-600 dark:text-orange-400 ml-auto bg-orange-50 dark:bg-orange-500/10 px-2 py-0.5 rounded border border-orange-200 dark:border-orange-500/20 tabular-nums">
+                    <Clock size={11} className="text-orange-600 dark:text-orange-400" />
                     <span>
                       ทำลายใน:{' '}
                       {Math.max(
@@ -595,7 +595,7 @@ export default function ThreadDetailPage({
                 </div>
 
                 {/* Title */}
-                <h1 className="text-lg sm:text-xl font-bold text-zinc-100 leading-snug mb-3">
+                <h1 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-100 leading-snug mb-3">
                   {thread.title}
                 </h1>
 
@@ -677,9 +677,9 @@ export default function ThreadDetailPage({
                       href={thread.source_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-yellow-400 bg-white/[0.02] border border-white/[0.06] hover:border-yellow-500/25 px-2.5 py-1 rounded transition-colors font-mono"
+                      className="inline-flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400 hover:text-amber-700 dark:hover:text-yellow-400 bg-zinc-100 dark:bg-white/[0.02] border border-zinc-200 dark:border-white/[0.06] hover:border-amber-400/50 dark:hover:border-yellow-500/25 px-2.5 py-1 rounded transition-colors font-mono"
                     >
-                      <ExternalLink size={12} className="text-yellow-400" />
+                      <ExternalLink size={12} className="text-amber-600 dark:text-yellow-400" />
                       <span>ข่าวต้นทาง: {thread.source_url}</span>
                     </a>
                   </div>
@@ -687,7 +687,7 @@ export default function ThreadDetailPage({
 
                 {/* Body Content */}
                 {thread.content && (
-                  <div className={`text-zinc-300 leading-relaxed whitespace-pre-wrap pb-4 border-b border-white/[0.06] ${
+                  <div className={`text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap pb-4 border-b border-zinc-200 dark:border-white/[0.06] ${
                     settings.fontSize === 'comfortable' ? 'text-sm sm:text-base leading-relaxed' : 'text-xs sm:text-sm leading-relaxed'
                   }`}>
                     {thread.content}
@@ -709,23 +709,23 @@ export default function ThreadDetailPage({
 
                 {/* Reddit Action Bar */}
                 <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-3 text-xs w-full">
-                  <div className="inline-flex items-center gap-1.5 text-zinc-400 font-mono text-[11px] shrink-0">
+                  <div className="inline-flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400 font-mono text-[11px] shrink-0">
                     <MessageSquare size={13} />
                     <span>{comments.length} ความคิดเห็น</span>
                   </div>
 
                   <button
                     onClick={handleShare}
-                    className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-yellow-400 transition-colors p-1 rounded hover:bg-white/[0.03] shrink-0"
+                    className="inline-flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-yellow-400 transition-colors p-1 rounded hover:bg-zinc-100 dark:hover:bg-white/[0.03] shrink-0"
                   >
-                    {copiedLink ? <Check size={13} className="text-yellow-400" /> : <Share2 size={13} />}
+                    {copiedLink ? <Check size={13} className="text-amber-600 dark:text-yellow-400" /> : <Share2 size={13} />}
                     <span>{copiedLink ? 'คัดลอกแล้ว' : 'แชร์'}</span>
                   </button>
 
                   <button
                     onClick={() => setIsSaved(!isSaved)}
-                    className={`inline-flex items-center gap-1.5 transition-colors p-1 rounded hover:bg-white/[0.03] shrink-0 ${
-                      isSaved ? 'text-yellow-400 font-semibold' : 'text-zinc-400 hover:text-yellow-400'
+                    className={`inline-flex items-center gap-1.5 transition-colors p-1 rounded hover:bg-zinc-100 dark:hover:bg-white/[0.03] shrink-0 ${
+                      isSaved ? 'text-amber-600 dark:text-yellow-400 font-semibold' : 'text-zinc-600 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-yellow-400'
                     }`}
                   >
                     <Bookmark size={13} />
@@ -737,7 +737,7 @@ export default function ThreadDetailPage({
                       <button
                         type="button"
                         onClick={() => setShowEditModal(true)}
-                        className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-yellow-400 transition-colors p-1 rounded hover:bg-white/[0.03] shrink-0"
+                        className="inline-flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-yellow-400 transition-colors p-1 rounded hover:bg-zinc-100 dark:hover:bg-white/[0.03] shrink-0"
                         title="แก้ไขโพสต์นี้"
                       >
                         <Edit3 size={13} />
@@ -747,7 +747,7 @@ export default function ThreadDetailPage({
                       <button
                         type="button"
                         onClick={() => setShowDeleteModal(true)}
-                        className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-red-400 transition-colors p-1 rounded hover:bg-white/[0.03] shrink-0"
+                        className="inline-flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-1 rounded hover:bg-zinc-100 dark:hover:bg-white/[0.03] shrink-0"
                         title="ลบโพสต์นี้"
                       >
                         <Trash2 size={13} />
@@ -764,7 +764,7 @@ export default function ThreadDetailPage({
                         title: thread.title,
                       })
                     }
-                    className="flex items-center gap-1 text-[11px] text-zinc-500 hover:text-red-400 transition-colors ml-auto shrink-0"
+                    className="flex items-center gap-1 text-[11px] text-zinc-500 hover:text-red-600 dark:hover:text-red-400 transition-colors ml-auto shrink-0"
                   >
                     <Flag size={12} />
                     <span className="font-mono tabular-nums">
@@ -786,12 +786,12 @@ export default function ThreadDetailPage({
               
               {/* Ephemeral Identity Notice with Custom Display Name Support */}
               {identity && (
-                <div className="bg-[#101217] border border-white/[0.06] rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div className="bg-white dark:bg-[#101217] border border-zinc-200 dark:border-white/[0.06] rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-sm dark:shadow-none">
                   <div className="flex items-center gap-2.5">
                     <IdentityAvatar iconKey={identity.avatarIcon} theme="red" size="sm" />
                     <div>
                       <div className="flex items-center gap-1.5">
-                        <span className="text-zinc-400">คุณกำลังแสดงความเห็นในฐานะ:</span>
+                        <span className="text-zinc-500 dark:text-zinc-400">คุณกำลังแสดงความเห็นในฐานะ:</span>
                         {isEditingAlias ? (
                           <div className="flex items-center gap-1.5">
                             <input
@@ -800,7 +800,7 @@ export default function ThreadDetailPage({
                               onChange={(e) => setCustomAlias(e.target.value)}
                               placeholder="u/ชื่อที่คุณต้องการ"
                               maxLength={40}
-                              className="bg-black/50 border border-yellow-400 rounded px-2 py-0.5 text-xs text-yellow-400 font-mono font-semibold focus:outline-none"
+                              className="bg-zinc-50 dark:bg-black/50 border border-amber-500 dark:border-yellow-400 rounded px-2 py-0.5 text-xs text-amber-700 dark:text-yellow-400 font-mono font-semibold focus:outline-none"
                             />
                             <button
                               type="button"
@@ -812,13 +812,13 @@ export default function ThreadDetailPage({
                           </div>
                         ) : (
                           <div className="flex items-center gap-1">
-                            <strong className="text-zinc-100 font-semibold font-mono">
+                            <strong className="text-zinc-900 dark:text-zinc-100 font-semibold font-mono">
                               u/{customAlias.replace(/^u\//, '')}
                             </strong>
                             <button
                               type="button"
                               onClick={() => setIsEditingAlias(true)}
-                              className="text-zinc-500 hover:text-yellow-400 p-0.5 rounded"
+                              className="text-zinc-400 dark:text-zinc-500 hover:text-amber-600 dark:hover:text-yellow-400 p-0.5 rounded"
                               title="เปลี่ยนชื่อแสดงตัวตน"
                             >
                               <Edit2 size={11} />
@@ -835,10 +835,10 @@ export default function ThreadDetailPage({
                   <div className="flex items-center gap-1 self-end sm:self-auto">
                     <button
                       onClick={handleRerollIdentity}
-                      className="btn-secondary !py-1 !px-2 text-xs shrink-0 hover:border-yellow-500/30"
+                      className="btn-secondary !py-1 !px-2 text-xs shrink-0 hover:border-amber-500/40 dark:hover:border-yellow-500/30"
                       title="สุ่มชื่อใหม่เฉพาะกระทู้นี้"
                     >
-                      <Dices size={13} className="text-yellow-400" />
+                      <Dices size={13} className="text-amber-600 dark:text-yellow-400" />
                       <span>สุ่มชื่อใหม่</span>
                     </button>
                   </div>
@@ -846,8 +846,8 @@ export default function ThreadDetailPage({
               )}
 
               {/* Root Comment Form (Top-level reply) */}
-              <div className="bg-[#101217] border border-white/[0.08] rounded-xl p-4 space-y-3">
-                <span className="text-xs font-semibold text-zinc-200">
+              <div className="bg-white dark:bg-[#101217] border border-zinc-200 dark:border-white/[0.08] rounded-xl p-4 space-y-3 shadow-sm dark:shadow-none">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-200">
                   แสดงความคิดเห็นในโพสต์นี้
                 </span>
 
@@ -858,12 +858,12 @@ export default function ThreadDetailPage({
                     value={commentContent}
                     onChange={(e) => setCommentContent(e.target.value)}
                     placeholder="เขียนความคิดเห็นของคุณในฐานะนิรนาม..."
-                    className="w-full bg-white/[0.02] border border-white/[0.08] focus:border-red-500 rounded-lg p-2.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-red-500 transition-colors font-sans"
+                    className="w-full bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200 dark:border-white/[0.08] focus:border-red-500 rounded-lg p-2.5 text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-red-500 transition-colors font-sans"
                   />
 
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                     <div className="flex items-center gap-2">
-                      <div className="px-2.5 py-1 bg-yellow-500/10 border border-yellow-500/25 rounded text-xs font-mono font-bold text-yellow-400 shrink-0">
+                      <div className="px-2.5 py-1 bg-amber-50 dark:bg-yellow-500/10 border border-amber-200 dark:border-yellow-500/25 rounded text-xs font-mono font-bold text-amber-700 dark:text-yellow-400 shrink-0">
                         {captchaData ? captchaData.question : '...'}
                       </div>
                       <input
@@ -872,12 +872,12 @@ export default function ThreadDetailPage({
                         value={captchaAnswer}
                         onChange={(e) => setCaptchaAnswer(e.target.value)}
                         placeholder="คำตอบ..."
-                        className="w-20 bg-white/[0.02] border border-white/[0.08] rounded px-2.5 py-1 text-xs text-white focus:outline-none focus:border-yellow-400 font-mono"
+                        className="w-20 bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200 dark:border-white/[0.08] rounded px-2.5 py-1 text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-amber-500 dark:focus:border-yellow-400 font-mono"
                       />
                       <button
                         type="button"
                         onClick={fetchCaptcha}
-                        className="p-1 text-zinc-500 hover:text-yellow-400"
+                        className="p-1 text-zinc-500 hover:text-amber-600 dark:hover:text-yellow-400"
                         title="เปลี่ยนคำถาม"
                       >
                         <RefreshCw size={12} />
@@ -904,8 +904,8 @@ export default function ThreadDetailPage({
 
               {/* Reddit Threaded Comments Tree */}
               <div className="space-y-2">
-                <div className="flex items-center justify-between py-1 border-b border-white/[0.06] text-xs">
-                  <span className="font-mono text-zinc-400 font-semibold tabular-nums">
+                <div className="flex items-center justify-between py-1 border-b border-zinc-200 dark:border-white/[0.06] text-xs">
+                  <span className="font-mono text-zinc-600 dark:text-zinc-400 font-semibold tabular-nums">
                     ความคิดเห็นแบบจัดลำดับ ({comments.length})
                   </span>
                   <span className="text-[11px] text-zinc-500">คลิกเส้นด้านซ้ายเพื่อย่อ/ขยายบทสนทนา</span>

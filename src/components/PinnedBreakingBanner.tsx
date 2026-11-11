@@ -49,10 +49,10 @@ export default function PinnedBreakingBanner({ pinnedThread }: PinnedBreakingBan
   return (
     <aside
       aria-label="Pinned Breaking News"
-      className="w-full max-w-full overflow-hidden rounded-xl border border-red-500/40 border-l-4 border-l-red-500 bg-gradient-to-r from-red-950/25 via-[#0e1015] to-[#0e1015] p-3.5 sm:p-4.5 shadow-[0_0_20px_rgba(239,68,68,0.1)] transition-all backdrop-blur-sm"
+      className="w-full max-w-full overflow-hidden rounded-xl border border-red-300 dark:border-red-500/40 border-l-4 border-l-red-600 dark:border-l-red-500 bg-gradient-to-r from-red-50 via-white to-white dark:from-red-950/25 dark:via-[#0e1015] dark:to-[#0e1015] p-3.5 sm:p-4.5 shadow-sm dark:shadow-[0_0_20px_rgba(239,68,68,0.1)] transition-all backdrop-blur-sm"
     >
       {/* Top Header Wire */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 mb-3 border-b border-white/[0.06]">
+      <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 mb-3 border-b border-red-200/70 dark:border-white/[0.06]">
         <div className="flex items-center gap-2">
           {/* Subtle Live Radar Indicator */}
           <span className="relative flex h-2 w-2">
@@ -60,22 +60,22 @@ export default function PinnedBreakingBanner({ pinnedThread }: PinnedBreakingBan
             <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
           </span>
 
-          <span className="text-xs font-mono font-bold text-red-400 flex items-center gap-1.5">
+          <span className="text-xs font-mono font-bold text-red-600 dark:text-red-400 flex items-center gap-1.5">
             <Radio size={13} />
             <span>ข่าวด่วนล่าสุด</span>
           </span>
 
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-red-950/60 text-red-300 border border-red-500/30">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-500/30">
             <Pin size={10} />
             <span>ปักหมุด</span>
           </span>
         </div>
 
         {/* Live Timestamp */}
-        <div className="flex items-center gap-1.5 text-[11px] font-mono text-zinc-400 tabular-nums">
-          <Clock size={12} className="text-yellow-400" />
+        <div className="flex items-center gap-1.5 text-[11px] font-mono text-zinc-500 dark:text-zinc-400 tabular-nums">
+          <Clock size={12} className="text-amber-600 dark:text-yellow-400" />
           <span>{getTimeAgo()}</span>
-          <span className="text-zinc-600">•</span>
+          <span className="text-zinc-300 dark:text-zinc-600">•</span>
           <span className="text-zinc-500">
             {new Date(pinnedThread.created_at).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })} น.
           </span>
@@ -88,13 +88,13 @@ export default function PinnedBreakingBanner({ pinnedThread }: PinnedBreakingBan
           href={`/thread/${pinnedThread.id}`}
           className="group block focus-visible:outline-none focus-visible:underline"
         >
-          <h2 className="text-base sm:text-lg font-bold text-zinc-100 group-hover:text-yellow-400 transition-colors leading-snug">
+          <h2 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-red-600 dark:group-hover:text-yellow-400 transition-colors leading-snug">
             {pinnedThread.title}
           </h2>
         </Link>
 
         {/* Snippet / Briefing */}
-        <p className="text-xs sm:text-[13px] text-zinc-400 leading-relaxed line-clamp-2">
+        <p className="text-xs sm:text-[13px] text-zinc-600 dark:text-zinc-400 leading-relaxed line-clamp-2">
           {pinnedThread.content}
         </p>
 
@@ -106,16 +106,16 @@ export default function PinnedBreakingBanner({ pinnedThread }: PinnedBreakingBan
               href={pinnedThread.source_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] hover:border-yellow-500/30 text-zinc-300 hover:text-yellow-400 px-2.5 py-1 rounded-md font-mono text-[11px] font-medium transition-colors"
+              className="inline-flex items-center gap-1.5 bg-zinc-100 dark:bg-white/[0.03] hover:bg-zinc-200/80 dark:hover:bg-white/[0.06] border border-zinc-200 dark:border-white/[0.08] hover:border-amber-500/40 dark:hover:border-yellow-500/30 text-zinc-700 dark:text-zinc-300 hover:text-amber-700 dark:hover:text-yellow-400 px-2.5 py-1 rounded-md font-mono text-[11px] font-medium transition-colors"
               title="ตรวจสอบข่าวต้นทาง"
             >
-              <ExternalLink size={11} className="text-yellow-400 shrink-0" />
+              <ExternalLink size={11} className="text-amber-600 dark:text-yellow-400 shrink-0" />
               <span>แหล่งข่าว: {sourceDomain}</span>
             </a>
           )}
 
           {/* Author metadata */}
-          <div className="inline-flex items-center gap-1.5 text-zinc-400 font-mono text-[11px]">
+          <div className="inline-flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400 font-mono text-[11px]">
             <IdentityAvatar iconKey={pinnedThread.author_avatar} theme="red" size="xs" />
             <span>u/{pinnedThread.author_alias.replace(/^u\//, '')}</span>
           </div>

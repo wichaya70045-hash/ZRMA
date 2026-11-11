@@ -314,29 +314,29 @@ export default function LiveChatBox({
 
   return (
     <div
-      className={`rounded-2xl flex flex-col h-full w-full max-w-full overflow-hidden shadow-xl border transition-colors ${
+      className={`rounded-2xl flex flex-col h-full w-full max-w-full overflow-hidden shadow-sm dark:shadow-xl border transition-colors ${
         isGhost
-          ? 'bg-[#0d0f14] border-orange-500/50 shadow-orange-950/20'
-          : 'bg-[#0e1015]/95 border-white/[0.08] backdrop-blur-md'
+          ? 'bg-orange-50/40 dark:bg-[#0d0f14] border-orange-300 dark:border-orange-500/50 dark:shadow-orange-950/20'
+          : 'bg-white dark:bg-[#0e1015]/95 border-zinc-200 dark:border-white/[0.08] backdrop-blur-md'
       }`}
     >
       {/* Ghost Room Warning Banner */}
       {isGhost && (
-        <div className="bg-red-950/40 border-b border-red-500/30 px-3 py-2 flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div className="bg-red-50 dark:bg-red-950/40 border-b border-red-200 dark:border-red-500/30 px-3 py-2 flex flex-wrap items-center justify-between gap-2 text-xs">
           <div className="flex items-center gap-2 shrink-0">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
             </span>
-            <div className="flex items-center gap-1.5 font-mono text-[11px] text-red-300">
-              <Ghost size={13} className="text-red-400 shrink-0" />
-              <strong className="text-red-300 uppercase tracking-wide">ห้องหายไปเมื่อไม่มีคน:</strong>
-              <span className="text-zinc-400 hidden sm:inline">ข้อความจะสลายตัวทันทีเมื่อทุกคนออก</span>
+            <div className="flex items-center gap-1.5 font-mono text-[11px] text-red-700 dark:text-red-300">
+              <Ghost size={13} className="text-red-600 dark:text-red-400 shrink-0" />
+              <strong className="text-red-700 dark:text-red-300 uppercase tracking-wide">ห้องหายไปเมื่อไม่มีคน:</strong>
+              <span className="text-zinc-600 dark:text-zinc-400 hidden sm:inline">ข้อความจะสลายตัวทันทีเมื่อทุกคนออก</span>
             </div>
           </div>
 
           <div className="flex items-center gap-2 ml-auto shrink-0">
-            <div className="flex items-center gap-1 font-mono text-[11px] text-yellow-400 bg-yellow-400/10 px-2 py-0.5 rounded border border-yellow-400/25">
+            <div className="flex items-center gap-1 font-mono text-[11px] text-amber-700 dark:text-yellow-400 bg-amber-100 dark:bg-yellow-400/10 px-2 py-0.5 rounded border border-amber-300 dark:border-yellow-400/25">
               <Users size={11} />
               <span>{ghostPresenceCount} คนในห้อง</span>
             </div>
@@ -344,7 +344,7 @@ export default function LiveChatBox({
             {onLeaveGhostRoom && (
               <button
                 onClick={handleLeaveAndDestroy}
-                className="text-[10px] font-mono text-zinc-400 hover:text-red-400 flex items-center gap-1 px-1.5 py-0.5 rounded hover:bg-white/[0.04] transition-colors"
+                className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 flex items-center gap-1 px-1.5 py-0.5 rounded hover:bg-red-100 dark:hover:bg-white/[0.04] transition-colors"
                 title="ออกจากห้องนี้"
               >
                 <LogOut size={11} />
@@ -356,20 +356,20 @@ export default function LiveChatBox({
       )}
 
       {/* Modern Terminal Header */}
-      <div className="px-3.5 py-2.5 sm:px-4 sm:py-3 bg-black/60 backdrop-blur-sm border-b border-white/[0.08] flex items-center justify-between gap-2">
+      <div className="px-3.5 py-2.5 sm:px-4 sm:py-3 bg-zinc-50/90 dark:bg-black/60 backdrop-blur-sm border-b border-zinc-200 dark:border-white/[0.08] flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <div
             className={`w-2 h-2 rounded-full shrink-0 ${
               settings.reduceMotion ? '' : 'animate-pulse'
-            } ${isGhost ? 'bg-orange-500' : 'bg-green-500'}`}
+            } ${isGhost ? 'bg-orange-500' : 'bg-emerald-500 dark:bg-green-500'}`}
           />
           <div className="min-w-0">
-            <h3 className="text-xs sm:text-sm font-bold text-zinc-100 flex items-center gap-1.5 truncate">
-              {isGhost && <Ghost size={13} className="text-orange-400 shrink-0" />}
+            <h3 className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5 truncate">
+              {isGhost && <Ghost size={13} className="text-orange-600 dark:text-orange-400 shrink-0" />}
               <span>{title}</span>
             </h3>
             <div className="flex items-center gap-1.5 text-[10px] font-mono text-zinc-500 tabular-nums">
-              <span className="text-green-400 font-semibold">● LIVE</span>
+              <span className="text-emerald-600 dark:text-green-400 font-semibold">● LIVE</span>
               <span>•</span>
               <span>{messages.length} ข้อความ</span>
             </div>
@@ -378,7 +378,7 @@ export default function LiveChatBox({
 
         {/* Identity with Editable Name & Dice Reroll */}
         {identity && (
-          <div className="flex items-center gap-1.5 bg-[#141721] border border-white/[0.08] px-2 py-1 rounded-xl text-xs shrink-0 shadow-sm">
+          <div className="flex items-center gap-1.5 bg-white dark:bg-[#141721] border border-zinc-200 dark:border-white/[0.08] px-2 py-1 rounded-xl text-xs shrink-0 shadow-sm">
             <IdentityAvatar iconKey={identity.avatarIcon} theme={isGhost ? 'orange' : 'yellow'} size="xs" />
             
             {isEditingAlias ? (
@@ -390,13 +390,13 @@ export default function LiveChatBox({
                   onKeyDown={(e) => e.key === 'Enter' && handleSaveAlias()}
                   placeholder="ชื่อ..."
                   maxLength={30}
-                  className="w-20 bg-black/60 border border-yellow-400 rounded px-1.5 py-0.5 text-[11px] text-yellow-400 font-mono focus:outline-none"
+                  className="w-20 bg-zinc-50 dark:bg-black/60 border border-amber-500 dark:border-yellow-400 rounded px-1.5 py-0.5 text-[11px] text-amber-700 dark:text-yellow-400 font-mono focus:outline-none"
                   autoFocus
                 />
                 <button
                   type="button"
                   onClick={handleSaveAlias}
-                  className="p-0.5 text-yellow-400 hover:text-white"
+                  className="p-0.5 text-amber-600 dark:text-yellow-400 hover:text-zinc-900 dark:hover:text-white"
                   title="บันทึกชื่อ"
                 >
                   <Check size={12} />
@@ -406,7 +406,7 @@ export default function LiveChatBox({
               <div className="flex items-center gap-1">
                 <span
                   onClick={() => setIsEditingAlias(true)}
-                  className="text-zinc-200 text-[11px] font-mono font-medium truncate max-w-[85px] sm:max-w-[120px] cursor-pointer hover:text-yellow-400 transition-colors"
+                  className="text-zinc-800 dark:text-zinc-200 text-[11px] font-mono font-medium truncate max-w-[85px] sm:max-w-[120px] cursor-pointer hover:text-amber-600 dark:hover:text-yellow-400 transition-colors"
                   title="คลิกเพื่อแก้ไขชื่อ"
                 >
                   {effectiveAlias}
@@ -414,7 +414,7 @@ export default function LiveChatBox({
                 <button
                   type="button"
                   onClick={() => setIsEditingAlias(true)}
-                  className="p-0.5 text-zinc-500 hover:text-yellow-400 transition-colors"
+                  className="p-0.5 text-zinc-400 dark:text-zinc-500 hover:text-amber-600 dark:hover:text-yellow-400 transition-colors"
                   title="แก้ไขชื่อตัวเอง"
                 >
                   <Edit2 size={10} />
@@ -424,7 +424,7 @@ export default function LiveChatBox({
 
             <button
               onClick={handleRerollIdentity}
-              className="p-1 text-zinc-400 hover:text-yellow-400 hover:bg-white/[0.06] rounded-lg transition-colors active:scale-95 ml-0.5"
+              className="p-1 text-zinc-500 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-yellow-400 hover:bg-zinc-100 dark:hover:bg-white/[0.06] rounded-lg transition-colors active:scale-95 ml-0.5"
               title="สุ่มชื่อใหม่"
               aria-label="Reroll anonymous identity"
             >
@@ -437,13 +437,13 @@ export default function LiveChatBox({
       {/* Destruction Alert Overlay */}
       {isRoomDestroyed ? (
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-3">
-          <div className="w-12 h-12 rounded-full bg-red-950/60 border border-red-500/40 text-red-400 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-950/60 border border-red-300 dark:border-red-500/40 text-red-600 dark:text-red-400 flex items-center justify-center">
             <Ghost size={26} />
           </div>
-          <h3 className="text-base font-bold text-zinc-100">
+          <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
             ห้องสนทนานี้สลายตัวแล้ว (Room Vaporized)
           </h3>
-          <p className="text-xs text-zinc-400 max-w-sm leading-relaxed">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-sm leading-relaxed">
             เนื่องจากไม่มีผู้ใช้อยู่ในห้อง ระบบ Zero-Trace ได้ทำการลบทำลายห้องและประวัติข้อความทั้งหมดถาวร 100% เรียบร้อยแล้ว
           </p>
           {onLeaveGhostRoom && (
@@ -455,7 +455,7 @@ export default function LiveChatBox({
       ) : (
         <>
           {/* Message Feed: Spacious, eye-friendly layout for mobile */}
-          <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 min-h-[380px] max-h-[calc(100dvh-260px)] sm:max-h-[520px] scroll-smooth">
+          <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 min-h-[380px] max-h-[calc(100dvh-260px)] sm:max-h-[520px] scroll-smooth bg-zinc-50/40 dark:bg-transparent">
             {isLoading ? (
               <div className="flex items-center justify-center h-full text-xs font-mono text-zinc-500">
                 CONNECTING STREAM...
@@ -464,18 +464,18 @@ export default function LiveChatBox({
               <div className="flex flex-col items-center justify-center h-full text-center p-6 space-y-2 text-zinc-500">
                 {isGhost ? (
                   <>
-                    <Ghost size={32} className="text-orange-400 mb-1 animate-pulse" />
-                    <p className="text-sm font-semibold text-zinc-200">ห้องสนทนาชั่วคราวเริ่มต้นแล้ว</p>
-                    <p className="text-xs text-zinc-400 max-w-xs leading-relaxed">
+                    <Ghost size={32} className="text-orange-500 dark:text-orange-400 mb-1 animate-pulse" />
+                    <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">ห้องสนทนาชั่วคราวเริ่มต้นแล้ว</p>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-xs leading-relaxed">
                       พิมพ์ข้อความเพื่อเริ่มคุย ข้อมูลทั้งหมดจะถูกลบทำลายทันทีเมื่อทุกคนออกจากห้อง
                     </p>
                   </>
                 ) : (
                   <>
-                    <div className="w-12 h-12 rounded-full bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mx-auto text-zinc-400">
-                      <Radio size={20} className="text-yellow-400" />
+                    <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.06] flex items-center justify-center mx-auto text-zinc-400">
+                      <Radio size={20} className="text-amber-600 dark:text-yellow-400" />
                     </div>
-                    <p className="text-sm font-semibold text-zinc-300">ยังไม่มีข้อความในห้องนี้</p>
+                    <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">ยังไม่มีข้อความในห้องนี้</p>
                     <p className="text-xs text-zinc-500 max-w-xs leading-relaxed">
                       เริ่มบทสนทนาแบบนิรนาม 100% ไม่เก็บประวัติส่วนบุคคลใดๆ
                     </p>
@@ -501,24 +501,24 @@ export default function LiveChatBox({
                     <div
                       className={`max-w-[88%] sm:max-w-[80%] rounded-2xl px-3.5 py-2.5 text-xs relative transition-all shadow-sm ${
                         isMsgHidden
-                          ? 'bg-red-950/20 border border-red-900/40 text-red-300'
+                          ? 'bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 text-red-700 dark:text-red-300'
                           : isSelf
-                          ? 'bg-gradient-to-br from-red-950/80 via-red-900/60 to-red-950/70 text-white border border-red-500/40 rounded-tr-xs'
-                          : 'bg-[#131620] text-zinc-100 border border-white/[0.08] rounded-tl-xs hover:border-white/[0.14]'
+                          ? 'bg-gradient-to-br from-red-600 to-red-700 dark:from-red-950/80 dark:via-red-900/60 dark:to-red-950/70 text-white border border-red-500/60 dark:border-red-500/40 rounded-tr-xs'
+                          : 'bg-white dark:bg-[#131620] text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-white/[0.08] rounded-tl-xs hover:border-zinc-300 dark:hover:border-white/[0.14]'
                       }`}
                     >
                       {/* Alias & Timestamp Header */}
                       <div
                         className={`flex items-center justify-between gap-2 text-[10.5px] mb-1 font-mono ${
-                          isSelf ? 'text-red-300' : 'text-zinc-400'
+                          isSelf ? 'text-red-100 dark:text-red-300' : 'text-zinc-500 dark:text-zinc-400'
                         }`}
                       >
-                        <span className="font-semibold truncate max-w-[130px] sm:max-w-[160px] text-zinc-200">
+                        <span className={`font-semibold truncate max-w-[130px] sm:max-w-[160px] ${isSelf ? 'text-white' : 'text-zinc-800 dark:text-zinc-200'}`}>
                           {isSelf ? `u/${msg.author_alias} (คุณ)` : `u/${msg.author_alias}`}
                         </span>
 
                         <div className="flex items-center gap-1.5 shrink-0">
-                          <span className="tabular-nums text-zinc-500">
+                          <span className={`tabular-nums ${isSelf ? 'text-red-100/80 dark:text-zinc-500' : 'text-zinc-400 dark:text-zinc-500'}`}>
                             {new Date(msg.created_at).toLocaleTimeString('th-TH', {
                               hour: '2-digit',
                               minute: '2-digit',
@@ -526,7 +526,7 @@ export default function LiveChatBox({
                           </span>
 
                           {msg.is_edited === 1 && (
-                            <span className="text-[9.5px] text-zinc-500 font-mono italic">
+                            <span className={`text-[9.5px] font-mono italic ${isSelf ? 'text-red-100/80' : 'text-zinc-500'}`}>
                               (แก้ไขแล้ว)
                             </span>
                           )}
@@ -538,7 +538,7 @@ export default function LiveChatBox({
                                 setEditingMsgId(msg.id);
                                 setEditingMsgText(msg.content);
                               }}
-                              className="text-zinc-500 hover:text-yellow-400 p-0.5 rounded transition-colors ml-0.5"
+                              className="text-red-100 dark:text-zinc-500 hover:text-yellow-300 dark:hover:text-yellow-400 p-0.5 rounded transition-colors ml-0.5"
                               title="แก้ไขข้อความ"
                             >
                               <Edit2 size={10} />
@@ -550,7 +550,7 @@ export default function LiveChatBox({
                             <button
                               type="button"
                               onClick={() => setReportTarget(msg)}
-                              className="text-zinc-500 hover:text-red-400 p-0.5 rounded transition-colors ml-0.5"
+                              className="text-zinc-400 dark:text-zinc-500 hover:text-red-600 dark:hover:text-red-400 p-0.5 rounded transition-colors ml-0.5"
                               title="รายงานข้อความนี้"
                               aria-label="Report message"
                             >
@@ -562,11 +562,11 @@ export default function LiveChatBox({
 
                       {/* Message Content: Clean typography, comfortable line spacing for Thai text */}
                       {isMsgHidden ? (
-                        <div className="flex items-center justify-between gap-2 text-[11px] text-red-300 pt-0.5">
+                        <div className="flex items-center justify-between gap-2 text-[11px] text-red-700 dark:text-red-300 pt-0.5">
                           <span>[ข้อความถูกซ่อนเนื่องจากถูกรายงาน 5 ครั้ง]</span>
                           <button
                             onClick={() => toggleRevealHidden(msg.id)}
-                            className="p-1 hover:bg-white/[0.06] rounded text-zinc-200 transition-colors"
+                            className="p-1 hover:bg-zinc-200 dark:hover:bg-white/[0.06] rounded text-zinc-700 dark:text-zinc-200 transition-colors"
                           >
                             <Eye size={12} />
                           </button>
@@ -582,14 +582,14 @@ export default function LiveChatBox({
                               if (e.key === 'Escape') setEditingMsgId(null);
                             }}
                             maxLength={500}
-                            className="w-full bg-black/60 border border-yellow-400 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none font-sans"
+                            className="w-full bg-white dark:bg-black/60 border border-amber-500 dark:border-yellow-400 rounded-lg px-2.5 py-1 text-xs text-zinc-900 dark:text-white focus:outline-none font-sans"
                             autoFocus
                           />
                           <div className="flex items-center gap-1.5 justify-end">
                             <button
                               type="button"
                               onClick={() => setEditingMsgId(null)}
-                              className="text-[10px] text-zinc-400 hover:text-white px-2 py-0.5 rounded border border-white/[0.1] hover:bg-white/[0.04]"
+                              className="text-[10px] text-white/80 dark:text-zinc-400 hover:text-white px-2 py-0.5 rounded border border-white/25 dark:border-white/[0.1] hover:bg-white/10 dark:hover:bg-white/[0.04]"
                             >
                               ยกเลิก
                             </button>
@@ -604,7 +604,7 @@ export default function LiveChatBox({
                           </div>
                         </div>
                       ) : (
-                        <div className="break-words leading-relaxed whitespace-pre-wrap text-[13.5px] sm:text-xs text-zinc-100 font-sans">
+                        <div className={`break-words leading-relaxed whitespace-pre-wrap text-[13.5px] sm:text-xs font-sans ${isSelf ? 'text-white' : 'text-zinc-800 dark:text-zinc-100'}`}>
                           {msg.content}
                         </div>
                       )}
@@ -619,13 +619,13 @@ export default function LiveChatBox({
           {/* Input Form: Mobile Ergonomic Touch Targets */}
           <form
             onSubmit={handleSendMessage}
-            className="p-2 sm:p-2.5 bg-[#0d0f14]/95 backdrop-blur-md border-t border-white/[0.08] flex items-center gap-2 sticky bottom-0 z-10"
+            className="p-2 sm:p-2.5 bg-zinc-50/95 dark:bg-[#0d0f14]/95 backdrop-blur-md border-t border-zinc-200 dark:border-white/[0.08] flex items-center gap-2 sticky bottom-0 z-10"
           >
             {/* Quick 1-tap Identity Reroll on Mobile */}
             <button
               type="button"
               onClick={handleRerollIdentity}
-              className="p-2 text-zinc-400 hover:text-yellow-400 hover:bg-white/[0.06] rounded-xl border border-white/[0.08] transition-colors shrink-0 active:scale-95"
+              className="p-2 text-zinc-500 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-yellow-400 hover:bg-zinc-200/60 dark:hover:bg-white/[0.06] rounded-xl border border-zinc-200 dark:border-white/[0.08] transition-colors shrink-0 active:scale-95"
               title="สุ่มชื่อและตัวตนใหม่ทันที"
               aria-label="Reroll identity"
             >
@@ -654,7 +654,7 @@ export default function LiveChatBox({
                 }
                 disabled={cooldown > 0 || isSending}
                 maxLength={500}
-                className="w-full bg-[#141721] border border-white/[0.1] focus:border-red-500 rounded-xl px-3.5 py-2 text-sm sm:text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-red-500 disabled:opacity-50 transition-colors font-sans"
+                className="w-full bg-white dark:bg-[#141721] border border-zinc-300 dark:border-white/[0.1] focus:border-red-500 rounded-xl px-3.5 py-2 text-sm sm:text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-red-500 disabled:opacity-50 transition-colors font-sans"
               />
             </div>
 

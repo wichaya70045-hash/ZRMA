@@ -120,13 +120,13 @@ export default function HomePage() {
     <div className="space-y-4 w-full max-w-full overflow-hidden">
       
       {/* Mobile Segmented Switcher */}
-      <div className="flex lg:hidden bg-black/40 p-1 rounded-lg border border-white/[0.06] text-xs">
+      <div className="flex lg:hidden bg-zinc-200/70 dark:bg-black/40 p-1 rounded-lg border border-zinc-300/70 dark:border-white/[0.06] text-xs">
         <button
           onClick={() => setActiveTabMobile('threads')}
           className={`flex-1 py-1.5 rounded font-medium transition-colors ${
             activeTabMobile === 'threads'
               ? 'bg-red-600 text-white font-semibold shadow-sm'
-              : 'text-zinc-400 hover:text-zinc-200'
+              : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
           }`}
         >
           ฟีดโพสต์ ({filteredThreads.length})
@@ -136,10 +136,10 @@ export default function HomePage() {
           className={`flex-1 py-1.5 rounded font-medium flex items-center justify-center gap-1.5 transition-colors ${
             activeTabMobile === 'chat'
               ? 'bg-yellow-400 text-zinc-950 font-bold shadow-sm'
-              : 'text-zinc-400 hover:text-zinc-200'
+              : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
           }`}
         >
-          <Radio size={12} className={activeTabMobile === 'chat' ? 'text-zinc-950' : 'text-yellow-400'} />
+          <Radio size={12} className={activeTabMobile === 'chat' ? 'text-zinc-950' : 'text-amber-600 dark:text-yellow-400'} />
           <span>ห้องแชทสด</span>
         </button>
       </div>
@@ -179,20 +179,20 @@ export default function HomePage() {
               {[1, 2, 3].map((n) => (
                 <div
                   key={n}
-                  className="bg-[#101217] border border-white/[0.06] rounded-xl p-4 animate-pulse space-y-2.5"
+                  className="bg-white dark:bg-[#101217] border border-zinc-200 dark:border-white/[0.06] rounded-xl p-4 animate-pulse space-y-2.5"
                 >
-                  <div className="h-3 bg-white/[0.06] rounded w-1/4"></div>
-                  <div className="h-4 bg-white/[0.06] rounded w-3/4"></div>
-                  <div className="h-3 bg-white/[0.06] rounded w-full"></div>
+                  <div className="h-3 bg-zinc-200 dark:bg-white/[0.06] rounded w-1/4"></div>
+                  <div className="h-4 bg-zinc-200 dark:bg-white/[0.06] rounded w-3/4"></div>
+                  <div className="h-3 bg-zinc-200 dark:bg-white/[0.06] rounded w-full"></div>
                 </div>
               ))}
             </div>
           ) : filteredThreads.length === 0 ? (
-            <div className="bg-[#101217] border border-white/[0.07] rounded-xl p-8 text-center space-y-3">
-              <div className="w-10 h-10 rounded-lg bg-white/[0.04] text-zinc-400 flex items-center justify-center mx-auto border border-white/[0.08]">
+            <div className="bg-white dark:bg-[#101217] border border-zinc-200 dark:border-white/[0.07] rounded-xl p-8 text-center space-y-3">
+              <div className="w-10 h-10 rounded-lg bg-zinc-100 dark:bg-white/[0.04] text-zinc-500 dark:text-zinc-400 flex items-center justify-center mx-auto border border-zinc-200 dark:border-white/[0.08]">
                 <FileText size={18} />
               </div>
-              <h3 className="text-sm font-semibold text-zinc-200">ไม่พบโพสต์ที่ตรงกับเงื่อนไข</h3>
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-200">ไม่พบโพสต์ที่ตรงกับเงื่อนไข</h3>
               <p className="text-xs text-zinc-500 max-w-sm mx-auto leading-relaxed">
                 อาจยังไม่มีโพสต์ในหมวดหมู่นี้ หรือกระทู้อาจหมดอายุและถูกลบทำลายไปแล้วตามนโยบายความเป็นส่วนตัว
               </p>
@@ -201,7 +201,7 @@ export default function HomePage() {
                   href="/new"
                   className="btn-secondary text-xs hover:border-red-500/40"
                 >
-                  <Plus size={13} className="text-red-400" />
+                  <Plus size={13} className="text-red-500 dark:text-red-400" />
                   <span>สร้างโพสต์แรกเลย</span>
                 </Link>
               </div>
