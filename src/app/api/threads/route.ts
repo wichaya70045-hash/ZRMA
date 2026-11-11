@@ -4,7 +4,7 @@ import { getThreads, createThread } from '@/lib/db';
 import { verifyCaptcha } from '@/lib/captcha';
 import { getSessionUser } from '@/lib/auth';
 import { broadcastToRoom } from '@/lib/sse';
-import { Category, RedditSort, JobType, JobWorkMode } from '@/types';
+import { Category, RedditSort, JobType, JobWorkMode, MarketCondition, MarketStatus, MarketDelivery } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,6 +15,9 @@ export async function GET(req: NextRequest) {
     const rawSort = searchParams.get('sort') || 'hot';
     const rawJobType = searchParams.get('job_type');
     const onlyJobs = searchParams.get('only_jobs') === '1';
+    const rawCondition = searchParams.get('condition');
+    const rawMarketStatus = searchParams.get('market_status');
+    const onlyMarket = searchParams.get('only_market') === '1';
 
     // Map legacy 'latest' to Reddit 'new'
     let sort: RedditSort = 'hot';
@@ -27,7 +30,22 @@ export async function GET(req: NextRequest) {
     const jobType: JobType | undefined =
       rawJobType === 'hiring' || rawJobType === 'seeking' ? rawJobType : undefined;
 
-    const threads = getThreads(category, sort, { onlyJobs, jobType });
+    const condition: MarketCondition | undefined =
+      rawCondition === 'new' || rawCondition === 'like_new' || rawCondition === 'used' || rawCondition === 'digital'
+        ? rawCondition
+        : undefined;
+
+    const marketStatus: MarketStatus | undefined =
+      rawMarketStatus === 'available' || rawMarketStatus === 'sold'
+        ? rawMarketStatus
+        : undefined;
+
+    const threads = getThreads(
+      category,
+      sort,
+      { onlyJobs, jobType },
+      { onlyMarket, condition, status: marketStatus }
+    );
     return NextResponse.json({ threads });
   } catch (err: any) {
     console.error('Error fetching threads:', err);
@@ -153,6 +171,35 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // Process Marketplace listing data if enabled
+    let marketDataString: string | null = null;
+    if (body.has_market === true || body.market) {
+      const rawMarket = body.market || body;
+      const rawCond = String(rawMarket.condition || rawMarket.market_condition || 'used');
+      const condition: MarketCondition =
+        rawCond === 'new' || rawCond === 'like_new' || rawCond === 'digital' ? rawCond : 'used';
+      const rawDel = String(rawMarket.delivery || rawMarket.market_delivery || 'shipping');
+      const delivery: MarketDelivery =
+        rawDel === 'meetup' || rawDel === 'online' ? rawDel : 'shipping';
+
+      const itemName = rawMarket.item_name || rawMarket.market_item_name || title;
+      const priceVal = rawMarket.price !== undefined && rawMarket.price !== null
+        ? rawMarket.price
+        : rawMarket.market_price;
+      const locVal = rawMarket.location || rawMarket.market_location;
+      const contactVal = rawMarket.contact_info || rawMarket.market_contact_info;
+
+      marketDataString = JSON.stringify({
+        item_name: itemName ? String(itemName).trim().slice(0, 150) : null,
+        price: priceVal !== undefined && priceVal !== null ? String(priceVal).trim().slice(0, 60) : null,
+        condition,
+        delivery,
+        location: locVal ? String(locVal).trim().slice(0, 100) : null,
+        contact_info: contactVal ? String(contactVal).trim().slice(0, 160) : null,
+        status: 'available',
+      });
+    }
+
     const sessionUser = await getSessionUser(req);
     const useAccountIdentity = Boolean(sessionUser && body.post_anonymously !== true);
 
@@ -169,6 +216,7 @@ export async function POST(req: NextRequest) {
       media_type: validatedMediaType,
       poll_data: pollDataString,
       job_data: jobDataString,
+      market_data: marketDataString,
       author_alias: useAccountIdentity
         ? sessionUser!.display_name
         : (author_alias ? author_alias.trim() : 'u/ผู้ไม่ประสงค์ออกนาม #????'),

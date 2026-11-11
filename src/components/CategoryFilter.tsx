@@ -21,9 +21,12 @@ import {
   LayoutList,
   Briefcase,
   Wrench,
+  Tag,
+  PackageCheck,
+  PackageX,
 } from 'lucide-react';
 import Link from 'next/link';
-import { RedditSort, Community, JobType } from '@/types';
+import { RedditSort, Community, JobType, MarketStatus } from '@/types';
 import CreateCommunityModal from './CreateCommunityModal';
 
 interface CategoryFilterProps {
@@ -33,6 +36,8 @@ interface CategoryFilterProps {
   onSelectSort: (sort: RedditSort) => void;
   selectedJobType?: 'all' | JobType;
   onSelectJobType?: (jt: 'all' | JobType) => void;
+  selectedMarketStatus?: 'all' | MarketStatus;
+  onSelectMarketStatus?: (s: 'all' | MarketStatus) => void;
   searchQuery?: string;
   onSearchChange?: (q: string) => void;
   layout?: 'card' | 'compact';
@@ -48,6 +53,7 @@ const ICON_MAP: Record<string, any> = {
   radar: Radar,
   globe: Globe,
   briefcase: Briefcase,
+  tag: Tag,
   trending: TrendingUp,
   chat: MessageSquare,
   alert: AlertCircle,
@@ -60,6 +66,8 @@ export default function CategoryFilter({
   onSelectSort,
   selectedJobType = 'all',
   onSelectJobType,
+  selectedMarketStatus = 'all',
+  onSelectMarketStatus,
   searchQuery = '',
   onSearchChange,
   layout = 'card',
@@ -339,6 +347,63 @@ export default function CategoryFilter({
             >
               <Wrench size={11} />
               ลงรับงาน / เสนอตัว
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* 4. Marketplace Sub-Bar (visible when z/market is selected) */}
+      {selectedCategory === 'market' && (
+        <div className="px-3 py-2.5 border-t border-amber-200 dark:border-yellow-500/20 bg-amber-50/70 dark:bg-yellow-950/20 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-[11px] font-bold text-amber-800 dark:text-yellow-300 mr-1 flex items-center gap-1">
+              <Tag size={12} />
+              ตลาดซื้อขาย:
+            </span>
+            <button
+              type="button"
+              onClick={() => onSelectMarketStatus?.('all')}
+              className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors ${
+                selectedMarketStatus === 'all'
+                  ? 'bg-amber-600 dark:bg-yellow-500 text-white dark:text-zinc-950'
+                  : 'bg-white dark:bg-black/30 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-white/[0.08]'
+              }`}
+            >
+              ทั้งหมด
+            </button>
+            <button
+              type="button"
+              onClick={() => onSelectMarketStatus?.('available')}
+              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors ${
+                selectedMarketStatus === 'available'
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-white dark:bg-black/30 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-white/[0.08]'
+              }`}
+            >
+              <PackageCheck size={11} />
+              กำลังวางขาย
+            </button>
+            <button
+              type="button"
+              onClick={() => onSelectMarketStatus?.('sold')}
+              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors ${
+                selectedMarketStatus === 'sold'
+                  ? 'bg-zinc-600 text-white'
+                  : 'bg-white dark:bg-black/30 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-white/[0.08]'
+              }`}
+            >
+              <PackageX size={11} />
+              ขายแล้ว
+            </button>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Link
+              href="/new?mode=market"
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 dark:bg-yellow-500 dark:hover:bg-yellow-400 text-white dark:text-zinc-950 text-[11px] font-bold transition-colors shadow-xs"
+            >
+              <Plus size={11} />
+              ลงขายของใหม่
             </Link>
           </div>
         </div>

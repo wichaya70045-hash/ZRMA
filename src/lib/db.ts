@@ -18,6 +18,10 @@ import {
   JobType,
   JobStatus,
   JobWorkMode,
+  MarketData,
+  MarketCondition,
+  MarketStatus,
+  MarketDelivery,
   TickerItem,
   UserProfile,
   AvatarFrame,
@@ -206,6 +210,7 @@ export function getDatabase(): DatabaseSync {
     try { db.exec('ALTER TABLE comments ADD COLUMN author_user_id TEXT;'); } catch {}
     try { db.exec('ALTER TABLE chat_messages ADD COLUMN author_user_id TEXT;'); } catch {}
     try { db.exec('ALTER TABLE threads ADD COLUMN job_data TEXT;'); } catch {}
+    try { db.exec('ALTER TABLE threads ADD COLUMN market_data TEXT;'); } catch {}
 
     // Seed default communities and sample threads if empty
     try {
@@ -215,6 +220,7 @@ export function getDatabase(): DatabaseSync {
         seedInitialData(db);
       }
       seedInitialJobs(db);
+      seedInitialMarket(db);
     } catch {
       // ignore
     }
@@ -230,6 +236,7 @@ function seedDefaultCommunities(database: DatabaseSync) {
   const defaults = [
     { name: 'breaking', title: 'z/breaking', description: 'ข่าวด่วน เหตุการณ์สำคัญ และสถานการณ์สด', icon: 'radar' },
     { name: 'jobs', title: 'z/jobs', description: 'กระดานจ้างงาน ลงเสนองาน และเสนอตัวรับงานอิสระ', icon: 'briefcase' },
+    { name: 'market', title: 'z/market', description: 'ตลาดซื้อขายของ ปล่อยของมือสอง สินค้าไอที และบริการ', icon: 'tag' },
     { name: 'tech', title: 'z/tech', description: 'เทคโนโลยี, AI, ซอฟต์แวร์, และความปลอดภัยไซเบอร์', icon: 'terminal' },
     { name: 'finance', title: 'z/finance', description: 'เศรษฐกิจ, การลงทุน, หุ้น, และคริปโทเคอร์เรนซี', icon: 'cpu' },
     { name: 'society', title: 'z/society', description: 'ประเด็นสังคม กฎหมาย และนโยบายสาธารณะ', icon: 'globe' },
@@ -608,6 +615,129 @@ function seedInitialJobs(database: DatabaseSync) {
   }
 }
 
+export function parseMarket(raw: any): MarketData | null {
+  if (!raw || typeof raw !== 'string') return null;
+  try {
+    const parsed = JSON.parse(raw);
+    if (!parsed) return null;
+    return {
+      item_name: parsed.item_name ? String(parsed.item_name) : null,
+      price: parsed.price ? String(parsed.price) : null,
+      condition: (parsed.condition as MarketCondition) || 'used',
+      delivery: (parsed.delivery as MarketDelivery) || 'shipping',
+      location: parsed.location ? String(parsed.location) : null,
+      contact_info: parsed.contact_info ? String(parsed.contact_info) : null,
+      status: parsed.status === 'sold' ? 'sold' : 'available',
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function toggleMarketStatus(
+  threadId: string,
+  status: MarketStatus,
+  edit_token?: string | null,
+  current_user_id?: string | null
+): { success: boolean; market?: MarketData; error?: string } {
+  const database = getDatabase();
+  const existing = database.prepare(`SELECT * FROM threads WHERE id = ?`).get(threadId) as any;
+  if (!existing) {
+    return { success: false, error: 'ไม่พบกระทู้นี้ หรือกระทู้อาจหมดอายุแล้ว' };
+  }
+
+  const market = parseMarket(existing.market_data);
+  if (!market) {
+    return { success: false, error: 'กระทู้นี้ไม่ใช่ประกาศขายของ' };
+  }
+
+  if (existing.author_user_id) {
+    const isOwner = Boolean(current_user_id && existing.author_user_id === current_user_id);
+    const hasToken = Boolean(existing.edit_token && edit_token && existing.edit_token === edit_token);
+    if (!isOwner && !hasToken) {
+      return { success: false, error: 'คุณไม่มีสิทธิ์เปลี่ยนสถานะสินค้านี้' };
+    }
+  } else {
+    if (!existing.edit_token || !edit_token || existing.edit_token !== edit_token) {
+      return { success: false, error: 'รหัสยืนยันการแก้ไข (Edit Passcode) ไม่ถูกต้อง' };
+    }
+  }
+
+  const updatedMarket: MarketData = {
+    ...market,
+    status,
+  };
+
+  database
+    .prepare(`UPDATE threads SET market_data = ? WHERE id = ?`)
+    .run(JSON.stringify(updatedMarket), threadId);
+
+  return { success: true, market: updatedMarket };
+}
+
+function seedInitialMarket(database: DatabaseSync) {
+  try {
+    const existing = database
+      .prepare(`SELECT COUNT(*) as count FROM threads WHERE category = 'market' OR market_data IS NOT NULL`)
+      .get() as any;
+    if (existing && Number(existing.count) > 0) return;
+
+    const expires = new Date(Date.now() + 168 * 60 * 60 * 1000).toISOString();
+    const created1 = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+    const created2 = new Date(Date.now() - 65 * 60 * 1000).toISOString();
+
+    const insert = database.prepare(`
+      INSERT OR IGNORE INTO threads (
+        id, title, content, category, flair, author_alias, author_avatar, upvotes, market_data, is_pinned, expires_at, created_at
+      ) VALUES (?, ?, ?, 'market', ?, ?, ?, ?, ?, 0, ?, ?)
+    `);
+
+    insert.run(
+      'seed-market-1',
+      '[ขาย] iPad Air 5 (M1) 64GB Wi-Fi สีสเปซเกรย์ สภาพ 98% กล่องครบ มีเคสแถม',
+      'อุปกรณ์ครบกล่อง หัวชาร์จและสายชาร์จแท้ยังใหม่มาก ใช้งานเรียนและจดโน้ตเป็นหลัก แบตอึด สุขภาพแบต 94% ไม่เคยตกหล่นใดๆ นัดรับตามแนว BTS หรือจัดส่งพัสดุด่วนได้ครับ',
+      'ไอที/มือถือ',
+      'TechTrader #1994',
+      'cpu',
+      15,
+      JSON.stringify({
+        item_name: 'iPad Air 5 64GB Wi-Fi',
+        price: '฿12,900',
+        condition: 'like_new',
+        delivery: 'meetup',
+        location: 'กทม. / BTS สยาม หรือ อารีย์',
+        contact_info: 'Line ID: @anon_trader หรือทักแชทกระทู้',
+        status: 'available',
+      }),
+      expires,
+      created1
+    );
+
+    insert.run(
+      'seed-market-2',
+      '[ขาย] คีย์บอร์ด Keychron K2 Wireless Mechanical Switch Brown สภาพสวยพร้อมใช้',
+      'ใช้งานทำงานเขียนโค้ด กดนุ่ม เสียงเพราะ เชื่อมบลูทูธได้ 3 อุปกรณ์ มีสาย USB-C ให้ อัปเกรดคีย์แคป PBT เรียบร้อย จัดส่งด่วน Flash Express ทั่วประเทศ',
+      'คอมพิวเตอร์',
+      'KeebGeek #5520',
+      'terminal',
+      8,
+      JSON.stringify({
+        item_name: 'Keychron K2 Brown Switch',
+        price: '฿2,200',
+        condition: 'used',
+        delivery: 'shipping',
+        location: 'เชียงใหม่ (ส่งพัสดุฟรี)',
+        contact_info: 'Line หรือพิมพ์ในห้องแชทสดประจำโพสต์',
+        status: 'available',
+      }),
+      expires,
+      created2
+    );
+  } catch {
+    // ignore
+  }
+}
+
 export function getTickerItems(): TickerItem[] {
   purgeExpiredData();
   const database = getDatabase();
@@ -669,6 +799,8 @@ function mapThreadRow(r: any): Thread {
     poll: parsePoll(r.poll_data),
     job_data: r.job_data || null,
     job: parseJob(r.job_data),
+    market_data: r.market_data || null,
+    market: parseMarket(r.market_data),
     author_alias: hasUser ? (r.u_display_name || r.author_alias) : r.author_alias,
     author_avatar: hasUser ? (r.u_avatar_icon || r.author_avatar) : r.author_avatar,
     author_user_id: r.author_user_id || null,
@@ -710,7 +842,8 @@ const THREAD_SELECT_SQL = `
 export function getThreads(
   category?: string,
   sort: RedditSort = 'hot',
-  jobFilter?: { onlyJobs?: boolean; jobType?: JobType }
+  jobFilter?: { onlyJobs?: boolean; jobType?: JobType },
+  marketFilter?: { onlyMarket?: boolean; condition?: MarketCondition; status?: MarketStatus }
 ): Thread[] {
   purgeExpiredData();
   const database = getDatabase();
@@ -722,6 +855,8 @@ export function getThreads(
     const cleanCat = category.replace(/^[zr]\//i, '');
     if (cleanCat === 'jobs') {
       query += ` AND (t.category = 'jobs' OR t.job_data IS NOT NULL)`;
+    } else if (cleanCat === 'market') {
+      query += ` AND (t.category = 'market' OR t.market_data IS NOT NULL)`;
     } else {
       query += ` AND t.category = ?`;
       params.push(cleanCat);
@@ -735,6 +870,20 @@ export function getThreads(
   if (jobFilter?.jobType === 'hiring' || jobFilter?.jobType === 'seeking') {
     query += ` AND json_extract(t.job_data, '$.job_type') = ?`;
     params.push(jobFilter.jobType);
+  }
+
+  if (marketFilter?.onlyMarket) {
+    query += ` AND t.market_data IS NOT NULL`;
+  }
+
+  if (marketFilter?.condition) {
+    query += ` AND json_extract(t.market_data, '$.condition') = ?`;
+    params.push(marketFilter.condition);
+  }
+
+  if (marketFilter?.status) {
+    query += ` AND json_extract(t.market_data, '$.status') = ?`;
+    params.push(marketFilter.status);
   }
 
   if (sort === 'hot') {
@@ -780,6 +929,7 @@ export function createThread(data: {
   media_type?: MediaType | null;
   poll_data?: string | null;
   job_data?: string | null;
+  market_data?: string | null;
   author_alias: string;
   author_avatar: string;
   author_user_id?: string | null;
@@ -804,8 +954,8 @@ export function createThread(data: {
   }
 
   database.prepare(`
-    INSERT INTO threads (id, title, content, category, flair, source_url, media_url, media_type, poll_data, job_data, author_alias, author_avatar, author_user_id, is_pinned, edit_token, is_edited, expires_at, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
+    INSERT INTO threads (id, title, content, category, flair, source_url, media_url, media_type, poll_data, job_data, market_data, author_alias, author_avatar, author_user_id, is_pinned, edit_token, is_edited, expires_at, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
   `).run(
     data.id,
     data.title,
@@ -817,6 +967,7 @@ export function createThread(data: {
     data.media_type || null,
     data.poll_data || null,
     data.job_data || null,
+    data.market_data || null,
     data.author_alias,
     data.author_avatar,
     data.author_user_id || null,

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Thread, RedditSort, JobType } from '@/types';
+import { Thread, RedditSort, JobType, MarketStatus } from '@/types';
 import ThreadCard from '@/components/ThreadCard';
 import CategoryFilter from '@/components/CategoryFilter';
 import CommunitySidebar from '@/components/CommunitySidebar';
@@ -35,6 +35,7 @@ function HomeContent() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedSort, setSelectedSort] = useState<RedditSort>(settings.defaultSort || 'hot');
   const [selectedJobType, setSelectedJobType] = useState<'all' | JobType>('all');
+  const [selectedMarketStatus, setSelectedMarketStatus] = useState<'all' | MarketStatus>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTabMobile, setActiveTabMobile] = useState<'threads' | 'chat'>('threads');
 
@@ -43,12 +44,19 @@ function HomeContent() {
     const sort = searchParams.get('sort');
     const q = searchParams.get('q');
     const jt = searchParams.get('job_type');
+    const ms = searchParams.get('market_status');
 
     setSelectedCategory(cat ? cat.replace(/^[zr]\//i, '') : 'all');
     if (jt === 'hiring' || jt === 'seeking') {
       setSelectedJobType(jt);
     } else {
       setSelectedJobType('all');
+    }
+
+    if (ms === 'available' || ms === 'sold') {
+      setSelectedMarketStatus(ms);
+    } else {
+      setSelectedMarketStatus('all');
     }
 
     if (sort && ['hot', 'breaking', 'new', 'top', 'rising'].includes(sort)) {
@@ -73,6 +81,9 @@ function HomeContent() {
       }
       if (selectedCategory === 'jobs' && (selectedJobType === 'hiring' || selectedJobType === 'seeking')) {
         params.append('job_type', selectedJobType);
+      }
+      if (selectedCategory === 'market' && (selectedMarketStatus === 'available' || selectedMarketStatus === 'sold')) {
+        params.append('market_status', selectedMarketStatus);
       }
       params.append('sort', selectedSort);
 
@@ -130,12 +141,19 @@ function HomeContent() {
         Boolean(t.job.budget && t.job.budget.toLowerCase().includes(q)) ||
         Boolean(t.job.work_mode && t.job.work_mode.toLowerCase().includes(q))
       : false;
+    const matchesMarket = t.market
+      ? Boolean(t.market.item_name && t.market.item_name.toLowerCase().includes(q)) ||
+        Boolean(t.market.price && t.market.price.toLowerCase().includes(q)) ||
+        Boolean(t.market.location && t.market.location.toLowerCase().includes(q)) ||
+        Boolean(t.market.condition && t.market.condition.toLowerCase().includes(q))
+      : false;
     return (
       t.title.toLowerCase().includes(q) ||
       t.content.toLowerCase().includes(q) ||
       t.author_alias.toLowerCase().includes(q) ||
       t.category.toLowerCase().includes(q) ||
-      matchesJob
+      matchesJob ||
+      matchesMarket
     );
   });
 
@@ -182,11 +200,14 @@ function HomeContent() {
             onSelectCategory={(cat) => {
               setSelectedCategory(cat);
               if (cat !== 'jobs') setSelectedJobType('all');
+              if (cat !== 'market') setSelectedMarketStatus('all');
             }}
             selectedSort={selectedSort}
             onSelectSort={(sort) => setSelectedSort(sort as RedditSort)}
             selectedJobType={selectedJobType}
             onSelectJobType={setSelectedJobType}
+            selectedMarketStatus={selectedMarketStatus}
+            onSelectMarketStatus={setSelectedMarketStatus}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
             layout={settings.feedLayout}

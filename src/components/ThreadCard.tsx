@@ -29,6 +29,7 @@ import EditThreadModal from './EditThreadModal';
 import DeleteThreadModal from './DeleteThreadModal';
 import ThreadPoll from './ThreadPoll';
 import ThreadJobBox from './ThreadJobBox';
+import ThreadMarketBox from './ThreadMarketBox';
 import { isThreadAuthor } from '@/lib/privacy';
 import { useSettings } from '@/lib/settings';
 import { useAuth } from '@/lib/authContext';
@@ -639,6 +640,13 @@ export default function ThreadCard({
           {thread.job && (
             <div className="mb-2.5">
               <ThreadJobBox threadId={thread.id} job={thread.job} />
+            </div>
+          )}
+
+          {/* Marketplace Listing Card (if enabled) */}
+          {thread.market && (
+            <div className="mb-2.5">
+              <ThreadMarketBox threadId={thread.id} market={thread.market} />
             </div>
           )}
 

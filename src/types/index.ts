@@ -66,6 +66,20 @@ export interface JobData {
   application_count: number;
 }
 
+export type MarketCondition = 'new' | 'like_new' | 'used' | 'digital';
+export type MarketStatus = 'available' | 'sold';
+export type MarketDelivery = 'shipping' | 'meetup' | 'online';
+
+export interface MarketData {
+  item_name?: string | null;
+  price?: string | null;
+  condition: MarketCondition;
+  delivery: MarketDelivery;
+  location?: string | null;
+  contact_info?: string | null;
+  status: MarketStatus;
+}
+
 export interface Thread {
   id: string;
   title: string;
@@ -79,6 +93,8 @@ export interface Thread {
   poll?: PollData | null;
   job_data?: string | null;
   job?: JobData | null;
+  market_data?: string | null;
+  market?: MarketData | null;
   author_alias: string;
   author_avatar: string;
   author_user_id?: string | null;

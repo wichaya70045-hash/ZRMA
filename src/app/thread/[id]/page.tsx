@@ -17,6 +17,7 @@ import CommunitySidebar from '@/components/CommunitySidebar';
 import ThreadedCommentTree from '@/components/ThreadedCommentTree';
 import ThreadPoll from '@/components/ThreadPoll';
 import ThreadJobBox from '@/components/ThreadJobBox';
+import ThreadMarketBox from '@/components/ThreadMarketBox';
 import {
   ArrowLeft,
   ChevronUp,
@@ -198,6 +199,13 @@ export default function ThreadDetailPage({
       try {
         const updatedJob = JSON.parse(event.data);
         setThread((prev) => (prev ? { ...prev, job: updatedJob } : prev));
+      } catch {}
+    });
+
+    eventSource.addEventListener('market_updated', (event) => {
+      try {
+        const updatedMarket = JSON.parse(event.data);
+        setThread((prev) => (prev ? { ...prev, market: updatedMarket } : prev));
       } catch {}
     });
 
@@ -751,6 +759,21 @@ export default function ThreadDetailPage({
                       postAnonymously={postAnonymously}
                       onJobUpdated={(updatedJob) => {
                         setThread((prev) => (prev ? { ...prev, job: updatedJob } : null));
+                      }}
+                    />
+                  </div>
+                )}
+
+                {/* Marketplace Interactive Box */}
+                {thread.market && (
+                  <div className="pt-2 pb-1">
+                    <ThreadMarketBox
+                      threadId={thread.id}
+                      market={thread.market}
+                      isInteractive
+                      isAuthor={isAuthor}
+                      onMarketUpdated={(updatedMarket) => {
+                        setThread((prev) => (prev ? { ...prev, market: updatedMarket } : null));
                       }}
                     />
                   </div>

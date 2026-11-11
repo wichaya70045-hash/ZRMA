@@ -33,6 +33,8 @@ import {
   PanelLeftOpen,
   X,
   Briefcase,
+  Tag,
+  PackageCheck,
 } from 'lucide-react';
 import type { Community } from '@/types';
 import { useAuth } from '@/lib/authContext';
@@ -56,6 +58,7 @@ const COMMUNITY_ICON_MAP: Record<string, React.ComponentType<{ size?: number; cl
   binary: Binary,
   'eye-off': EyeOff,
   briefcase: Briefcase,
+  tag: Tag,
   atom: Atom,
   trending: TrendingUp,
   chat: MessageSquare,
@@ -182,6 +185,13 @@ function LeftSidebarContent({ mobileOpen, onCloseMobile }: LeftSidebarProps) {
       icon: Briefcase,
       active: pathname === '/' && currentCategory === 'jobs',
       iconClass: 'text-emerald-500',
+    },
+    {
+      label: 'ตลาดซื้อขาย / ปล่อยของ',
+      href: '/?category=market',
+      icon: Tag,
+      active: pathname === '/' && currentCategory === 'market',
+      iconClass: 'text-amber-500',
     },
   ];
 
