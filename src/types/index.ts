@@ -39,6 +39,33 @@ export interface PollData {
   closed?: boolean;
 }
 
+export type JobType = 'hiring' | 'seeking';
+export type JobStatus = 'open' | 'closed';
+export type JobWorkMode = 'remote' | 'onsite' | 'hybrid';
+
+export interface JobApplication {
+  id: string;
+  applicant_alias: string;
+  applicant_avatar: string;
+  applicant_user_id?: string | null;
+  applicant_username?: string | null;
+  pitch: string;
+  contact?: string | null;
+  proposed_budget?: string | null;
+  created_at: string;
+}
+
+export interface JobData {
+  job_type: JobType;
+  budget?: string | null;
+  work_mode?: JobWorkMode;
+  skills?: string[];
+  contact_info?: string | null;
+  status: JobStatus;
+  applications?: JobApplication[];
+  application_count: number;
+}
+
 export interface Thread {
   id: string;
   title: string;
@@ -50,6 +77,8 @@ export interface Thread {
   media_type?: MediaType | null;
   poll_data?: string | null;
   poll?: PollData | null;
+  job_data?: string | null;
+  job?: JobData | null;
   author_alias: string;
   author_avatar: string;
   author_user_id?: string | null;

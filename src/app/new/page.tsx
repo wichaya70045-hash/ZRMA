@@ -37,6 +37,8 @@ import {
   Key,
   BarChart2,
   Trash2,
+  Briefcase,
+  Wrench,
 } from 'lucide-react';
 
 const EXPIRY_OPTIONS = [
@@ -52,6 +54,7 @@ const ICON_MAP: Record<string, any> = {
   cpu: Cpu,
   radar: Radar,
   globe: Globe,
+  briefcase: Briefcase,
   atom: Atom,
   trending: TrendingUp,
   chat: MessageSquare,
@@ -81,6 +84,14 @@ export default function NewThreadPage() {
   const [hasPoll, setHasPoll] = useState(false);
   const [pollQuestion, setPollQuestion] = useState('');
   const [pollOptions, setPollOptions] = useState<string[]>(['', '']);
+
+  // Job / Hiring Marketplace state
+  const [hasJob, setHasJob] = useState(false);
+  const [jobType, setJobType] = useState<'hiring' | 'seeking'>('hiring');
+  const [jobBudget, setJobBudget] = useState('');
+  const [jobWorkMode, setJobWorkMode] = useState<'remote' | 'onsite' | 'hybrid'>('remote');
+  const [jobSkills, setJobSkills] = useState('');
+  const [jobContact, setJobContact] = useState('');
 
   const handleAddPollOption = () => {
     if (pollOptions.length < 8) {
@@ -126,6 +137,21 @@ export default function NewThreadPage() {
     setCustomAuthorAlias(id.alias);
     const randomPin = Math.floor(100000 + Math.random() * 900000).toString();
     setEditPasscode(randomPin);
+
+    // Pre-select Job mode if navigated from /?category=jobs or /new?job=...
+    try {
+      const sp = new URLSearchParams(window.location.search);
+      const jobParam = sp.get('job');
+      const catParam = sp.get('category');
+      if (jobParam === 'hiring' || jobParam === 'seeking') {
+        setHasJob(true);
+        setJobType(jobParam);
+        setCategory('jobs');
+      } else if (catParam === 'jobs') {
+        setHasJob(true);
+        setCategory('jobs');
+      }
+    } catch {}
   }, []);
 
   const fetchCommunities = async () => {
@@ -264,6 +290,16 @@ export default function NewThreadPage() {
           has_poll: hasPoll,
           poll_question: pollQuestion.trim() || null,
           poll_options: pollOptions.map((o) => o.trim()).filter(Boolean),
+          has_job: hasJob,
+          job: hasJob
+            ? {
+                job_type: jobType,
+                budget: jobBudget.trim() || null,
+                work_mode: jobWorkMode,
+                skills: jobSkills,
+                contact_info: jobContact.trim() || null,
+              }
+            : null,
           author_alias: customAuthorAlias.trim() || identity?.alias || 'u/นิรนาม #????',
           author_avatar: identity?.avatarIcon || 'terminal',
           post_anonymously: postAnonymously,
@@ -753,6 +789,128 @@ export default function NewThreadPage() {
                       <span>+ เพิ่มตัวเลือก</span>
                     </button>
                   )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 6.5 Job / Hiring Marketplace Mode */}
+          <div className="p-3.5 bg-zinc-50 dark:bg-black/40 border border-zinc-200 dark:border-white/[0.08] hover:border-emerald-500/40 rounded-xl space-y-3 transition-colors">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/25 flex items-center justify-center shrink-0">
+                  <Briefcase size={16} />
+                </div>
+                <div>
+                  <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 block">
+                    ประกาศจ้างงาน / เสนอตัวรับงาน (Job Marketplace)
+                  </span>
+                  <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                    เปิดฟอร์มให้คนเข้ามากดรับงาน เสนอราคา หรือติดต่อจ้างงานได้ในกระทู้นี้
+                  </span>
+                </div>
+              </div>
+
+              <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                <input
+                  type="checkbox"
+                  checked={hasJob}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setHasJob(checked);
+                    if (checked) setCategory('jobs');
+                  }}
+                  className="sr-only peer"
+                />
+                <div className="w-9 h-5 bg-zinc-300 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+              </label>
+            </div>
+
+            {hasJob && (
+              <div className="space-y-3 pt-3 border-t border-zinc-200 dark:border-white/[0.06] animate-in fade-in duration-200">
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setJobType('hiring')}
+                    className={`flex items-center justify-center gap-1.5 py-2 rounded-lg border text-xs font-semibold transition-all ${
+                      jobType === 'hiring'
+                        ? 'bg-emerald-600 text-white border-emerald-500'
+                        : 'bg-white dark:bg-white/[0.03] border-zinc-200 dark:border-white/[0.08] text-zinc-700 dark:text-zinc-300'
+                    }`}
+                  >
+                    <Briefcase size={13} />
+                    <span>เสนองาน / จ้างงาน</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setJobType('seeking')}
+                    className={`flex items-center justify-center gap-1.5 py-2 rounded-lg border text-xs font-semibold transition-all ${
+                      jobType === 'seeking'
+                        ? 'bg-sky-600 text-white border-sky-500'
+                        : 'bg-white dark:bg-white/[0.03] border-zinc-200 dark:border-white/[0.08] text-zinc-700 dark:text-zinc-300'
+                    }`}
+                  >
+                    <Wrench size={13} />
+                    <span>เสนอตัวรับงาน / รับทำ</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="text-[11px] font-mono text-zinc-600 dark:text-zinc-400 block mb-1">
+                      งบประมาณ / ค่าตอบแทน:
+                    </label>
+                    <input
+                      type="text"
+                      value={jobBudget}
+                      onChange={(e) => setJobBudget(e.target.value)}
+                      placeholder="เช่น 5,000 - 15,000 บาท หรือ ตามตกลง"
+                      maxLength={80}
+                      className="w-full bg-white dark:bg-white/[0.02] border border-zinc-200 dark:border-white/[0.08] focus:border-emerald-500 rounded-lg px-3 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-mono text-zinc-600 dark:text-zinc-400 block mb-1">
+                      รูปแบบการทำงาน:
+                    </label>
+                    <select
+                      value={jobWorkMode}
+                      onChange={(e) => setJobWorkMode(e.target.value as 'remote' | 'onsite' | 'hybrid')}
+                      className="w-full bg-white dark:bg-[#12141b] border border-zinc-200 dark:border-white/[0.08] focus:border-emerald-500 rounded-lg px-3 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none"
+                    >
+                      <option value="remote">Remote (ออนไลน์ 100%)</option>
+                      <option value="hybrid">Hybrid (ยืดหยุ่น)</option>
+                      <option value="onsite">Onsite (หน้างาน / นัดเจอ)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="text-[11px] font-mono text-zinc-600 dark:text-zinc-400 block mb-1">
+                      ทักษะที่เกี่ยวข้อง (คั่นด้วยจุลภาค , ):
+                    </label>
+                    <input
+                      type="text"
+                      value={jobSkills}
+                      onChange={(e) => setJobSkills(e.target.value)}
+                      placeholder="เช่น React, ตัดต่อ, แปลภาษา"
+                      className="w-full bg-white dark:bg-white/[0.02] border border-zinc-200 dark:border-white/[0.08] focus:border-emerald-500 rounded-lg px-3 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-mono text-zinc-600 dark:text-zinc-400 block mb-1">
+                      ช่องทางติดต่อเพิ่มเติม (ไม่บังคับ):
+                    </label>
+                    <input
+                      type="text"
+                      value={jobContact}
+                      onChange={(e) => setJobContact(e.target.value)}
+                      placeholder="เช่น แชทสดกระทู้ / Telegram @..."
+                      maxLength={160}
+                      className="w-full bg-white dark:bg-white/[0.02] border border-zinc-200 dark:border-white/[0.08] focus:border-emerald-500 rounded-lg px-3 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none"
+                    />
+                  </div>
                 </div>
               </div>
             )}

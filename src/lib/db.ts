@@ -13,6 +13,11 @@ import {
   GhostRoom,
   PollData,
   PollOption,
+  JobData,
+  JobApplication,
+  JobType,
+  JobStatus,
+  JobWorkMode,
   TickerItem,
   UserProfile,
   AvatarFrame,
@@ -200,6 +205,7 @@ export function getDatabase(): DatabaseSync {
     try { db.exec('ALTER TABLE threads ADD COLUMN author_user_id TEXT;'); } catch {}
     try { db.exec('ALTER TABLE comments ADD COLUMN author_user_id TEXT;'); } catch {}
     try { db.exec('ALTER TABLE chat_messages ADD COLUMN author_user_id TEXT;'); } catch {}
+    try { db.exec('ALTER TABLE threads ADD COLUMN job_data TEXT;'); } catch {}
 
     // Seed default communities and sample threads if empty
     try {
@@ -208,6 +214,7 @@ export function getDatabase(): DatabaseSync {
       if (!countRow || countRow.count === 0) {
         seedInitialData(db);
       }
+      seedInitialJobs(db);
     } catch {
       // ignore
     }
@@ -222,6 +229,7 @@ export function getDatabase(): DatabaseSync {
 function seedDefaultCommunities(database: DatabaseSync) {
   const defaults = [
     { name: 'breaking', title: 'z/breaking', description: 'ข่าวด่วน เหตุการณ์สำคัญ และสถานการณ์สด', icon: 'radar' },
+    { name: 'jobs', title: 'z/jobs', description: 'กระดานจ้างงาน ลงเสนองาน และเสนอตัวรับงานอิสระ', icon: 'briefcase' },
     { name: 'tech', title: 'z/tech', description: 'เทคโนโลยี, AI, ซอฟต์แวร์, และความปลอดภัยไซเบอร์', icon: 'terminal' },
     { name: 'finance', title: 'z/finance', description: 'เศรษฐกิจ, การลงทุน, หุ้น, และคริปโทเคอร์เรนซี', icon: 'cpu' },
     { name: 'society', title: 'z/society', description: 'ประเด็นสังคม กฎหมาย และนโยบายสาธารณะ', icon: 'globe' },
@@ -500,6 +508,106 @@ export function parsePoll(raw: any): PollData | null {
   return null;
 }
 
+export function parseJob(raw: any): JobData | null {
+  if (!raw || typeof raw !== 'string') return null;
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && (parsed.job_type === 'hiring' || parsed.job_type === 'seeking')) {
+      const apps: JobApplication[] = Array.isArray(parsed.applications)
+        ? parsed.applications.map((a: any) => ({
+            id: String(a.id || ''),
+            applicant_alias: String(a.applicant_alias || 'ผู้สนใจนิรนาม'),
+            applicant_avatar: String(a.applicant_avatar || 'shield'),
+            applicant_user_id: a.applicant_user_id || null,
+            applicant_username: a.applicant_username || null,
+            pitch: String(a.pitch || ''),
+            contact: a.contact || null,
+            proposed_budget: a.proposed_budget || null,
+            created_at: String(a.created_at || ''),
+          }))
+        : [];
+      return {
+        job_type: parsed.job_type as JobType,
+        budget: parsed.budget || null,
+        work_mode: (parsed.work_mode as JobWorkMode) || 'remote',
+        skills: Array.isArray(parsed.skills) ? parsed.skills.map((s: any) => String(s)).filter(Boolean) : [],
+        contact_info: parsed.contact_info || null,
+        status: parsed.status === 'closed' ? 'closed' : 'open',
+        applications: apps,
+        application_count: Number(parsed.application_count ?? apps.length),
+      };
+    }
+  } catch {}
+  return null;
+}
+
+function seedInitialJobs(database: DatabaseSync) {
+  try {
+    const existingCount = database
+      .prepare(`SELECT COUNT(*) as count FROM threads WHERE category = 'jobs' OR job_data IS NOT NULL`)
+      .get() as any;
+    if (existingCount && existingCount.count > 0) return;
+
+    const now = new Date();
+    const created1 = new Date(now.getTime() - 25 * 60 * 1000).toISOString();
+    const created2 = new Date(now.getTime() - 55 * 60 * 1000).toISOString();
+    const expires = new Date(now.getTime() + 168 * 60 * 60 * 1000).toISOString();
+
+    const insert = database.prepare(`
+      INSERT OR IGNORE INTO threads (
+        id, title, content, category, flair, author_alias, author_avatar,
+        upvotes, downvotes, job_data, expires_at, created_at
+      ) VALUES (?, ?, ?, 'jobs', ?, ?, ?, ?, 0, ?, ?, ?)
+    `);
+
+    insert.run(
+      'seed-job-hiring-1',
+      '[จ้างงาน] หาผู้พัฒนา Next.js / TypeScript ทำเว็บแอปแดชบอร์ด (งาน Remote)',
+      'ต้องการนักพัฒนาช่วยสร้างหน้า Dashboard พร้อมเชื่อม API และระบบ Chart ใช้เวลาทำงานประมาณ 1-2 สัปดาห์ กดปุ่ม "รับงาน / เสนอตัว" ด้านล่างเพื่อส่งรายละเอียดและเรทราคาได้เลยครับ',
+      'เสนองาน',
+      'ProjectLead #8821',
+      'cpu',
+      12,
+      JSON.stringify({
+        job_type: 'hiring',
+        budget: '15,000 - 25,000 บาท',
+        work_mode: 'remote',
+        skills: ['Next.js', 'TypeScript', 'Tailwind CSS'],
+        contact_info: 'แจ้งผ่านช่องรับงานหรือแชทสดของกระทู้',
+        status: 'open',
+        applications: [],
+        application_count: 0,
+      }),
+      expires,
+      created1
+    );
+
+    insert.run(
+      'seed-job-seeking-1',
+      '[รับงาน] รับตัดต่อวิดีโอสั้น Reels/TikTok, ออกแบบปก และกราฟิกแบนเนอร์ ส่งไวใน 24 ชม.',
+      'มีประสบการณ์ตัดต่อและทำ Motion Graphic มากกว่า 3 ปี รับงานด่วน งานประจำ หรือเป็นโปรเจกต์ สามารถกดปุ่ม "ติดต่องาน / ยื่นข้อเสนอ" เพื่อแจ้งบรีฟงานได้เลยครับ',
+      'รับงาน',
+      'PixelCraft #4109',
+      'terminal',
+      9,
+      JSON.stringify({
+        job_type: 'seeking',
+        budget: 'เริ่มต้น 500 - 2,500 บาท/ชิ้น',
+        work_mode: 'remote',
+        skills: ['Premiere Pro', 'After Effects', 'Graphic Design'],
+        contact_info: 'แจ้งผ่านแบบฟอร์มเสนองานในกระทู้นี้',
+        status: 'open',
+        applications: [],
+        application_count: 0,
+      }),
+      expires,
+      created2
+    );
+  } catch {
+    // ignore
+  }
+}
+
 export function getTickerItems(): TickerItem[] {
   purgeExpiredData();
   const database = getDatabase();
@@ -559,6 +667,8 @@ function mapThreadRow(r: any): Thread {
     media_type: (r.media_type as MediaType) || null,
     poll_data: r.poll_data || null,
     poll: parsePoll(r.poll_data),
+    job_data: r.job_data || null,
+    job: parseJob(r.job_data),
     author_alias: hasUser ? (r.u_display_name || r.author_alias) : r.author_alias,
     author_avatar: hasUser ? (r.u_avatar_icon || r.author_avatar) : r.author_avatar,
     author_user_id: r.author_user_id || null,
@@ -597,7 +707,11 @@ const THREAD_SELECT_SQL = `
   LEFT JOIN users u ON t.author_user_id = u.id
 `;
 
-export function getThreads(category?: string, sort: RedditSort = 'hot'): Thread[] {
+export function getThreads(
+  category?: string,
+  sort: RedditSort = 'hot',
+  jobFilter?: { onlyJobs?: boolean; jobType?: JobType }
+): Thread[] {
   purgeExpiredData();
   const database = getDatabase();
 
@@ -608,6 +722,15 @@ export function getThreads(category?: string, sort: RedditSort = 'hot'): Thread[
     const cleanCat = category.replace(/^[zr]\//i, '');
     query += ` AND t.category = ?`;
     params.push(cleanCat);
+  }
+
+  if (jobFilter?.onlyJobs) {
+    query += ` AND t.job_data IS NOT NULL`;
+  }
+
+  if (jobFilter?.jobType === 'hiring' || jobFilter?.jobType === 'seeking') {
+    query += ` AND json_extract(t.job_data, '$.job_type') = ?`;
+    params.push(jobFilter.jobType);
   }
 
   if (sort === 'hot') {
@@ -652,6 +775,7 @@ export function createThread(data: {
   media_url?: string | null;
   media_type?: MediaType | null;
   poll_data?: string | null;
+  job_data?: string | null;
   author_alias: string;
   author_avatar: string;
   author_user_id?: string | null;
@@ -676,8 +800,8 @@ export function createThread(data: {
   }
 
   database.prepare(`
-    INSERT INTO threads (id, title, content, category, flair, source_url, media_url, media_type, poll_data, author_alias, author_avatar, author_user_id, is_pinned, edit_token, is_edited, expires_at, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
+    INSERT INTO threads (id, title, content, category, flair, source_url, media_url, media_type, poll_data, job_data, author_alias, author_avatar, author_user_id, is_pinned, edit_token, is_edited, expires_at, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
   `).run(
     data.id,
     data.title,
@@ -688,6 +812,7 @@ export function createThread(data: {
     data.media_url || null,
     data.media_type || null,
     data.poll_data || null,
+    data.job_data || null,
     data.author_alias,
     data.author_avatar,
     data.author_user_id || null,
@@ -698,6 +823,78 @@ export function createThread(data: {
   );
 
   return getThreadById(data.id)!;
+}
+
+export function applyToJobThread(
+  threadId: string,
+  application: JobApplication
+): { success: boolean; job?: JobData; error?: string } {
+  const database = getDatabase();
+  const existing = database.prepare(`SELECT * FROM threads WHERE id = ?`).get(threadId) as any;
+  if (!existing) {
+    return { success: false, error: 'ไม่พบกระทู้นี้ หรือกระทู้อาจหมดอายุแล้ว' };
+  }
+
+  const job = parseJob(existing.job_data);
+  if (!job) {
+    return { success: false, error: 'กระทู้นี้ไม่ใช่ประกาศจ้างงานหรือรับงาน' };
+  }
+
+  if (job.status === 'closed') {
+    return { success: false, error: 'ประกาศงานนี้ปิดรับสมัคร/ปิดรับงานแล้ว' };
+  }
+
+  const nextApps = [application, ...(job.applications || [])].slice(0, 50);
+  const updatedJob: JobData = {
+    ...job,
+    applications: nextApps,
+    application_count: Number(job.application_count || 0) + 1,
+  };
+
+  database
+    .prepare(`UPDATE threads SET job_data = ? WHERE id = ?`)
+    .run(JSON.stringify(updatedJob), threadId);
+
+  return { success: true, job: updatedJob };
+}
+
+export function toggleJobStatus(
+  threadId: string,
+  status: JobStatus,
+  edit_token?: string | null,
+  current_user_id?: string | null
+): { success: boolean; job?: JobData; error?: string } {
+  const database = getDatabase();
+  const existing = database.prepare(`SELECT * FROM threads WHERE id = ?`).get(threadId) as any;
+  if (!existing) {
+    return { success: false, error: 'ไม่พบกระทู้นี้ หรือกระทู้อาจหมดอายุแล้ว' };
+  }
+
+  const job = parseJob(existing.job_data);
+  if (!job) {
+    return { success: false, error: 'กระทู้นี้ไม่ใช่ประกาศงาน' };
+  }
+
+  if (existing.author_user_id) {
+    const isOwner = Boolean(current_user_id && existing.author_user_id === current_user_id);
+    const hasToken = Boolean(existing.edit_token && edit_token && existing.edit_token === edit_token);
+    if (!isOwner && !hasToken) {
+      return { success: false, error: 'คุณไม่มีสิทธิ์เปลี่ยนสถานะประกาศงานนี้' };
+    }
+  } else if (existing.edit_token && edit_token && existing.edit_token !== edit_token) {
+    return { success: false, error: 'รหัสยืนยันการแก้ไขไม่ถูกต้อง' };
+  }
+
+  const updatedJob: JobData = {
+    ...job,
+    status,
+  };
+
+  database
+    .prepare(`UPDATE threads SET job_data = ? WHERE id = ?`)
+    .run(JSON.stringify(updatedJob), threadId);
+
+  return { success: true, job: updatedJob };
 }
 
 export function voteThreadPoll(

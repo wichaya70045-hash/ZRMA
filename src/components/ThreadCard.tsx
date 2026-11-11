@@ -28,6 +28,7 @@ import ReportModal from './ReportModal';
 import EditThreadModal from './EditThreadModal';
 import DeleteThreadModal from './DeleteThreadModal';
 import ThreadPoll from './ThreadPoll';
+import ThreadJobBox from './ThreadJobBox';
 import { isThreadAuthor } from '@/lib/privacy';
 import { useSettings } from '@/lib/settings';
 import { useAuth } from '@/lib/authContext';
@@ -271,6 +272,20 @@ export default function ThreadCard({
               <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-amber-50 dark:bg-yellow-500/10 text-amber-700 dark:text-yellow-400 border border-amber-200 dark:border-yellow-500/25 flex items-center gap-1 shrink-0">
                 <BarChart2 size={9} />
                 <span>โพล ({thread.poll.total_votes || 0})</span>
+              </span>
+            )}
+            {thread.job && (
+              <span
+                className={`px-1.5 py-0.2 rounded text-[9px] font-mono font-bold border flex items-center gap-1 shrink-0 ${
+                  thread.job.job_type === 'hiring'
+                    ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/25'
+                    : 'bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-500/25'
+                }`}
+              >
+                <span>
+                  {thread.job.job_type === 'hiring' ? '💼 เสนองาน' : '🛠️ รับงาน'}
+                  {thread.job.budget ? ` • ${thread.job.budget}` : ''}
+                </span>
               </span>
             )}
             {thread.source_url && (
@@ -617,6 +632,13 @@ export default function ThreadCard({
                   setThread((prev) => ({ ...prev, poll: updated }));
                 }}
               />
+            </div>
+          )}
+
+          {/* Job Marketplace Card (if enabled) */}
+          {thread.job && (
+            <div className="mb-2.5">
+              <ThreadJobBox threadId={thread.id} job={thread.job} />
             </div>
           )}
 

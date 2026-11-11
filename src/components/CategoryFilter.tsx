@@ -19,8 +19,11 @@ import {
   X,
   LayoutGrid,
   LayoutList,
+  Briefcase,
+  Wrench,
 } from 'lucide-react';
-import { RedditSort, Community } from '@/types';
+import Link from 'next/link';
+import { RedditSort, Community, JobType } from '@/types';
 import CreateCommunityModal from './CreateCommunityModal';
 
 interface CategoryFilterProps {
@@ -28,6 +31,8 @@ interface CategoryFilterProps {
   onSelectCategory: (cat: string) => void;
   selectedSort: RedditSort;
   onSelectSort: (sort: RedditSort) => void;
+  selectedJobType?: 'all' | JobType;
+  onSelectJobType?: (jt: 'all' | JobType) => void;
   searchQuery?: string;
   onSearchChange?: (q: string) => void;
   layout?: 'card' | 'compact';
@@ -42,6 +47,7 @@ const ICON_MAP: Record<string, any> = {
   cpu: Cpu,
   radar: Radar,
   globe: Globe,
+  briefcase: Briefcase,
   trending: TrendingUp,
   chat: MessageSquare,
   alert: AlertCircle,
@@ -52,6 +58,8 @@ export default function CategoryFilter({
   onSelectCategory,
   selectedSort,
   onSelectSort,
+  selectedJobType = 'all',
+  onSelectJobType,
   searchQuery = '',
   onSearchChange,
   layout = 'card',
@@ -93,8 +101,23 @@ export default function CategoryFilter({
           <span>z/all</span>
         </button>
 
+        {/* Dedicated Jobs / Hiring Feed Menu Button */}
+        <button
+          onClick={() => onSelectCategory('jobs')}
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all border active:scale-95 ${
+            selectedCategory === 'jobs'
+              ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white border-emerald-500 font-bold shadow-[0_0_12px_rgba(16,185,129,0.3)]'
+              : 'bg-emerald-500/10 dark:bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/25'
+          }`}
+        >
+          <Briefcase size={13} strokeWidth={selectedCategory === 'jobs' ? 2.3 : 1.85} />
+          <span>💼 การจ้างงาน</span>
+        </button>
+
         {/* Dynamic subreddits */}
-        {communities.map((comm) => {
+        {communities
+          .filter((comm) => comm.name !== 'jobs')
+          .map((comm) => {
           const isActive = selectedCategory === comm.name;
           const IconComp = ICON_MAP[comm.icon] || Terminal;
           const isBreaking = comm.name === 'breaking';
@@ -256,6 +279,70 @@ export default function CategoryFilter({
         </div>
 
       </div>
+
+      {/* 3. Jobs Marketplace Sub-Bar (visible when z/jobs is selected) */}
+      {selectedCategory === 'jobs' && (
+        <div className="px-3 py-2.5 border-t border-emerald-200 dark:border-emerald-500/20 bg-emerald-50/70 dark:bg-emerald-950/20 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 mr-1 flex items-center gap-1">
+              <Briefcase size={12} />
+              กระดานงาน:
+            </span>
+            <button
+              type="button"
+              onClick={() => onSelectJobType?.('all')}
+              className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors ${
+                selectedJobType === 'all'
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-white dark:bg-black/30 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-white/[0.08]'
+              }`}
+            >
+              ทั้งหมด
+            </button>
+            <button
+              type="button"
+              onClick={() => onSelectJobType?.('hiring')}
+              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors ${
+                selectedJobType === 'hiring'
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-white dark:bg-black/30 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-white/[0.08]'
+              }`}
+            >
+              <Briefcase size={11} />
+              เสนองาน (หาคนทำ)
+            </button>
+            <button
+              type="button"
+              onClick={() => onSelectJobType?.('seeking')}
+              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors ${
+                selectedJobType === 'seeking'
+                  ? 'bg-sky-600 text-white'
+                  : 'bg-white dark:bg-black/30 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-white/[0.08]'
+              }`}
+            >
+              <Wrench size={11} />
+              รับงาน (เสนอตัว)
+            </button>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Link
+              href="/new?job=hiring"
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-semibold transition-colors"
+            >
+              <Plus size={11} />
+              ลงเสนองาน / จ้างงาน
+            </Link>
+            <Link
+              href="/new?job=seeking"
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-[11px] font-semibold transition-colors"
+            >
+              <Wrench size={11} />
+              ลงรับงาน / เสนอตัว
+            </Link>
+          </div>
+        </div>
+      )}
 
       <CreateCommunityModal
         isOpen={isModalOpen}

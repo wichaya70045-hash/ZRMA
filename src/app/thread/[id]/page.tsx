@@ -16,6 +16,7 @@ import LiveChatBox from '@/components/LiveChatBox';
 import CommunitySidebar from '@/components/CommunitySidebar';
 import ThreadedCommentTree from '@/components/ThreadedCommentTree';
 import ThreadPoll from '@/components/ThreadPoll';
+import ThreadJobBox from '@/components/ThreadJobBox';
 import {
   ArrowLeft,
   ChevronUp,
@@ -191,6 +192,13 @@ export default function ThreadDetailPage({
       } catch (err) {
         console.error('Error parsing new_comment:', err);
       }
+    });
+
+    eventSource.addEventListener('job_updated', (event) => {
+      try {
+        const updatedJob = JSON.parse(event.data);
+        setThread((prev) => (prev ? { ...prev, job: updatedJob } : prev));
+      } catch {}
     });
 
     eventSource.addEventListener('content_hidden', (event) => {
@@ -725,6 +733,24 @@ export default function ThreadDetailPage({
                       poll={thread.poll}
                       onPollUpdated={(updated) => {
                         setThread((prev) => (prev ? { ...prev, poll: updated } : null));
+                      }}
+                    />
+                  </div>
+                )}
+
+                {/* Job Marketplace Interactive Box */}
+                {thread.job && (
+                  <div className="pt-2 pb-1">
+                    <ThreadJobBox
+                      threadId={thread.id}
+                      job={thread.job}
+                      isInteractive
+                      isAuthor={isAuthor}
+                      authorAlias={customAlias.trim() || identity?.alias}
+                      authorAvatar={identity?.avatarIcon}
+                      postAnonymously={postAnonymously}
+                      onJobUpdated={(updatedJob) => {
+                        setThread((prev) => (prev ? { ...prev, job: updatedJob } : null));
                       }}
                     />
                   </div>

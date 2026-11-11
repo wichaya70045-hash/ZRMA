@@ -32,6 +32,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   X,
+  Briefcase,
 } from 'lucide-react';
 import type { Community } from '@/types';
 import { useAuth } from '@/lib/authContext';
@@ -54,6 +55,7 @@ const COMMUNITY_ICON_MAP: Record<string, React.ComponentType<{ size?: number; cl
   key: Key,
   binary: Binary,
   'eye-off': EyeOff,
+  briefcase: Briefcase,
   atom: Atom,
   trending: TrendingUp,
   chat: MessageSquare,
@@ -173,6 +175,13 @@ function LeftSidebarContent({ mobileOpen, onCloseMobile }: LeftSidebarProps) {
       icon: Clock,
       active: pathname === '/' && currentSort === 'new',
       iconClass: 'text-sky-500',
+    },
+    {
+      label: 'การจ้างงาน & รับงาน',
+      href: '/?category=jobs',
+      icon: Briefcase,
+      active: pathname === '/' && currentCategory === 'jobs',
+      iconClass: 'text-emerald-500',
     },
   ];
 

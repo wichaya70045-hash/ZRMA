@@ -23,6 +23,7 @@ import {
   Atom,
   TrendingUp,
   Ghost,
+  Briefcase,
 } from 'lucide-react';
 import { Community } from '@/types';
 import CreateCommunityModal from './CreateCommunityModal';
@@ -40,6 +41,7 @@ const ICON_MAP: Record<string, any> = {
   radar: Radar,
   globe: Globe,
   atom: Atom,
+  briefcase: Briefcase,
   trending: TrendingUp,
   chat: MessageSquare,
   alert: AlertCircle,

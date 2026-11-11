@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Thread, RedditSort } from '@/types';
+import { Thread, RedditSort, JobType } from '@/types';
 import ThreadCard from '@/components/ThreadCard';
 import CategoryFilter from '@/components/CategoryFilter';
 import CommunitySidebar from '@/components/CommunitySidebar';
@@ -34,6 +34,7 @@ function HomeContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedSort, setSelectedSort] = useState<RedditSort>(settings.defaultSort || 'hot');
+  const [selectedJobType, setSelectedJobType] = useState<'all' | JobType>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTabMobile, setActiveTabMobile] = useState<'threads' | 'chat'>('threads');
 
@@ -41,8 +42,14 @@ function HomeContent() {
     const cat = searchParams.get('category');
     const sort = searchParams.get('sort');
     const q = searchParams.get('q');
+    const jt = searchParams.get('job_type');
 
     setSelectedCategory(cat ? cat.replace(/^[zr]\//i, '') : 'all');
+    if (jt === 'hiring' || jt === 'seeking') {
+      setSelectedJobType(jt);
+    } else {
+      setSelectedJobType('all');
+    }
 
     if (sort && ['hot', 'breaking', 'new', 'top', 'rising'].includes(sort)) {
       setSelectedSort(sort as RedditSort);
@@ -64,6 +71,9 @@ function HomeContent() {
       if (selectedCategory && selectedCategory !== 'all') {
         params.append('category', selectedCategory);
       }
+      if (selectedCategory === 'jobs' && (selectedJobType === 'hiring' || selectedJobType === 'seeking')) {
+        params.append('job_type', selectedJobType);
+      }
       params.append('sort', selectedSort);
 
       const res = await fetch(`/api/threads?${params.toString()}`);
@@ -80,7 +90,7 @@ function HomeContent() {
 
   useEffect(() => {
     fetchThreads();
-  }, [selectedCategory, selectedSort]);
+  }, [selectedCategory, selectedSort, selectedJobType]);
 
   useEffect(() => {
     const eventSource = new EventSource('/api/chat/stream?room=global');
@@ -162,9 +172,14 @@ function HomeContent() {
           {/* Unified Master Category & Filter Center */}
           <CategoryFilter
             selectedCategory={selectedCategory}
-            onSelectCategory={setSelectedCategory}
+            onSelectCategory={(cat) => {
+              setSelectedCategory(cat);
+              if (cat !== 'jobs') setSelectedJobType('all');
+            }}
             selectedSort={selectedSort}
             onSelectSort={(sort) => setSelectedSort(sort as RedditSort)}
+            selectedJobType={selectedJobType}
+            onSelectJobType={setSelectedJobType}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
             layout={settings.feedLayout}

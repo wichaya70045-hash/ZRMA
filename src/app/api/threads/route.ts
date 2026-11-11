@@ -4,7 +4,7 @@ import { getThreads, createThread } from '@/lib/db';
 import { verifyCaptcha } from '@/lib/captcha';
 import { getSessionUser } from '@/lib/auth';
 import { broadcastToRoom } from '@/lib/sse';
-import { Category, RedditSort } from '@/types';
+import { Category, RedditSort, JobType, JobWorkMode } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,7 +13,9 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const category = searchParams.get('category') || undefined;
     const rawSort = searchParams.get('sort') || 'hot';
-    
+    const rawJobType = searchParams.get('job_type');
+    const onlyJobs = searchParams.get('only_jobs') === '1';
+
     // Map legacy 'latest' to Reddit 'new'
     let sort: RedditSort = 'hot';
     if (rawSort === 'latest' || rawSort === 'new') {
@@ -22,7 +24,10 @@ export async function GET(req: NextRequest) {
       sort = rawSort;
     }
 
-    const threads = getThreads(category, sort);
+    const jobType: JobType | undefined =
+      rawJobType === 'hiring' || rawJobType === 'seeking' ? rawJobType : undefined;
+
+    const threads = getThreads(category, sort, { onlyJobs, jobType });
     return NextResponse.json({ threads });
   } catch (err: any) {
     console.error('Error fetching threads:', err);
@@ -118,6 +123,36 @@ export async function POST(req: NextRequest) {
       pollDataString = JSON.stringify(pollPayload);
     }
 
+    // Process Job listing data if enabled
+    let jobDataString: string | null = null;
+    if (body.has_job === true || body.job) {
+      const rawJob = body.job || body;
+      const jobType: JobType = rawJob.job_type === 'seeking' ? 'seeking' : 'hiring';
+      const rawMode = String(rawJob.work_mode || 'remote');
+      const workMode: JobWorkMode =
+        rawMode === 'onsite' || rawMode === 'hybrid' ? rawMode : 'remote';
+      const rawSkills = Array.isArray(rawJob.skills)
+        ? rawJob.skills
+        : typeof rawJob.skills === 'string'
+        ? rawJob.skills.split(',')
+        : [];
+      const cleanSkills = rawSkills
+        .map((s: any) => String(s).trim())
+        .filter(Boolean)
+        .slice(0, 8);
+
+      jobDataString = JSON.stringify({
+        job_type: jobType,
+        budget: rawJob.budget ? String(rawJob.budget).trim().slice(0, 80) : null,
+        work_mode: workMode,
+        skills: cleanSkills,
+        contact_info: rawJob.contact_info ? String(rawJob.contact_info).trim().slice(0, 160) : null,
+        status: 'open',
+        applications: [],
+        application_count: 0,
+      });
+    }
+
     const sessionUser = await getSessionUser(req);
     const useAccountIdentity = Boolean(sessionUser && body.post_anonymously !== true);
 
@@ -133,6 +168,7 @@ export async function POST(req: NextRequest) {
       media_url: media_url ? media_url.trim() : null,
       media_type: validatedMediaType,
       poll_data: pollDataString,
+      job_data: jobDataString,
       author_alias: useAccountIdentity
         ? sessionUser!.display_name
         : (author_alias ? author_alias.trim() : 'u/ผู้ไม่ประสงค์ออกนาม #????'),
