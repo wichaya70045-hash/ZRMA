@@ -1,7 +1,24 @@
 import { DatabaseSync } from 'node:sqlite';
 import path from 'path';
 import fs from 'fs';
-import { Thread, Comment, CommentNode, ChatMessage, Category, RedditSort, Community, MediaType, GhostRoom, PollData, PollOption, TickerItem } from '@/types';
+import {
+  Thread,
+  Comment,
+  CommentNode,
+  ChatMessage,
+  Category,
+  RedditSort,
+  Community,
+  MediaType,
+  GhostRoom,
+  PollData,
+  PollOption,
+  TickerItem,
+  UserProfile,
+  AvatarFrame,
+  BannerTheme,
+  NameColor,
+} from '@/types';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 if (!fs.existsSync(DATA_DIR)) {
@@ -129,6 +146,23 @@ export function getDatabase(): DatabaseSync {
       );
 
       CREATE INDEX IF NOT EXISTS idx_used_captchas_exp ON used_captchas(expires_at);
+
+      CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        username TEXT UNIQUE NOT NULL,
+        display_name TEXT NOT NULL,
+        password_hash TEXT NOT NULL,
+        bio TEXT DEFAULT '',
+        avatar_icon TEXT DEFAULT 'shield',
+        avatar_url TEXT,
+        avatar_frame TEXT DEFAULT 'none',
+        banner_theme TEXT DEFAULT 'obsidian',
+        name_color TEXT DEFAULT 'default',
+        custom_badge TEXT,
+        created_at TEXT NOT NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
     `);
 
     // Migrations for columns in existing databases
@@ -163,6 +197,9 @@ export function getDatabase(): DatabaseSync {
     try { db.exec('ALTER TABLE chat_messages ADD COLUMN is_edited INTEGER DEFAULT 0;'); } catch {}
     try { db.exec('ALTER TABLE chat_messages ADD COLUMN edited_at TEXT;'); } catch {}
     try { db.exec('ALTER TABLE chat_messages ADD COLUMN edit_token TEXT;'); } catch {}
+    try { db.exec('ALTER TABLE threads ADD COLUMN author_user_id TEXT;'); } catch {}
+    try { db.exec('ALTER TABLE comments ADD COLUMN author_user_id TEXT;'); } catch {}
+    try { db.exec('ALTER TABLE chat_messages ADD COLUMN author_user_id TEXT;'); } catch {}
 
     // Seed default communities and sample threads if empty
     try {
@@ -509,18 +546,62 @@ export function getTickerItems(): TickerItem[] {
   });
 }
 
+function mapThreadRow(r: any): Thread {
+  const hasUser = Boolean(r.u_username);
+  return {
+    id: r.id,
+    title: r.title,
+    content: r.content,
+    category: r.category,
+    flair: r.flair || null,
+    source_url: r.source_url,
+    media_url: r.media_url || null,
+    media_type: (r.media_type as MediaType) || null,
+    poll_data: r.poll_data || null,
+    poll: parsePoll(r.poll_data),
+    author_alias: hasUser ? (r.u_display_name || r.author_alias) : r.author_alias,
+    author_avatar: hasUser ? (r.u_avatar_icon || r.author_avatar) : r.author_avatar,
+    author_user_id: r.author_user_id || null,
+    author_username: r.u_username || null,
+    author_avatar_url: r.u_avatar_url || null,
+    author_frame: (r.u_avatar_frame as AvatarFrame) || null,
+    author_name_color: (r.u_name_color as NameColor) || null,
+    author_badge: r.u_custom_badge || null,
+    upvotes: Number(r.upvotes),
+    downvotes: Number(r.downvotes),
+    score: Number(r.score),
+    comment_count: Number(r.comment_count),
+    report_count: Number(r.report_count),
+    is_hidden: Number(r.is_hidden),
+    is_pinned: Number(r.is_pinned || 0),
+    is_edited: Number(r.is_edited || 0),
+    edited_at: r.edited_at || null,
+    expires_at: r.expires_at,
+    created_at: r.created_at,
+  };
+}
+
+const THREAD_SELECT_SQL = `
+  SELECT 
+    t.*,
+    (t.upvotes - t.downvotes) as score,
+    (SELECT COUNT(*) FROM comments c WHERE c.thread_id = t.id) as comment_count,
+    u.username as u_username,
+    u.display_name as u_display_name,
+    u.avatar_icon as u_avatar_icon,
+    u.avatar_url as u_avatar_url,
+    u.avatar_frame as u_avatar_frame,
+    u.name_color as u_name_color,
+    u.custom_badge as u_custom_badge
+  FROM threads t
+  LEFT JOIN users u ON t.author_user_id = u.id
+`;
+
 export function getThreads(category?: string, sort: RedditSort = 'hot'): Thread[] {
   purgeExpiredData();
   const database = getDatabase();
 
-  let query = `
-    SELECT 
-      t.*,
-      (t.upvotes - t.downvotes) as score,
-      (SELECT COUNT(*) FROM comments c WHERE c.thread_id = t.id) as comment_count
-    FROM threads t
-    WHERE 1=1
-  `;
+  let query = `${THREAD_SELECT_SQL} WHERE 1=1`;
   const params: any[] = [];
 
   if (category && category !== 'all') {
@@ -546,72 +627,19 @@ export function getThreads(category?: string, sort: RedditSort = 'hot'): Thread[
   query += ` LIMIT 50`;
 
   const rows = database.prepare(query).all(...params) as any[];
-  return rows.map((r) => ({
-    id: r.id,
-    title: r.title,
-    content: r.content,
-    category: r.category,
-    flair: r.flair || null,
-    source_url: r.source_url,
-    media_url: r.media_url || null,
-    media_type: (r.media_type as MediaType) || null,
-    poll_data: r.poll_data || null,
-    poll: parsePoll(r.poll_data),
-    author_alias: r.author_alias,
-    author_avatar: r.author_avatar,
-    upvotes: Number(r.upvotes),
-    downvotes: Number(r.downvotes),
-    score: Number(r.score),
-    comment_count: Number(r.comment_count),
-    report_count: Number(r.report_count),
-    is_hidden: Number(r.is_hidden),
-    is_pinned: Number(r.is_pinned || 0),
-    is_edited: Number(r.is_edited || 0),
-    edited_at: r.edited_at || null,
-    expires_at: r.expires_at,
-    created_at: r.created_at,
-  }));
+  return rows.map(mapThreadRow);
 }
 
 export function getThreadById(id: string): Thread | null {
   purgeExpiredData();
   const database = getDatabase();
   const row = database.prepare(`
-    SELECT 
-      t.*,
-      (t.upvotes - t.downvotes) as score,
-      (SELECT COUNT(*) FROM comments c WHERE c.thread_id = t.id) as comment_count
-    FROM threads t
+    ${THREAD_SELECT_SQL}
     WHERE t.id = ?
   `).get(id) as any;
 
   if (!row) return null;
-
-  return {
-    id: row.id,
-    title: row.title,
-    content: row.content,
-    category: row.category,
-    flair: row.flair || null,
-    source_url: row.source_url,
-    media_url: row.media_url || null,
-    media_type: (row.media_type as MediaType) || null,
-    poll_data: row.poll_data || null,
-    poll: parsePoll(row.poll_data),
-    author_alias: row.author_alias,
-    author_avatar: row.author_avatar,
-    upvotes: Number(row.upvotes),
-    downvotes: Number(row.downvotes),
-    score: Number(row.score),
-    comment_count: Number(row.comment_count),
-    report_count: Number(row.report_count),
-    is_hidden: Number(row.is_hidden),
-    is_pinned: Number(row.is_pinned || 0),
-    is_edited: Number(row.is_edited || 0),
-    edited_at: row.edited_at || null,
-    expires_at: row.expires_at,
-    created_at: row.created_at,
-  };
+  return mapThreadRow(row);
 }
 
 export function createThread(data: {
@@ -626,6 +654,7 @@ export function createThread(data: {
   poll_data?: string | null;
   author_alias: string;
   author_avatar: string;
+  author_user_id?: string | null;
   is_pinned?: number;
   expires_hours: number;
   edit_token?: string | null;
@@ -647,8 +676,8 @@ export function createThread(data: {
   }
 
   database.prepare(`
-    INSERT INTO threads (id, title, content, category, flair, source_url, media_url, media_type, poll_data, author_alias, author_avatar, is_pinned, edit_token, is_edited, expires_at, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
+    INSERT INTO threads (id, title, content, category, flair, source_url, media_url, media_type, poll_data, author_alias, author_avatar, author_user_id, is_pinned, edit_token, is_edited, expires_at, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
   `).run(
     data.id,
     data.title,
@@ -661,6 +690,7 @@ export function createThread(data: {
     data.poll_data || null,
     data.author_alias,
     data.author_avatar,
+    data.author_user_id || null,
     data.is_pinned ? 1 : 0,
     data.edit_token || null,
     expiresAt,
@@ -715,6 +745,7 @@ export function updateThread(id: string, data: {
   flair?: string | null;
   source_url?: string | null;
   edit_token?: string | null;
+  current_user_id?: string | null;
 }): { success: boolean; thread?: Thread; error?: string } {
   const database = getDatabase();
   const existing = database.prepare(`SELECT * FROM threads WHERE id = ?`).get(id) as any;
@@ -722,8 +753,14 @@ export function updateThread(id: string, data: {
     return { success: false, error: 'ไม่พบกระทู้นี้ หรือกระทู้อาจหมดอายุแล้ว' };
   }
 
-  // Check edit token
-  if (existing.edit_token && data.edit_token && existing.edit_token !== data.edit_token) {
+  // Check authorization: account owner OR matching edit token
+  if (existing.author_user_id) {
+    const isOwner = Boolean(data.current_user_id && existing.author_user_id === data.current_user_id);
+    const hasToken = Boolean(existing.edit_token && data.edit_token && existing.edit_token === data.edit_token);
+    if (!isOwner && !hasToken) {
+      return { success: false, error: 'คุณไม่มีสิทธิ์แก้ไขกระทู้นี้ กรุณาเข้าสู่ระบบด้วยบัญชีเจ้าของโพสต์หรือใช้รหัสยืนยัน' };
+    }
+  } else if (existing.edit_token && data.edit_token && existing.edit_token !== data.edit_token) {
     return { success: false, error: 'รหัสยืนยันการแก้ไข (Edit Passcode) ไม่ถูกต้อง' };
   }
 
@@ -754,14 +791,24 @@ export function updateThread(id: string, data: {
   return { success: true, thread: updated || undefined };
 }
 
-export function deleteThread(id: string, edit_token?: string | null): { success: boolean; error?: string } {
+export function deleteThread(
+  id: string,
+  edit_token?: string | null,
+  current_user_id?: string | null
+): { success: boolean; error?: string } {
   const database = getDatabase();
   const existing = database.prepare(`SELECT * FROM threads WHERE id = ?`).get(id) as any;
   if (!existing) {
     return { success: false, error: 'ไม่พบกระทู้นี้ หรือกระทู้อาจหมดอายุแล้ว' };
   }
 
-  if (existing.edit_token && edit_token && existing.edit_token !== edit_token) {
+  if (existing.author_user_id) {
+    const isOwner = Boolean(current_user_id && existing.author_user_id === current_user_id);
+    const hasToken = Boolean(existing.edit_token && edit_token && existing.edit_token === edit_token);
+    if (!isOwner && !hasToken) {
+      return { success: false, error: 'คุณไม่มีสิทธิ์ลบกระทู้นี้ กรุณาเข้าสู่ระบบด้วยบัญชีเจ้าของโพสต์หรือใช้รหัสยืนยัน' };
+    }
+  } else if (existing.edit_token && edit_token && existing.edit_token !== edit_token) {
     return { success: false, error: 'รหัสยืนยันการลบ (Delete Passcode) ไม่ถูกต้อง' };
   }
 
@@ -811,18 +858,9 @@ export function voteThread(
   };
 }
 
-export function getCommentsByThread(threadId: string): Comment[] {
-  const database = getDatabase();
-  const rows = database.prepare(`
-    SELECT 
-      c.*,
-      (c.upvotes - c.downvotes) as score
-    FROM comments c
-    WHERE c.thread_id = ?
-    ORDER BY c.created_at ASC
-  `).all(threadId) as any[];
-
-  return rows.map((r) => ({
+function mapCommentRow(r: any): Comment {
+  const hasUser = Boolean(r.u_username);
+  return {
     id: r.id,
     thread_id: r.thread_id,
     parent_id: r.parent_id,
@@ -830,15 +868,47 @@ export function getCommentsByThread(threadId: string): Comment[] {
     quote_author: r.quote_author,
     content: r.content,
     media_url: r.media_url || null,
-    author_alias: r.author_alias,
-    author_avatar: r.author_avatar,
+    author_alias: hasUser ? (r.u_display_name || r.author_alias) : r.author_alias,
+    author_avatar: hasUser ? (r.u_avatar_icon || r.author_avatar) : r.author_avatar,
+    author_user_id: r.author_user_id || null,
+    author_username: r.u_username || null,
+    author_avatar_url: r.u_avatar_url || null,
+    author_frame: (r.u_avatar_frame as AvatarFrame) || null,
+    author_name_color: (r.u_name_color as NameColor) || null,
+    author_badge: r.u_custom_badge || null,
     upvotes: Number(r.upvotes),
     downvotes: Number(r.downvotes),
     score: Number(r.score),
     report_count: Number(r.report_count),
     is_hidden: Number(r.is_hidden),
     created_at: r.created_at,
-  }));
+  };
+}
+
+const COMMENT_SELECT_SQL = `
+  SELECT 
+    c.*,
+    (c.upvotes - c.downvotes) as score,
+    u.username as u_username,
+    u.display_name as u_display_name,
+    u.avatar_icon as u_avatar_icon,
+    u.avatar_url as u_avatar_url,
+    u.avatar_frame as u_avatar_frame,
+    u.name_color as u_name_color,
+    u.custom_badge as u_custom_badge
+  FROM comments c
+  LEFT JOIN users u ON c.author_user_id = u.id
+`;
+
+export function getCommentsByThread(threadId: string): Comment[] {
+  const database = getDatabase();
+  const rows = database.prepare(`
+    ${COMMENT_SELECT_SQL}
+    WHERE c.thread_id = ?
+    ORDER BY c.created_at ASC
+  `).all(threadId) as any[];
+
+  return rows.map(mapCommentRow);
 }
 
 export function createComment(data: {
@@ -851,13 +921,14 @@ export function createComment(data: {
   media_url?: string | null;
   author_alias: string;
   author_avatar: string;
+  author_user_id?: string | null;
 }): Comment {
   const database = getDatabase();
   const createdAt = new Date().toISOString();
 
   database.prepare(`
-    INSERT INTO comments (id, thread_id, parent_id, quote_text, quote_author, content, media_url, author_alias, author_avatar, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO comments (id, thread_id, parent_id, quote_text, quote_author, content, media_url, author_alias, author_avatar, author_user_id, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     data.id,
     data.thread_id,
@@ -868,27 +939,12 @@ export function createComment(data: {
     data.media_url || null,
     data.author_alias,
     data.author_avatar,
+    data.author_user_id || null,
     createdAt
   );
 
-  const row = database.prepare(`SELECT *, (upvotes - downvotes) as score FROM comments WHERE id = ?`).get(data.id) as any;
-  return {
-    id: row.id,
-    thread_id: row.thread_id,
-    parent_id: row.parent_id,
-    quote_text: row.quote_text,
-    quote_author: row.quote_author,
-    content: row.content,
-    media_url: row.media_url || null,
-    author_alias: row.author_alias,
-    author_avatar: row.author_avatar,
-    upvotes: Number(row.upvotes),
-    downvotes: Number(row.downvotes),
-    score: Number(row.score),
-    report_count: Number(row.report_count),
-    is_hidden: Number(row.is_hidden),
-    created_at: row.created_at,
-  };
+  const row = database.prepare(`${COMMENT_SELECT_SQL} WHERE c.id = ?`).get(data.id) as any;
+  return mapCommentRow(row);
 }
 
 export function voteComment(
@@ -931,28 +987,53 @@ export function voteComment(
   };
 }
 
-export function getChatMessages(roomId: string = 'global'): ChatMessage[] {
-  pruneChatRoom(roomId);
-  const database = getDatabase();
-  const rows = database.prepare(`
-    SELECT * FROM chat_messages 
-    WHERE room_id = ? 
-    ORDER BY created_at ASC
-    LIMIT 100
-  `).all(roomId) as any[];
-
-  return rows.map((r) => ({
+function mapChatMessageRow(r: any): ChatMessage {
+  const hasUser = Boolean(r.u_username);
+  return {
     id: r.id,
     room_id: r.room_id,
     content: r.content,
-    author_alias: r.author_alias,
-    author_avatar: r.author_avatar,
+    author_alias: hasUser ? (r.u_display_name || r.author_alias) : r.author_alias,
+    author_avatar: hasUser ? (r.u_avatar_icon || r.author_avatar) : r.author_avatar,
+    author_user_id: r.author_user_id || null,
+    author_username: r.u_username || null,
+    author_avatar_url: r.u_avatar_url || null,
+    author_frame: (r.u_avatar_frame as AvatarFrame) || null,
+    author_name_color: (r.u_name_color as NameColor) || null,
+    author_badge: r.u_custom_badge || null,
     report_count: Number(r.report_count),
     is_hidden: Number(r.is_hidden),
     is_edited: Number(r.is_edited || 0),
     edited_at: r.edited_at || null,
     created_at: r.created_at,
-  }));
+  };
+}
+
+const CHAT_SELECT_SQL = `
+  SELECT
+    m.*,
+    u.username as u_username,
+    u.display_name as u_display_name,
+    u.avatar_icon as u_avatar_icon,
+    u.avatar_url as u_avatar_url,
+    u.avatar_frame as u_avatar_frame,
+    u.name_color as u_name_color,
+    u.custom_badge as u_custom_badge
+  FROM chat_messages m
+  LEFT JOIN users u ON m.author_user_id = u.id
+`;
+
+export function getChatMessages(roomId: string = 'global'): ChatMessage[] {
+  pruneChatRoom(roomId);
+  const database = getDatabase();
+  const rows = database.prepare(`
+    ${CHAT_SELECT_SQL}
+    WHERE m.room_id = ? 
+    ORDER BY m.created_at ASC
+    LIMIT 100
+  `).all(roomId) as any[];
+
+  return rows.map(mapChatMessageRow);
 }
 
 export function sendChatMessage(data: {
@@ -961,25 +1042,30 @@ export function sendChatMessage(data: {
   content: string;
   author_alias: string;
   author_avatar: string;
+  author_user_id?: string | null;
   edit_token?: string | null;
 }): ChatMessage {
   const database = getDatabase();
   const createdAt = new Date().toISOString();
 
   database.prepare(`
-    INSERT INTO chat_messages (id, room_id, content, author_alias, author_avatar, edit_token, is_edited, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, 0, ?)
+    INSERT INTO chat_messages (id, room_id, content, author_alias, author_avatar, author_user_id, edit_token, is_edited, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)
   `).run(
     data.id,
     data.room_id || 'global',
     data.content,
     data.author_alias,
     data.author_avatar,
+    data.author_user_id || null,
     data.edit_token || null,
     createdAt
   );
 
   pruneChatRoom(data.room_id || 'global');
+
+  const row = database.prepare(`${CHAT_SELECT_SQL} WHERE m.id = ?`).get(data.id) as any;
+  if (row) return mapChatMessageRow(row);
 
   return {
     id: data.id,
@@ -987,6 +1073,7 @@ export function sendChatMessage(data: {
     content: data.content,
     author_alias: data.author_alias,
     author_avatar: data.author_avatar,
+    author_user_id: data.author_user_id || null,
     report_count: 0,
     is_hidden: 0,
     is_edited: 0,
@@ -999,6 +1086,7 @@ export function updateChatMessage(id: string, data: {
   content: string;
   author_alias?: string;
   edit_token?: string;
+  current_user_id?: string | null;
 }): { success: boolean; message?: ChatMessage; error?: string } {
   const database = getDatabase();
   const existing = database.prepare(`SELECT * FROM chat_messages WHERE id = ?`).get(id) as any;
@@ -1007,7 +1095,13 @@ export function updateChatMessage(id: string, data: {
   }
 
   // Validate ownership
-  if (existing.edit_token && data.edit_token && existing.edit_token !== data.edit_token) {
+  if (existing.author_user_id) {
+    const isOwner = Boolean(data.current_user_id && existing.author_user_id === data.current_user_id);
+    const hasToken = Boolean(existing.edit_token && data.edit_token && existing.edit_token === data.edit_token);
+    if (!isOwner && !hasToken) {
+      return { success: false, error: 'คุณไม่มีสิทธิ์แก้ไขข้อความนี้' };
+    }
+  } else if (existing.edit_token && data.edit_token && existing.edit_token !== data.edit_token) {
     return { success: false, error: 'คุณไม่มีสิทธิ์แก้ไขข้อความนี้' };
   } else if (!existing.edit_token && data.author_alias && existing.author_alias !== data.author_alias) {
     return { success: false, error: 'คุณสามารถแก้ไขได้เฉพาะข้อความของตัวเองเท่านั้น' };
@@ -1022,32 +1116,32 @@ export function updateChatMessage(id: string, data: {
     WHERE id = ?
   `).run(data.content.trim(), now, id);
 
-  const updated = database.prepare(`SELECT * FROM chat_messages WHERE id = ?`).get(id) as any;
+  const updated = database.prepare(`${CHAT_SELECT_SQL} WHERE m.id = ?`).get(id) as any;
   return {
     success: true,
-    message: {
-      id: updated.id,
-      room_id: updated.room_id,
-      content: updated.content,
-      author_alias: updated.author_alias,
-      author_avatar: updated.author_avatar,
-      report_count: Number(updated.report_count),
-      is_hidden: Number(updated.is_hidden),
-      is_edited: Number(updated.is_edited || 0),
-      edited_at: updated.edited_at || null,
-      created_at: updated.created_at,
-    },
+    message: mapChatMessageRow(updated),
   };
 }
 
-export function deleteChatMessage(id: string, author_alias?: string, edit_token?: string): { success: boolean; error?: string } {
+export function deleteChatMessage(
+  id: string,
+  author_alias?: string,
+  edit_token?: string,
+  current_user_id?: string | null
+): { success: boolean; error?: string } {
   const database = getDatabase();
   const existing = database.prepare(`SELECT * FROM chat_messages WHERE id = ?`).get(id) as any;
   if (!existing) {
     return { success: false, error: 'ไม่พบข้อความแชทนี้' };
   }
 
-  if (existing.edit_token && edit_token && existing.edit_token !== edit_token) {
+  if (existing.author_user_id) {
+    const isOwner = Boolean(current_user_id && existing.author_user_id === current_user_id);
+    const hasToken = Boolean(existing.edit_token && edit_token && existing.edit_token === edit_token);
+    if (!isOwner && !hasToken) {
+      return { success: false, error: 'คุณไม่มีสิทธิ์ลบข้อความนี้' };
+    }
+  } else if (existing.edit_token && edit_token && existing.edit_token !== edit_token) {
     return { success: false, error: 'คุณไม่มีสิทธิ์ลบข้อความนี้' };
   } else if (!existing.edit_token && author_alias && existing.author_alias !== author_alias) {
     return { success: false, error: 'คุณสามารถลบได้เฉพาะข้อความของตัวเองเท่านั้น' };
@@ -1228,3 +1322,199 @@ export function purgeInactiveGhostRooms() {
 }
 
 export { buildCommentTree } from './commentTree';
+
+// ----------------------------------------------------
+// OPTIONAL ACCOUNTS & DECORATION SYSTEM (Zero-Log: No Email/IP/Phone)
+// ----------------------------------------------------
+
+function mapUserProfile(row: any): UserProfile {
+  return {
+    id: row.id,
+    username: row.username,
+    display_name: row.display_name,
+    bio: row.bio || '',
+    avatar_icon: row.avatar_icon || 'shield',
+    avatar_url: row.avatar_url || null,
+    avatar_frame: (row.avatar_frame as AvatarFrame) || 'none',
+    banner_theme: (row.banner_theme as BannerTheme) || 'obsidian',
+    name_color: (row.name_color as NameColor) || 'default',
+    custom_badge: row.custom_badge || null,
+    created_at: row.created_at,
+  };
+}
+
+export function createUser(data: {
+  id: string;
+  username: string;
+  display_name: string;
+  password_hash: string;
+  avatar_icon?: string;
+}): UserProfile {
+  const database = getDatabase();
+  const createdAt = new Date().toISOString();
+  const cleanUsername = data.username.trim().toLowerCase();
+
+  database.prepare(`
+    INSERT INTO users (
+      id, username, display_name, password_hash, bio, avatar_icon,
+      avatar_url, avatar_frame, banner_theme, name_color, custom_badge, created_at
+    )
+    VALUES (?, ?, ?, ?, '', ?, NULL, 'none', 'obsidian', 'default', NULL, ?)
+  `).run(
+    data.id,
+    cleanUsername,
+    data.display_name.trim(),
+    data.password_hash,
+    data.avatar_icon || 'shield',
+    createdAt
+  );
+
+  return getUserById(data.id)!;
+}
+
+export function getUserWithPasswordByUsername(
+  username: string
+): (UserProfile & { password_hash: string }) | null {
+  const database = getDatabase();
+  const row = database
+    .prepare(`SELECT * FROM users WHERE username = ?`)
+    .get(username.trim().toLowerCase()) as any;
+  if (!row) return null;
+  return {
+    ...mapUserProfile(row),
+    password_hash: row.password_hash,
+  };
+}
+
+export function getUserWithPasswordById(
+  id: string
+): (UserProfile & { password_hash: string }) | null {
+  const database = getDatabase();
+  const row = database
+    .prepare(`SELECT * FROM users WHERE id = ?`)
+    .get(id) as any;
+  if (!row) return null;
+  return {
+    ...mapUserProfile(row),
+    password_hash: row.password_hash,
+  };
+}
+
+export function getUserById(id: string): UserProfile | null {
+  const database = getDatabase();
+  const row = database
+    .prepare(`SELECT * FROM users WHERE id = ?`)
+    .get(id) as any;
+  if (!row) return null;
+  return mapUserProfile(row);
+}
+
+export function getUserByUsername(username: string): UserProfile | null {
+  const database = getDatabase();
+  const row = database
+    .prepare(`SELECT * FROM users WHERE username = ?`)
+    .get(username.trim().toLowerCase()) as any;
+  if (!row) return null;
+  return mapUserProfile(row);
+}
+
+export function updateUserProfile(
+  id: string,
+  data: {
+    display_name?: string;
+    bio?: string;
+    avatar_icon?: string;
+    avatar_url?: string | null;
+    avatar_frame?: AvatarFrame;
+    banner_theme?: BannerTheme;
+    name_color?: NameColor;
+    custom_badge?: string | null;
+  }
+): UserProfile | null {
+  const database = getDatabase();
+  const existing = getUserById(id);
+  if (!existing) return null;
+
+  database.prepare(`
+    UPDATE users
+    SET display_name = ?,
+        bio = ?,
+        avatar_icon = ?,
+        avatar_url = ?,
+        avatar_frame = ?,
+        banner_theme = ?,
+        name_color = ?,
+        custom_badge = ?
+    WHERE id = ?
+  `).run(
+    data.display_name !== undefined ? data.display_name.trim() : existing.display_name,
+    data.bio !== undefined ? data.bio.trim() : (existing.bio ?? ''),
+    data.avatar_icon !== undefined ? data.avatar_icon : existing.avatar_icon,
+    data.avatar_url !== undefined ? (data.avatar_url || null) : (existing.avatar_url ?? null),
+    data.avatar_frame !== undefined ? data.avatar_frame : existing.avatar_frame,
+    data.banner_theme !== undefined ? data.banner_theme : existing.banner_theme,
+    data.name_color !== undefined ? data.name_color : existing.name_color,
+    data.custom_badge !== undefined ? (data.custom_badge?.trim() || null) : (existing.custom_badge ?? null),
+    id
+  );
+
+  return getUserById(id);
+}
+
+export function updateUserPassword(id: string, password_hash: string): boolean {
+  const database = getDatabase();
+  const res = database
+    .prepare(`UPDATE users SET password_hash = ? WHERE id = ?`)
+    .run(password_hash, id);
+  return Number(res.changes || 0) > 0;
+}
+
+export function getThreadsByUserId(userId: string): Thread[] {
+  purgeExpiredData();
+  const database = getDatabase();
+  const rows = database
+    .prepare(`
+      ${THREAD_SELECT_SQL}
+      WHERE t.author_user_id = ? AND t.is_hidden = 0
+      ORDER BY t.created_at DESC
+      LIMIT 50
+    `)
+    .all(userId) as any[];
+  return rows.map(mapThreadRow);
+}
+
+export function getPublicProfileByUsername(username: string): {
+  profile: UserProfile;
+  stats: { thread_count: number; comment_count: number; total_score: number };
+  threads: Thread[];
+} | null {
+  purgeExpiredData();
+  const database = getDatabase();
+  const profile = getUserByUsername(username);
+  if (!profile) return null;
+
+  const threads = getThreadsByUserId(profile.id);
+  const threadStats = database
+    .prepare(`
+      SELECT
+        COUNT(*) as thread_count,
+        COALESCE(SUM(upvotes - downvotes), 0) as total_score
+      FROM threads
+      WHERE author_user_id = ? AND is_hidden = 0
+    `)
+    .get(profile.id) as any;
+
+  const commentStats = database
+    .prepare(`SELECT COUNT(*) as comment_count FROM comments WHERE author_user_id = ?`)
+    .get(profile.id) as any;
+
+  return {
+    profile,
+    stats: {
+      thread_count: Number(threadStats?.thread_count || 0),
+      comment_count: Number(commentStats?.comment_count || 0),
+      total_score: Number(threadStats?.total_score || 0),
+    },
+    threads,
+  };
+}

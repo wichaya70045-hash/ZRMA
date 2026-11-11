@@ -23,9 +23,16 @@ import {
   TrendingUp,
   ArrowRight,
   Layers,
+  LogIn,
+  LogOut,
+  Palette,
+  User as UserIcon,
+  ChevronDown,
 } from 'lucide-react';
 import SettingsModal from './SettingsModal';
+import IdentityAvatar, { NAME_COLOR_CLASSES } from './IdentityAvatar';
 import { useSettings } from '@/lib/settings';
+import { useAuth } from '@/lib/authContext';
 import { Thread, Community } from '@/types';
 
 export default function Navbar() {
@@ -33,7 +40,10 @@ export default function Navbar() {
   const pathname = usePathname();
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showAccountMenu, setShowAccountMenu] = useState(false);
   const { settings, resolvedTheme, toggleThemeMode } = useSettings();
+  const { user, loading: authLoading, openAuthModal, logout } = useAuth();
+  const accountMenuRef = useRef<HTMLDivElement>(null);
 
   // Global Smart Search State
   const [searchTerm, setSearchTerm] = useState('');
@@ -96,6 +106,9 @@ export default function Navbar() {
     const handleClickOutside = (e: MouseEvent) => {
       if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
         setIsSearchFocused(false);
+      }
+      if (accountMenuRef.current && !accountMenuRef.current.contains(e.target as Node)) {
+        setShowAccountMenu(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -401,6 +414,90 @@ export default function Navbar() {
               <span className="hidden sm:inline">สร้างโพสต์</span>
               <span className="sm:hidden">โพสต์</span>
             </Link>
+
+            {/* Optional Account Login / Profile Menu */}
+            {!authLoading && (
+              user ? (
+                <div ref={accountMenuRef} className="relative shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setShowAccountMenu((prev) => !prev)}
+                    className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg border border-zinc-200 dark:border-white/[0.1] bg-zinc-50 dark:bg-white/[0.04] hover:border-red-500/40 transition-colors"
+                    title={`บัญชี @${user.username}`}
+                  >
+                    <IdentityAvatar
+                      iconKey={user.avatar_icon}
+                      avatarUrl={user.avatar_url}
+                      frame={user.avatar_frame}
+                      theme={user.avatar_frame !== 'none' ? 'amber' : 'zinc'}
+                      size="xs"
+                    />
+                    <span className={`hidden lg:inline text-xs font-semibold max-w-[95px] truncate ${NAME_COLOR_CLASSES[user.name_color]}`}>
+                      {user.display_name}
+                    </span>
+                    <ChevronDown size={12} className="text-zinc-400" />
+                  </button>
+
+                  {showAccountMenu && (
+                    <div className="absolute right-0 top-full mt-1.5 w-56 rounded-xl border border-zinc-200 dark:border-white/[0.1] bg-white dark:bg-[#101217] shadow-2xl overflow-hidden z-50">
+                      <div className="px-3.5 py-2.5 border-b border-zinc-100 dark:border-white/[0.06] bg-zinc-50/70 dark:bg-white/[0.02]">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className={`text-xs font-bold truncate ${NAME_COLOR_CLASSES[user.name_color]}`}>
+                            {user.display_name}
+                          </span>
+                          {user.custom_badge && (
+                            <span className="px-1.5 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-[9px] font-bold text-amber-600 dark:text-amber-300">
+                              {user.custom_badge}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] font-mono text-zinc-500 truncate">@{user.username}</p>
+                      </div>
+
+                      <div className="p-1.5 space-y-0.5 text-xs">
+                        <Link
+                          href={`/u/${encodeURIComponent(user.username)}`}
+                          onClick={() => setShowAccountMenu(false)}
+                          className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/[0.06] transition-colors"
+                        >
+                          <UserIcon size={14} className="text-sky-500" />
+                          <span>โปรไฟล์ของฉัน</span>
+                        </Link>
+                        <Link
+                          href="/account"
+                          onClick={() => setShowAccountMenu(false)}
+                          className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/[0.06] transition-colors"
+                        >
+                          <Palette size={14} className="text-amber-500" />
+                          <span>ตกแต่งบัญชี & กรอบรูป</span>
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowAccountMenu(false);
+                            logout();
+                          }}
+                          className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                        >
+                          <LogOut size={14} />
+                          <span>ออกจากระบบ (สลับเป็น Guest)</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => openAuthModal('login')}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-white/[0.1] bg-zinc-50 dark:bg-white/[0.04] hover:border-red-500/40 text-xs font-medium text-zinc-700 dark:text-zinc-200 transition-colors shrink-0"
+                  title="เข้าสู่ระบบหรือสมัครเพื่อตกแต่งโปรไฟล์ (ไม่บังคับ)"
+                >
+                  <LogIn size={13} className="text-red-500" />
+                  <span className="hidden lg:inline">เข้าสู่ระบบ</span>
+                </button>
+              )
+            )}
           </div>
         </div>
 

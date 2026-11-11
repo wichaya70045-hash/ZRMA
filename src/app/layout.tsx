@@ -3,6 +3,7 @@ import './globals.css';
 import Navbar from '@/components/Navbar';
 import BreakingNewsTicker from '@/components/BreakingNewsTicker';
 import { SettingsProvider } from '@/lib/settings';
+import { AuthProvider } from '@/lib/authContext';
 
 export const metadata: Metadata = {
   title: 'ZRMA Community - ชุมชนข่าวสาร เสวนา & แชทสด ไร้ตัวตน 100%',
@@ -52,7 +53,8 @@ export default function RootLayout({
       </head>
       <body className="bg-[#f4f5f7] dark:bg-[#090a0d] text-zinc-900 dark:text-zinc-100 min-h-screen flex flex-col antialiased selection:bg-red-600 selection:text-white font-sans overflow-x-hidden w-full max-w-full">
         <SettingsProvider>
-          <Navbar />
+          <AuthProvider>
+            <Navbar />
           <BreakingNewsTicker />
           <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-4 py-3 sm:py-6 overflow-x-hidden">
             {children}
@@ -75,6 +77,7 @@ export default function RootLayout({
               </p>
             </div>
           </footer>
+          </AuthProvider>
         </SettingsProvider>
       </body>
     </html>

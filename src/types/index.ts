@@ -4,6 +4,28 @@ export type RedditSort = 'hot' | 'new' | 'top' | 'rising' | 'breaking';
 
 export type MediaType = 'image' | 'video';
 
+export type AvatarFrame = 'none' | 'crimson' | 'amber' | 'emerald' | 'rainbow' | 'neon';
+
+export type BannerTheme = 'obsidian' | 'crimson-grid' | 'amber-cyber' | 'aurora' | 'sunset';
+
+export type NameColor = 'default' | 'red' | 'amber' | 'emerald' | 'cyan' | 'purple' | 'pink';
+
+export interface UserProfile {
+  id: string;
+  username: string;
+  display_name: string;
+  bio: string;
+  avatar_icon: string;
+  avatar_url?: string | null;
+  avatar_frame: AvatarFrame;
+  banner_theme: BannerTheme;
+  name_color: NameColor;
+  custom_badge?: string | null;
+  created_at: string;
+  post_count?: number;
+  comment_count?: number;
+}
+
 export interface PollOption {
   id: number;
   text: string;
@@ -30,6 +52,12 @@ export interface Thread {
   poll?: PollData | null;
   author_alias: string;
   author_avatar: string;
+  author_user_id?: string | null;
+  author_username?: string | null;
+  author_avatar_url?: string | null;
+  author_frame?: AvatarFrame | null;
+  author_name_color?: NameColor | null;
+  author_badge?: string | null;
   upvotes: number;
   downvotes: number;
   score: number; // upvotes - downvotes
@@ -53,6 +81,12 @@ export interface Comment {
   media_url?: string | null;
   author_alias: string;
   author_avatar: string;
+  author_user_id?: string | null;
+  author_username?: string | null;
+  author_avatar_url?: string | null;
+  author_frame?: AvatarFrame | null;
+  author_name_color?: NameColor | null;
+  author_badge?: string | null;
   upvotes: number;
   downvotes: number;
   score: number;
@@ -73,6 +107,12 @@ export interface ChatMessage {
   content: string;
   author_alias: string;
   author_avatar: string;
+  author_user_id?: string | null;
+  author_username?: string | null;
+  author_avatar_url?: string | null;
+  author_frame?: AvatarFrame | null;
+  author_name_color?: NameColor | null;
+  author_badge?: string | null;
   report_count: number;
   is_hidden: number;
   is_edited?: number; // 0 or 1

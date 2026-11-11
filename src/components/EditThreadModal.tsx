@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Thread } from '@/types';
 import { getAuthoredThreadToken, saveAuthoredThread } from '@/lib/privacy';
+import { useAuth } from '@/lib/authContext';
 import { X, Check, AlertCircle, Key, Edit3 } from 'lucide-react';
 
 interface EditThreadModalProps {
@@ -18,6 +19,9 @@ export default function EditThreadModal({
   thread,
   onThreadUpdated,
 }: EditThreadModalProps) {
+  const { user } = useAuth();
+  const isAccountOwner = Boolean(user && thread.author_user_id && user.id === thread.author_user_id);
+
   const [title, setTitle] = useState(thread.title);
   const [content, setContent] = useState(thread.content);
   const [category, setCategory] = useState(thread.category);
@@ -60,7 +64,7 @@ export default function EditThreadModal({
     }
 
     const effectiveToken = passcode.trim() || getAuthoredThreadToken(thread.id) || '';
-    if (!effectiveToken) {
+    if (!effectiveToken && !isAccountOwner) {
       setErrorMsg('กรุณากรอกรหัสลับสำหรับแก้ไขโพสต์ (Edit Passcode)');
       return;
     }
@@ -189,18 +193,22 @@ export default function EditThreadModal({
                 <Key size={12} className="text-amber-600 dark:text-yellow-400" />
                 <span>รหัสลับยืนยันความเป็นเจ้าของ (Passcode)</span>
               </label>
-              {hasStoredToken && (
+              {isAccountOwner ? (
+                <span className="text-[10px] text-emerald-600 dark:text-green-400 font-mono">
+                  ✓ ยืนยันสิทธิ์ด้วยบัญชี @{user?.username}
+                </span>
+              ) : hasStoredToken ? (
                 <span className="text-[10px] text-emerald-600 dark:text-green-400 font-mono">
                   ✓ ตรวจพบรหัสผ่านในเบราว์เซอร์นี้
                 </span>
-              )}
+              ) : null}
             </div>
             <input
               type="password"
-              required
+              required={!isAccountOwner}
               value={passcode}
               onChange={(e) => setPasscode(e.target.value)}
-              placeholder="รหัส PIN หรือ Passcode ที่ตั้งไว้ตอนสร้าง..."
+              placeholder={isAccountOwner ? 'ไม่ต้องกรอก (ยืนยันด้วยบัญชีแล้ว)' : 'รหัส PIN หรือ Passcode ที่ตั้งไว้ตอนสร้าง...'}
               className="w-full bg-white dark:bg-white/[0.03] border border-zinc-300 dark:border-white/[0.08] focus:border-amber-500 dark:focus:border-yellow-400 rounded-lg px-3 py-1.5 text-xs text-amber-700 dark:text-yellow-400 font-mono focus:outline-none"
             />
           </div>

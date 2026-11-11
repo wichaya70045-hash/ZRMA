@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getThreadById, updateThread, deleteThread } from '@/lib/db';
+import { getSessionUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,6 +44,8 @@ export async function PUT(
 
     const cleanContent = typeof content === 'string' ? content.trim() : '';
 
+    const sessionUser = await getSessionUser(req);
+
     const result = updateThread(id, {
       title: title.trim(),
       content: cleanContent,
@@ -50,6 +53,7 @@ export async function PUT(
       flair: flair !== undefined ? (flair?.trim() || null) : undefined,
       source_url: source_url !== undefined ? (source_url?.trim() || null) : undefined,
       edit_token: edit_token ? String(edit_token).trim() : null,
+      current_user_id: sessionUser?.id || null,
     });
 
     if (!result.success) {
@@ -79,7 +83,12 @@ export async function DELETE(
       edit_token = searchParams.get('token');
     }
 
-    const result = deleteThread(id, edit_token ? String(edit_token).trim() : null);
+    const sessionUser = await getSessionUser(req);
+    const result = deleteThread(
+      id,
+      edit_token ? String(edit_token).trim() : null,
+      sessionUser?.id || null
+    );
 
     if (!result.success) {
       return NextResponse.json({ error: result.error || 'ไม่สามารถลบกระทู้ได้' }, { status: 403 });

@@ -6,7 +6,8 @@ import Link from 'next/link';
 import { Community, CaptchaChallenge, MediaType } from '@/types';
 import { getScopedIdentity, rerollScopedIdentity, setCustomScopedIdentity, saveAuthoredThread, AnonymousIdentity } from '@/lib/privacy';
 import { useSettings } from '@/lib/settings';
-import IdentityAvatar from '@/components/IdentityAvatar';
+import { useAuth } from '@/lib/authContext';
+import IdentityAvatar, { NAME_COLOR_CLASSES } from '@/components/IdentityAvatar';
 import CreateCommunityModal from '@/components/CreateCommunityModal';
 import {
   ArrowLeft,
@@ -60,6 +61,9 @@ const ICON_MAP: Record<string, any> = {
 export default function NewThreadPage() {
   const router = useRouter();
   const { settings } = useSettings();
+  const { user } = useAuth();
+  const [postAnonymously, setPostAnonymously] = useState(false);
+  const usingAccount = Boolean(user && !postAnonymously);
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -262,6 +266,7 @@ export default function NewThreadPage() {
           poll_options: pollOptions.map((o) => o.trim()).filter(Boolean),
           author_alias: customAuthorAlias.trim() || identity?.alias || 'u/นิรนาม #????',
           author_avatar: identity?.avatarIcon || 'terminal',
+          post_anonymously: postAnonymously,
           is_pinned: isPinned ? 1 : 0,
           expires_hours: expiresHours,
           edit_token: editPasscode.trim(),
@@ -317,29 +322,64 @@ export default function NewThreadPage() {
             <h1 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">สร้างกระทู้ใหม่</h1>
           </div>
 
-          {/* Editable Display Name Box */}
-          <div className="flex items-center gap-2 bg-zinc-50 dark:bg-black/40 border border-zinc-200 dark:border-white/[0.08] px-3 py-1.5 rounded-lg self-start sm:self-auto max-w-full overflow-hidden">
-            {identity && <IdentityAvatar iconKey={identity.avatarIcon} theme="red" size="xs" />}
-            <div className="min-w-0">
-              <span className="text-[10px] text-zinc-500 uppercase block font-mono">ชื่อที่จะแสดง (u/):</span>
-              <input
-                type="text"
-                value={customAuthorAlias}
-                onChange={(e) => handleAliasChange(e.target.value)}
-                placeholder="u/ชื่อที่คุณต้องการ"
-                maxLength={40}
-                className="bg-transparent text-xs font-semibold text-zinc-900 dark:text-zinc-200 focus:outline-none focus:text-amber-600 dark:focus:text-yellow-400 font-mono w-28 sm:w-36"
+          {/* Editable Display Name Box OR Account Identity */}
+          {usingAccount && user ? (
+            <div className="flex items-center gap-2.5 bg-zinc-50 dark:bg-black/40 border border-zinc-200 dark:border-white/[0.08] px-3 py-1.5 rounded-lg self-start sm:self-auto max-w-full overflow-hidden">
+              <IdentityAvatar
+                iconKey={user.avatar_icon}
+                avatarUrl={user.avatar_url}
+                frame={user.avatar_frame}
+                theme={user.avatar_frame !== 'none' ? 'amber' : 'zinc'}
+                size="xs"
               />
+              <div className="min-w-0">
+                <span className="text-[10px] text-zinc-500 uppercase block font-mono">โพสต์ด้วยบัญชี:</span>
+                <span className={`text-xs font-semibold truncate block max-w-[140px] ${NAME_COLOR_CLASSES[user.name_color]}`}>
+                  {user.display_name}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPostAnonymously(true)}
+                className="px-2 py-1 text-[10.5px] font-medium rounded border border-zinc-200 dark:border-white/[0.1] text-zinc-600 dark:text-zinc-300 hover:border-amber-500/40 transition-colors shrink-0"
+                title="สลับไปโพสต์แบบไม่ระบุตัวตน"
+              >
+                ซ่อนตัวตน
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={handleRerollIdentity}
-              className="p-1 text-zinc-500 hover:text-amber-600 dark:hover:text-yellow-400 rounded hover:bg-zinc-200/70 dark:hover:bg-white/[0.06] transition-colors ml-1 active:scale-95 shrink-0"
-              title="สุ่มชื่อใหม่ (Random Reroll)"
-            >
-              <Dices size={14} />
-            </button>
-          </div>
+          ) : (
+            <div className="flex items-center gap-2 bg-zinc-50 dark:bg-black/40 border border-zinc-200 dark:border-white/[0.08] px-3 py-1.5 rounded-lg self-start sm:self-auto max-w-full overflow-hidden">
+              {user && postAnonymously && (
+                <button
+                  type="button"
+                  onClick={() => setPostAnonymously(false)}
+                  className="px-2 py-1 text-[10.5px] font-medium rounded bg-red-500/10 text-red-500 hover:bg-red-500/20 shrink-0"
+                >
+                  ใช้บัญชี
+                </button>
+              )}
+              {identity && <IdentityAvatar iconKey={identity.avatarIcon} theme="red" size="xs" />}
+              <div className="min-w-0">
+                <span className="text-[10px] text-zinc-500 uppercase block font-mono">ชื่อที่จะแสดง (u/):</span>
+                <input
+                  type="text"
+                  value={customAuthorAlias}
+                  onChange={(e) => handleAliasChange(e.target.value)}
+                  placeholder="u/ชื่อที่คุณต้องการ"
+                  maxLength={40}
+                  className="bg-transparent text-xs font-semibold text-zinc-900 dark:text-zinc-200 focus:outline-none focus:text-amber-600 dark:focus:text-yellow-400 font-mono w-28 sm:w-36"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={handleRerollIdentity}
+                className="p-1 text-zinc-500 hover:text-amber-600 dark:hover:text-yellow-400 rounded hover:bg-zinc-200/70 dark:hover:bg-white/[0.06] transition-colors ml-1 active:scale-95 shrink-0"
+                title="สุ่มชื่อใหม่ (Random Reroll)"
+              >
+                <Dices size={14} />
+              </button>
+            </div>
+          )}
         </div>
 
         {errorMsg && (

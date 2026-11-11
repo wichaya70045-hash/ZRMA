@@ -11,6 +11,7 @@ import {
   AnonymousIdentity,
 } from '@/lib/privacy';
 import { useSettings } from '@/lib/settings';
+import { useAuth } from '@/lib/authContext';
 import {
   Send,
   Dices,
@@ -28,8 +29,9 @@ import {
   Users,
   Volume2,
 } from 'lucide-react';
-import IdentityAvatar from './IdentityAvatar';
+import IdentityAvatar, { NAME_COLOR_CLASSES } from './IdentityAvatar';
 import ReportModal from './ReportModal';
+import Link from 'next/link';
 
 interface LiveChatBoxProps {
   roomId?: string;
@@ -47,6 +49,9 @@ export default function LiveChatBox({
   onLeaveGhostRoom,
 }: LiveChatBoxProps) {
   const { settings, playChatChime } = useSettings();
+  const { user } = useAuth();
+  const [postAnonymously, setPostAnonymously] = useState(false);
+  const usingAccount = Boolean(user && !postAnonymously);
   const isGhost = isGhostRoom || roomId.startsWith('ghost_');
   const ghostName = roomId.replace(/^ghost_/, '');
 
@@ -229,6 +234,7 @@ export default function LiveChatBox({
           content,
           author_alias: effectiveAlias,
           author_avatar: identity.avatarIcon,
+          post_anonymously: postAnonymously,
         }),
       });
 
@@ -376,9 +382,40 @@ export default function LiveChatBox({
           </div>
         </div>
 
-        {/* Identity with Editable Name & Dice Reroll */}
-        {identity && (
+        {/* Identity with Account / Anonymous Mode Toggle */}
+        {usingAccount && user ? (
+          <div className="flex items-center gap-2 bg-white dark:bg-[#141721] border border-zinc-200 dark:border-white/[0.08] px-2 py-1 rounded-xl text-xs shrink-0 shadow-sm">
+            <IdentityAvatar
+              iconKey={user.avatar_icon}
+              avatarUrl={user.avatar_url}
+              frame={user.avatar_frame}
+              theme={user.avatar_frame !== 'none' ? 'amber' : 'zinc'}
+              size="xs"
+            />
+            <span className={`text-[11px] font-semibold truncate max-w-[95px] sm:max-w-[130px] ${NAME_COLOR_CLASSES[user.name_color]}`}>
+              {user.display_name}
+            </span>
+            <button
+              type="button"
+              onClick={() => setPostAnonymously(true)}
+              className="p-1 text-zinc-400 hover:text-amber-600 dark:hover:text-yellow-400 rounded transition-colors"
+              title="สลับเป็นโหมดไม่ระบุตัวตนชั่วคราว (Guest Mode)"
+            >
+              <EyeOff size={12} />
+            </button>
+          </div>
+        ) : identity && (
           <div className="flex items-center gap-1.5 bg-white dark:bg-[#141721] border border-zinc-200 dark:border-white/[0.08] px-2 py-1 rounded-xl text-xs shrink-0 shadow-sm">
+            {user && postAnonymously && (
+              <button
+                type="button"
+                onClick={() => setPostAnonymously(false)}
+                className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-red-500/10 text-red-500 hover:bg-red-500/20 shrink-0"
+                title="กลับไปใช้บัญชีของคุณ"
+              >
+                ใช้บัญชี
+              </button>
+            )}
             <IdentityAvatar iconKey={identity.avatarIcon} theme={isGhost ? 'orange' : 'yellow'} size="xs" />
             
             {isEditingAlias ? (
@@ -484,7 +521,10 @@ export default function LiveChatBox({
               </div>
             ) : (
               messages.map((msg) => {
-                const isSelf = effectiveAlias === msg.author_alias;
+                const isSelf = Boolean(
+                  (user && msg.author_user_id && msg.author_user_id === user.id) ||
+                    (!usingAccount && effectiveAlias === msg.author_alias)
+                );
                 const isMsgHidden = msg.is_hidden === 1 && !revealedIds[msg.id];
 
                 return (
@@ -494,6 +534,8 @@ export default function LiveChatBox({
                   >
                     <IdentityAvatar
                       iconKey={msg.author_avatar}
+                      avatarUrl={msg.author_avatar_url}
+                      frame={msg.author_frame}
                       theme={isSelf ? 'red' : isGhost ? 'orange' : 'yellow'}
                       size="xs"
                     />
@@ -513,8 +555,26 @@ export default function LiveChatBox({
                           isSelf ? 'text-red-100 dark:text-red-300' : 'text-zinc-500 dark:text-zinc-400'
                         }`}
                       >
-                        <span className={`font-semibold truncate max-w-[130px] sm:max-w-[160px] ${isSelf ? 'text-white' : 'text-zinc-800 dark:text-zinc-200'}`}>
-                          {isSelf ? `u/${msg.author_alias} (คุณ)` : `u/${msg.author_alias}`}
+                        <span className="inline-flex items-center gap-1.5 min-w-0">
+                          {msg.author_username ? (
+                            <Link
+                              href={`/u/${encodeURIComponent(msg.author_username)}`}
+                              className={`font-semibold truncate max-w-[130px] sm:max-w-[160px] hover:underline ${
+                                isSelf ? 'text-white' : (msg.author_name_color ? NAME_COLOR_CLASSES[msg.author_name_color] : 'text-zinc-800 dark:text-zinc-200')
+                              }`}
+                            >
+                              {isSelf ? `u/${msg.author_alias} (คุณ)` : `u/${msg.author_alias}`}
+                            </Link>
+                          ) : (
+                            <span className={`font-semibold truncate max-w-[130px] sm:max-w-[160px] ${isSelf ? 'text-white' : 'text-zinc-800 dark:text-zinc-200'}`}>
+                              {isSelf ? `u/${msg.author_alias} (คุณ)` : `u/${msg.author_alias}`}
+                            </span>
+                          )}
+                          {msg.author_badge && (
+                            <span className="px-1 py-0.2 rounded bg-amber-400/20 text-[9px] font-bold text-amber-200 dark:text-amber-300 leading-none shrink-0">
+                              {msg.author_badge}
+                            </span>
+                          )}
                         </span>
 
                         <div className="flex items-center gap-1.5 shrink-0">

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { getChatMessages, sendChatMessage, updateChatMessage, deleteChatMessage } from '@/lib/db';
+import { getSessionUser } from '@/lib/auth';
 import { broadcastToRoom } from '@/lib/sse';
 
 export const dynamic = 'force-dynamic';
@@ -31,14 +32,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'ข้อความยาวเกินกำหนด (สูงสุด 500 ตัวอักษร)' }, { status: 400 });
     }
 
+    const sessionUser = await getSessionUser(req);
+    const useAccountIdentity = Boolean(sessionUser && body.post_anonymously !== true);
+
     const id = crypto.randomUUID();
     const token = edit_token || crypto.randomBytes(12).toString('hex');
     const message = sendChatMessage({
       id,
       room_id,
       content: content.trim(),
-      author_alias: author_alias || 'ผู้ไม่ประสงค์ออกนาม #????',
-      author_avatar: author_avatar || '🥷',
+      author_alias: useAccountIdentity
+        ? sessionUser!.display_name
+        : (author_alias || 'ผู้ไม่ประสงค์ออกนาม #????'),
+      author_avatar: useAccountIdentity
+        ? sessionUser!.avatar_icon
+        : (author_avatar || 'shield'),
+      author_user_id: useAccountIdentity ? sessionUser!.id : null,
       edit_token: token,
     });
 
@@ -69,10 +78,13 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: 'ข้อความยาวเกินกำหนด (สูงสุด 500 ตัวอักษร)' }, { status: 400 });
     }
 
+    const sessionUser = await getSessionUser(req);
+
     const result = updateChatMessage(id, {
       content: content.trim(),
       author_alias,
       edit_token,
+      current_user_id: sessionUser?.id || null,
     });
 
     if (!result.success || !result.message) {
@@ -109,7 +121,8 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'ไม่พบรหัสข้อความที่ต้องการลบ' }, { status: 400 });
     }
 
-    const result = deleteChatMessage(id, author_alias, edit_token || undefined);
+    const sessionUser = await getSessionUser(req);
+    const result = deleteChatMessage(id, author_alias, edit_token || undefined, sessionUser?.id || null);
     if (!result.success) {
       return NextResponse.json({ error: result.error || 'ไม่สามารถลบข้อความได้' }, { status: 403 });
     }

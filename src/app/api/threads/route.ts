@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { getThreads, createThread } from '@/lib/db';
 import { verifyCaptcha } from '@/lib/captcha';
+import { getSessionUser } from '@/lib/auth';
 import { broadcastToRoom } from '@/lib/sse';
 import { Category, RedditSort } from '@/types';
 
@@ -117,6 +118,9 @@ export async function POST(req: NextRequest) {
       pollDataString = JSON.stringify(pollPayload);
     }
 
+    const sessionUser = await getSessionUser(req);
+    const useAccountIdentity = Boolean(sessionUser && body.post_anonymously !== true);
+
     const id = crypto.randomUUID();
     const token = body.edit_token?.trim() || crypto.randomBytes(16).toString('hex');
     const newThread = createThread({
@@ -129,8 +133,13 @@ export async function POST(req: NextRequest) {
       media_url: media_url ? media_url.trim() : null,
       media_type: validatedMediaType,
       poll_data: pollDataString,
-      author_alias: author_alias ? author_alias.trim() : 'u/ผู้ไม่ประสงค์ออกนาม #????',
-      author_avatar: author_avatar || 'terminal',
+      author_alias: useAccountIdentity
+        ? sessionUser!.display_name
+        : (author_alias ? author_alias.trim() : 'u/ผู้ไม่ประสงค์ออกนาม #????'),
+      author_avatar: useAccountIdentity
+        ? sessionUser!.avatar_icon
+        : (author_avatar || 'terminal'),
+      author_user_id: useAccountIdentity ? sessionUser!.id : null,
       is_pinned: isPinned,
       expires_hours: hours,
       edit_token: token,

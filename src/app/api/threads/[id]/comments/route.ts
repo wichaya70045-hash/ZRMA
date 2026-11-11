@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { getCommentsByThread, createComment, getThreadById } from '@/lib/db';
 import { verifyCaptcha } from '@/lib/captcha';
+import { getSessionUser } from '@/lib/auth';
 import { broadcastToRoom } from '@/lib/sse';
 
 export const dynamic = 'force-dynamic';
@@ -62,6 +63,9 @@ export async function POST(
       );
     }
 
+    const sessionUser = await getSessionUser(req);
+    const useAccountIdentity = Boolean(sessionUser && body.post_anonymously !== true);
+
     const commentId = crypto.randomUUID();
     const comment = createComment({
       id: commentId,
@@ -71,8 +75,13 @@ export async function POST(
       quote_author: quote_author || null,
       content: content.trim(),
       media_url: media_url ? media_url.trim() : null,
-      author_alias: author_alias || 'ผู้ไม่ประสงค์ออกนาม #????',
-      author_avatar: author_avatar || '🥷',
+      author_alias: useAccountIdentity
+        ? sessionUser!.display_name
+        : (author_alias || 'ผู้ไม่ประสงค์ออกนาม #????'),
+      author_avatar: useAccountIdentity
+        ? sessionUser!.avatar_icon
+        : (author_avatar || 'shield'),
+      author_user_id: useAccountIdentity ? sessionUser!.id : null,
     });
 
     // Broadcast new comment to anyone viewing this thread

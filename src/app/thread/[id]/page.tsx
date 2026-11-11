@@ -7,7 +7,8 @@ import { Thread, Comment, CommentNode, CaptchaChallenge } from '@/types';
 import { getScopedIdentity, rerollScopedIdentity, setCustomScopedIdentity, isThreadAuthor, AnonymousIdentity } from '@/lib/privacy';
 import { buildCommentTree } from '@/lib/commentTree';
 import { useSettings } from '@/lib/settings';
-import IdentityAvatar from '@/components/IdentityAvatar';
+import { useAuth } from '@/lib/authContext';
+import IdentityAvatar, { AuthorIdentityChip, NAME_COLOR_CLASSES } from '@/components/IdentityAvatar';
 import ReportModal from '@/components/ReportModal';
 import EditThreadModal from '@/components/EditThreadModal';
 import DeleteThreadModal from '@/components/DeleteThreadModal';
@@ -92,12 +93,22 @@ export default function ThreadDetailPage({
   const [copiedLink, setCopiedLink] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
+  const { user } = useAuth();
+  const [postAnonymously, setPostAnonymously] = useState(false);
+  const usingAccount = Boolean(user && !postAnonymously);
+
   useEffect(() => {
     const id = getScopedIdentity(`thread_${threadId}`);
     setIdentity(id);
     setCustomAlias(id.alias);
-    setIsAuthor(isThreadAuthor(threadId));
   }, [threadId]);
+
+  useEffect(() => {
+    const isOwnerAccount = Boolean(
+      user && thread?.author_user_id && user.id === thread.author_user_id
+    );
+    setIsAuthor(isThreadAuthor(threadId) || isOwnerAccount);
+  }, [threadId, thread, user]);
 
   const fetchCaptcha = async () => {
     try {
@@ -308,6 +319,7 @@ export default function ThreadDetailPage({
           parent_id: null,
           author_alias: customAlias.trim() || identity.alias,
           author_avatar: identity.avatarIcon,
+          post_anonymously: postAnonymously,
           captcha_token: captchaData.token,
           captcha_answer: captchaAnswer.trim(),
         }),
@@ -352,6 +364,7 @@ export default function ThreadDetailPage({
           parent_id: parentId,
           author_alias: customAlias.trim() || identity.alias,
           author_avatar: identity.avatarIcon,
+          post_anonymously: postAnonymously,
           captcha_token: captchaData.token,
           captcha_answer: ans,
         }),
@@ -546,9 +559,19 @@ export default function ThreadDetailPage({
 
                   <span className="text-zinc-300 dark:text-zinc-600">•</span>
 
-                  <div className="flex items-center gap-1 text-zinc-600 dark:text-zinc-400 font-mono text-[11px]">
-                    <IdentityAvatar iconKey={thread.author_avatar} theme="red" size="xs" />
-                    <span>u/{cleanAuthorAlias}</span>
+                  <div className="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400 font-mono text-[11px]">
+                    <AuthorIdentityChip
+                      alias={cleanAuthorAlias}
+                      avatarIcon={thread.author_avatar}
+                      avatarUrl={thread.author_avatar_url}
+                      username={thread.author_username}
+                      frame={thread.author_frame}
+                      nameColor={thread.author_name_color}
+                      badge={thread.author_badge}
+                      avatarSize="xs"
+                      prefix="u/"
+                      onClickStopPropagation={false}
+                    />
                     <span className="px-1.5 py-0.2 rounded text-[10px] font-mono font-bold bg-red-600 text-white ml-0.5">
                       OP
                     </span>
@@ -784,8 +807,43 @@ export default function ThreadDetailPage({
           ) : (
             <div className="space-y-4">
               
-              {/* Ephemeral Identity Notice with Custom Display Name Support */}
-              {identity && (
+              {/* Account Identity OR Ephemeral Identity Notice */}
+              {usingAccount && user ? (
+                <div className="bg-white dark:bg-[#101217] border border-zinc-200 dark:border-white/[0.06] rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-sm dark:shadow-none">
+                  <div className="flex items-center gap-2.5">
+                    <IdentityAvatar
+                      iconKey={user.avatar_icon}
+                      avatarUrl={user.avatar_url}
+                      frame={user.avatar_frame}
+                      theme={user.avatar_frame !== 'none' ? 'amber' : 'zinc'}
+                      size="sm"
+                    />
+                    <div>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-zinc-500 dark:text-zinc-400">คุณกำลังแสดงความเห็นด้วยบัญชี:</span>
+                        <strong className={`font-semibold ${NAME_COLOR_CLASSES[user.name_color]}`}>
+                          {user.display_name}
+                        </strong>
+                        {user.custom_badge && (
+                          <span className="px-1.5 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-[10px] font-bold text-amber-600 dark:text-amber-300">
+                            {user.custom_badge}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-zinc-500">
+                        แสดงโปรไฟล์ตกแต่งของคุณในคอมเมนต์นี้ หรือสลับเป็นโหมดไม่ระบุตัวตนชั่วคราวได้ทันที
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setPostAnonymously(true)}
+                    className="btn-secondary !py-1 !px-2.5 text-xs shrink-0 self-end sm:self-auto"
+                  >
+                    แสดงความเห็นแบบไม่ระบุตัวตน
+                  </button>
+                </div>
+              ) : identity && (
                 <div className="bg-white dark:bg-[#101217] border border-zinc-200 dark:border-white/[0.06] rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-sm dark:shadow-none">
                   <div className="flex items-center gap-2.5">
                     <IdentityAvatar iconKey={identity.avatarIcon} theme="red" size="sm" />
@@ -832,7 +890,16 @@ export default function ThreadDetailPage({
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1 self-end sm:self-auto">
+                  <div className="flex items-center gap-1.5 self-end sm:self-auto">
+                    {user && postAnonymously && (
+                      <button
+                        type="button"
+                        onClick={() => setPostAnonymously(false)}
+                        className="px-2.5 py-1 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 text-xs font-medium shrink-0"
+                      >
+                        กลับไปใช้บัญชีของฉัน
+                      </button>
+                    )}
                     <button
                       onClick={handleRerollIdentity}
                       className="btn-secondary !py-1 !px-2 text-xs shrink-0 hover:border-amber-500/40 dark:hover:border-yellow-500/30"

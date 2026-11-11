@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { CommentNode, CaptchaChallenge } from '@/types';
-import IdentityAvatar from './IdentityAvatar';
+import { AuthorIdentityChip } from './IdentityAvatar';
 import {
   ChevronUp,
   ChevronDown,
@@ -93,12 +93,18 @@ function SingleCommentNode({
         
         {/* Comment Header */}
         <div className="flex items-center justify-between gap-2 mb-1.5">
-          <div className="flex items-center gap-1.5">
-            <IdentityAvatar iconKey={node.author_avatar} theme={isOP ? 'red' : 'zinc'} size="xs" />
-            
-            <span className={`font-semibold ${isOP ? 'text-red-600 dark:text-red-400 font-bold' : 'text-zinc-900 dark:text-zinc-200'}`}>
-              u/{node.author_alias.replace(/^u\//, '')}
-            </span>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <AuthorIdentityChip
+              alias={node.author_alias}
+              avatarIcon={node.author_avatar}
+              avatarUrl={node.author_avatar_url}
+              username={node.author_username}
+              frame={node.author_frame}
+              nameColor={isOP && !node.author_name_color ? 'red' : node.author_name_color}
+              badge={node.author_badge}
+              avatarSize="xs"
+              prefix="u/"
+            />
 
             {/* Reddit OP (Original Poster) Badge */}
             {isOP && (

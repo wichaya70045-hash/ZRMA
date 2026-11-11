@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Thread } from '@/types';
 import { getAuthoredThreadToken, removeAuthoredThread } from '@/lib/privacy';
+import { useAuth } from '@/lib/authContext';
 import { X, Trash2, AlertTriangle, Key } from 'lucide-react';
 
 interface DeleteThreadModalProps {
@@ -18,6 +19,9 @@ export default function DeleteThreadModal({
   thread,
   onThreadDeleted,
 }: DeleteThreadModalProps) {
+  const { user } = useAuth();
+  const isAccountOwner = Boolean(user && thread.author_user_id && user.id === thread.author_user_id);
+
   const [passcode, setPasscode] = useState('');
   const [hasStoredToken, setHasStoredToken] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -44,7 +48,7 @@ export default function DeleteThreadModal({
     setErrorMsg('');
 
     const effectiveToken = passcode.trim() || getAuthoredThreadToken(thread.id) || '';
-    if (!effectiveToken) {
+    if (!effectiveToken && !isAccountOwner) {
       setErrorMsg('กรุณากรอกรหัสลับยืนยันการลบ (Delete Passcode)');
       return;
     }
@@ -120,18 +124,22 @@ export default function DeleteThreadModal({
                 <Key size={12} className="text-amber-600 dark:text-yellow-400" />
                 <span>รหัสลับยืนยันการลบ (Passcode)</span>
               </label>
-              {hasStoredToken && (
+              {isAccountOwner ? (
+                <span className="text-[10px] text-emerald-600 dark:text-green-400 font-mono">
+                  ✓ ยืนยันสิทธิ์ด้วยบัญชี @{user?.username}
+                </span>
+              ) : hasStoredToken ? (
                 <span className="text-[10px] text-emerald-600 dark:text-green-400 font-mono">
                   ✓ ตรวจพบรหัสผ่านในเครื่อง
                 </span>
-              )}
+              ) : null}
             </div>
             <input
               type="password"
-              required
+              required={!isAccountOwner}
               value={passcode}
               onChange={(e) => setPasscode(e.target.value)}
-              placeholder="รหัส PIN หรือ Passcode..."
+              placeholder={isAccountOwner ? 'ไม่ต้องกรอก (ยืนยันด้วยบัญชีแล้ว)' : 'รหัส PIN หรือ Passcode...'}
               className="w-full bg-white dark:bg-white/[0.03] border border-zinc-300 dark:border-white/[0.08] focus:border-red-500 rounded-lg px-3 py-1.5 text-xs text-red-600 dark:text-red-400 font-mono focus:outline-none"
             />
           </div>

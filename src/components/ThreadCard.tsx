@@ -23,13 +23,14 @@ import {
   Trash2,
   BarChart2,
 } from 'lucide-react';
-import IdentityAvatar from './IdentityAvatar';
+import { AuthorIdentityChip } from './IdentityAvatar';
 import ReportModal from './ReportModal';
 import EditThreadModal from './EditThreadModal';
 import DeleteThreadModal from './DeleteThreadModal';
 import ThreadPoll from './ThreadPoll';
 import { isThreadAuthor } from '@/lib/privacy';
 import { useSettings } from '@/lib/settings';
+import { useAuth } from '@/lib/authContext';
 
 interface ThreadCardProps {
   thread: Thread;
@@ -47,6 +48,7 @@ export default function ThreadCard({
   onThreadUpdated,
 }: ThreadCardProps) {
   const { settings } = useSettings();
+  const { user } = useAuth();
   const activeLayout = layout || settings.feedLayout;
 
   const [thread, setThread] = useState<Thread>(initialThread);
@@ -57,8 +59,11 @@ export default function ThreadCard({
 
   useEffect(() => {
     setThread(initialThread);
-    setIsAuthor(isThreadAuthor(initialThread.id));
-  }, [initialThread]);
+    const isOwnerAccount = Boolean(
+      user && initialThread.author_user_id && user.id === initialThread.author_user_id
+    );
+    setIsAuthor(isThreadAuthor(initialThread.id) || isOwnerAccount);
+  }, [initialThread, user]);
 
   const [score, setScore] = useState(thread.score);
   const [userVote, setUserVote] = useState<'up' | 'down' | null>(null);
@@ -282,7 +287,17 @@ export default function ThreadCard({
           </div>
 
           <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-zinc-500 font-mono mt-0.5">
-            <span>u/{cleanAlias}</span>
+            <AuthorIdentityChip
+              alias={cleanAlias}
+              avatarIcon={thread.author_avatar}
+              avatarUrl={thread.author_avatar_url}
+              username={thread.author_username}
+              frame={thread.author_frame}
+              nameColor={thread.author_name_color}
+              badge={thread.author_badge}
+              avatarSize="xs"
+              prefix="u/"
+            />
             <span>•</span>
             <span>{getTimeAgo()}</span>
             {thread.is_edited === 1 && (
@@ -458,8 +473,17 @@ export default function ThreadCard({
             <span className="text-zinc-300 dark:text-zinc-600">•</span>
 
             <div className="flex items-center gap-1 text-zinc-600 dark:text-zinc-400 font-mono text-[11px]">
-              <IdentityAvatar iconKey={thread.author_avatar} theme="red" size="xs" />
-              <span>u/{cleanAlias}</span>
+              <AuthorIdentityChip
+                alias={cleanAlias}
+                avatarIcon={thread.author_avatar}
+                avatarUrl={thread.author_avatar_url}
+                username={thread.author_username}
+                frame={thread.author_frame}
+                nameColor={thread.author_name_color}
+                badge={thread.author_badge}
+                avatarSize="xs"
+                prefix="u/"
+              />
             </div>
 
             <span className="text-zinc-300 dark:text-zinc-600">•</span>
