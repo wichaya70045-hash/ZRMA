@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   Community,
-  CaptchaChallenge,
   MediaType,
   MarketCondition,
   MarketDelivery,
@@ -30,7 +29,6 @@ import {
   Dices,
   Clock,
   Terminal,
-  ShieldCheck,
   UploadCloud,
   Image as ImageIcon,
   Film,
@@ -84,12 +82,14 @@ const ICON_MAP: Record<string, any> = {
 };
 
 const JOB_QUICK_TAGS = [
-  { label: '💻 เว็บ & โค้ด', name: 'งานไอที/โปรแกรมเมอร์', skill: 'Next.js' },
-  { label: '🎨 กราฟิก & UI', name: 'งานออกแบบกราฟิก', skill: 'Figma' },
-  { label: '🎬 ตัดต่อคลิป', name: 'งานตัดต่อวิดีโอ', skill: 'Premiere Pro' },
-  { label: '✍️ บทความ & แปล', name: 'งานเขียน/แปลภาษา', skill: 'Content' },
-  { label: '📱 การตลาด & ยิงแอด', name: 'การตลาดออนไลน์', skill: 'Digital Marketing' },
-  { label: '🎧 แอดมิน & ตอบแชท', name: 'งานแอดมินเพจ', skill: 'Admin' },
+  { label: '💻 เว็บ & โค้ด', name: 'งานไอที/โปรแกรมเมอร์' },
+  { label: '🎨 กราฟิก & UI', name: 'งานออกแบบกราฟิก' },
+  { label: '🎬 ตัดต่อคลิป', name: 'งานตัดต่อวิดีโอ' },
+  { label: '✍️ บทความ & แปล', name: 'งานเขียน/แปลภาษา' },
+  { label: '📱 การตลาด & ยิงแอด', name: 'การตลาดออนไลน์' },
+  { label: '🎧 แอดมิน & ตอบแชท', name: 'งานแอดมินเพจ' },
+  { label: '⚡ งานด่วน', name: 'งานด่วน' },
+  { label: '🤝 โปรเจกต์ระยะสั้น', name: 'โปรเจกต์ระยะสั้น' },
 ];
 
 const MARKET_QUICK_TAGS = [
@@ -122,8 +122,6 @@ export default function NewThreadPage() {
   const [isPinned, setIsPinned] = useState(false);
   const [sourceUrl, setSourceUrl] = useState('');
   const [expiresHours, setExpiresHours] = useState<number>(72);
-  const [captchaAnswer, setCaptchaAnswer] = useState('');
-  const [captchaData, setCaptchaData] = useState<CaptchaChallenge | null>(null);
   const [editPasscode, setEditPasscode] = useState('');
   const [showAdvancedPasscode, setShowAdvancedPasscode] = useState(false);
 
@@ -135,8 +133,6 @@ export default function NewThreadPage() {
   // Job / Hiring Marketplace state
   const [jobType, setJobType] = useState<'hiring' | 'seeking'>('hiring');
   const [jobBudget, setJobBudget] = useState('');
-  const [jobWorkMode, setJobWorkMode] = useState<'remote' | 'onsite' | 'hybrid'>('remote');
-  const [jobSkills, setJobSkills] = useState('');
   const [jobContact, setJobContact] = useState('');
 
   // Marketplace (Selling/Items) state
@@ -206,21 +202,6 @@ export default function NewThreadPage() {
 
   useEffect(() => {
     fetchCommunities();
-  }, []);
-
-  const fetchCaptcha = async () => {
-    try {
-      const res = await fetch('/api/captcha');
-      const data = await res.json();
-      setCaptchaData(data);
-      setCaptchaAnswer('');
-    } catch (err) {
-      console.error('Error fetching captcha:', err);
-    }
-  };
-
-  useEffect(() => {
-    fetchCaptcha();
   }, []);
 
   const handleRerollIdentity = () => {
@@ -325,11 +306,6 @@ export default function NewThreadPage() {
       }
     }
 
-    if (!captchaAnswer.trim() || !captchaData?.token) {
-      setErrorMsg('กรุณากรอกคำตอบคำถามยืนยันความปลอดภัย');
-      return;
-    }
-
     let finalCategory = category || 'general';
     if (postMode === 'job') {
       finalCategory = 'jobs';
@@ -362,8 +338,6 @@ export default function NewThreadPage() {
           ? {
               job_type: jobType,
               budget: jobBudget.trim() || null,
-              work_mode: jobWorkMode,
-              skills: jobSkills,
               contact_info: jobContact.trim() || null,
             }
           : null,
@@ -384,8 +358,6 @@ export default function NewThreadPage() {
         is_pinned: isPinned && postMode === 'general' ? 1 : 0,
         expires_hours: expiresHours,
         edit_token: editPasscode.trim(),
-        captcha_token: captchaData.token,
-        captcha_answer: captchaAnswer.trim(),
       };
 
       const res = await fetch('/api/threads', {
@@ -405,11 +377,9 @@ export default function NewThreadPage() {
         router.push(`/thread/${data.thread.id}`);
       } else {
         setErrorMsg(data.error || 'เกิดข้อผิดพลาดในการสร้างกระทู้');
-        fetchCaptcha();
       }
     } catch {
       setErrorMsg('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
-      fetchCaptcha();
     } finally {
       setIsSubmitting(false);
     }
@@ -634,23 +604,52 @@ export default function NewThreadPage() {
                   maxLength={200}
                   className="w-full bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200 dark:border-white/[0.08] focus:border-emerald-500 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors"
                 />
+              </div>
 
-                {/* Quick position pills */}
+              {/* Step 3: Editable Tag / Flair */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label htmlFor="job-flair" className="text-xs font-mono uppercase text-zinc-600 dark:text-zinc-400 font-bold flex items-center gap-1.5">
+                    <span className="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px]">3</span>
+                    <Tag size={13} className="text-emerald-500" />
+                    <span>แท็กงาน (Tag / Flair) - พิมพ์หรือแก้ไขเองได้อิสระ</span>
+                  </label>
+                  {flair && (
+                    <button
+                      type="button"
+                      onClick={() => setFlair('')}
+                      className="text-[10.5px] text-zinc-400 hover:text-red-500 transition-colors font-mono"
+                    >
+                      ✕ ล้างแท็ก
+                    </button>
+                  )}
+                </div>
+                <input
+                  id="job-flair"
+                  type="text"
+                  value={flair}
+                  onChange={(e) => setFlair(e.target.value)}
+                  placeholder="พิมพ์แท็กเองได้ เช่น เว็บ, กราฟิก, ตัดต่อ, แอดมิน, งานด่วน, บทความ หรือเลือกจากแท็กแนะนำ..."
+                  maxLength={50}
+                  className="w-full bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200 dark:border-white/[0.08] focus:border-emerald-500 rounded-xl px-3.5 py-2 text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors font-mono"
+                />
+
+                {/* Quick position / tag pills that fill or replace the editable flair */}
                 <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                  <span className="text-[10.5px] text-zinc-500 dark:text-zinc-400 font-mono">เลือกแท็กด่วน:</span>
+                  <span className="text-[10.5px] text-zinc-500 dark:text-zinc-400 font-mono">แท็กแนะนำ:</span>
                   {JOB_QUICK_TAGS.map((tag) => (
                     <button
                       key={tag.name}
                       type="button"
                       onClick={() => {
-                        if (!title) setTitle(jobType === 'hiring' ? `หาคน${tag.name}` : `รับทำ${tag.name}`);
                         setFlair(tag.name);
-                        const curSkills = jobSkills.split(',').map((s) => s.trim()).filter(Boolean);
-                        if (!curSkills.includes(tag.skill)) {
-                          setJobSkills([...curSkills, tag.skill].join(', '));
-                        }
+                        if (!title) setTitle(jobType === 'hiring' ? `หาคน${tag.name}` : `รับทำ${tag.name}`);
                       }}
-                      className="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-white/[0.04] hover:bg-emerald-50 dark:hover:bg-emerald-500/10 border border-zinc-200 dark:border-white/[0.08] text-[11px] text-zinc-700 dark:text-zinc-300 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors"
+                      className={`px-2 py-0.5 rounded-md text-[11px] border transition-colors ${
+                        flair === tag.name
+                          ? 'bg-emerald-600 text-white border-emerald-600 font-bold'
+                          : 'bg-zinc-100 dark:bg-white/[0.04] text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-white/[0.08] hover:border-emerald-500'
+                      }`}
                     >
                       {tag.label}
                     </button>
@@ -658,119 +657,44 @@ export default function NewThreadPage() {
                 </div>
               </div>
 
-              {/* Step 3: Budget & Work Mode */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 p-3.5 rounded-xl bg-zinc-50/70 dark:bg-black/30 border border-zinc-200/80 dark:border-white/[0.06]">
-                {/* Budget */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-mono uppercase text-zinc-600 dark:text-zinc-400 font-bold flex items-center gap-1">
-                    <Banknote size={13} className="text-amber-500" />
-                    <span>3. งบประมาณ / ค่าตอบแทน</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={jobBudget}
-                    onChange={(e) => setJobBudget(e.target.value)}
-                    placeholder="เช่น ฿5,000, ฿15,000 - ฿25,000, หรือตามตกลง"
-                    maxLength={80}
-                    className="w-full bg-white dark:bg-black/40 border border-zinc-200 dark:border-white/[0.08] focus:border-emerald-500 rounded-lg px-3 py-2 text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none"
-                  />
-                  <div className="flex flex-wrap gap-1 pt-1">
-                    {['฿500 - ฿1,000', '฿3,000 - ฿5,000', '฿10,000+', 'ตามตกลง'].map((p) => (
-                      <button
-                        key={p}
-                        type="button"
-                        onClick={() => setJobBudget(p)}
-                        className={`px-2 py-0.5 rounded text-[10.5px] border transition-colors ${
-                          jobBudget === p
-                            ? 'bg-amber-500 text-white border-amber-500 font-bold'
-                            : 'bg-white dark:bg-white/[0.04] text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-white/[0.08] hover:border-amber-400'
-                        }`}
-                      >
-                        {p}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Work Mode */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-mono uppercase text-zinc-600 dark:text-zinc-400 font-bold flex items-center gap-1">
-                    <MapPin size={13} className="text-red-500" />
-                    <span>รูปแบบการทำงาน</span>
-                  </label>
-                  <div className="grid grid-cols-3 gap-1.5 pt-0.5">
-                    {(['remote', 'onsite', 'hybrid'] as const).map((mode) => (
-                      <button
-                        key={mode}
-                        type="button"
-                        onClick={() => setJobWorkMode(mode)}
-                        className={`py-2 px-1 text-center rounded-lg border text-xs font-semibold transition-all ${
-                          jobWorkMode === mode
-                            ? 'border-emerald-500 bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 ring-1 ring-emerald-500/40'
-                            : 'border-zinc-200 dark:border-white/[0.08] bg-white dark:bg-black/30 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300'
-                        }`}
-                      >
-                        {mode === 'remote' ? '🌐 Remote' : mode === 'onsite' ? '🏢 Onsite' : '🔄 Hybrid'}
-                      </button>
-                    ))}
-                  </div>
-                  <p className="text-[10px] text-zinc-500 font-mono pt-0.5">
-                    {jobWorkMode === 'remote'
-                      ? 'ทำงานออนไลน์ 100% จากที่ไหนก็ได้'
-                      : jobWorkMode === 'onsite'
-                      ? 'ทำงานที่สถานที่/ออฟฟิศ'
-                      : 'ทำงานผสมผสานออฟฟิศ/บ้าน'}
-                  </p>
-                </div>
-
-                {/* Skills */}
-                <div className="sm:col-span-2 space-y-1.5 pt-1 border-t border-zinc-200 dark:border-white/[0.06]">
-                  <label className="text-xs font-mono uppercase text-zinc-600 dark:text-zinc-400 font-semibold flex items-center justify-between">
-                    <span>ทักษะที่เกี่ยวข้อง / Skills (พิมพ์หรือกดเลือกแท็ก):</span>
-                    <span className="text-[10px] text-zinc-400 font-mono">คั่นด้วยจุลภาค (,)</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={jobSkills}
-                    onChange={(e) => setJobSkills(e.target.value)}
-                    placeholder="เช่น React, Next.js, Figma, Premiere Pro"
-                    maxLength={120}
-                    className="w-full bg-white dark:bg-black/40 border border-zinc-200 dark:border-white/[0.08] focus:border-emerald-500 rounded-lg px-3 py-2 text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none font-mono"
-                  />
-                  <div className="flex flex-wrap gap-1.5 pt-1">
-                    {['React', 'Next.js', 'TypeScript', 'Figma', 'Python', 'Premiere Pro', 'Photoshop', 'SEO / Ads'].map((s) => {
-                      const hasSkill = jobSkills.split(',').map((x) => x.trim().toLowerCase()).includes(s.toLowerCase());
-                      return (
-                        <button
-                          key={s}
-                          type="button"
-                          onClick={() => {
-                            const parts = jobSkills.split(',').map((x) => x.trim()).filter(Boolean);
-                            if (hasSkill) {
-                              setJobSkills(parts.filter((x) => x.toLowerCase() !== s.toLowerCase()).join(', '));
-                            } else {
-                              setJobSkills([...parts, s].join(', '));
-                            }
-                          }}
-                          className={`px-2 py-0.5 rounded text-[10.5px] font-mono border transition-colors ${
-                            hasSkill
-                              ? 'bg-emerald-600 text-white border-emerald-600 font-bold'
-                              : 'bg-white dark:bg-white/[0.04] text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-white/[0.08] hover:border-emerald-500'
-                          }`}
-                        >
-                          +{s}
-                        </button>
-                      );
-                    })}
-                  </div>
+              {/* Step 4: Budget / Compensation */}
+              <div className="p-3.5 rounded-xl bg-zinc-50/70 dark:bg-black/30 border border-zinc-200/80 dark:border-white/[0.06] space-y-2">
+                <label className="text-xs font-mono uppercase text-zinc-600 dark:text-zinc-400 font-bold flex items-center gap-1.5">
+                  <span className="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px]">4</span>
+                  <Banknote size={14} className="text-amber-500" />
+                  <span>งบประมาณ / ค่าตอบแทน</span>
+                </label>
+                <input
+                  type="text"
+                  value={jobBudget}
+                  onChange={(e) => setJobBudget(e.target.value)}
+                  placeholder="เช่น ฿5,000, ฿15,000 - ฿25,000, หรือตามตกลง"
+                  maxLength={80}
+                  className="w-full bg-white dark:bg-black/40 border border-zinc-200 dark:border-white/[0.08] focus:border-emerald-500 rounded-lg px-3 py-2 text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none"
+                />
+                <div className="flex flex-wrap gap-1.5 pt-0.5">
+                  {['฿500 - ฿1,000', '฿3,000 - ฿5,000', '฿10,000+', 'ตามตกลง'].map((p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => setJobBudget(p)}
+                      className={`px-2.5 py-1 rounded text-[11px] border transition-colors ${
+                        jobBudget === p
+                          ? 'bg-amber-500 text-white border-amber-500 font-bold'
+                          : 'bg-white dark:bg-white/[0.04] text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-white/[0.08] hover:border-amber-400'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              {/* Step 4: Job Description & Contact */}
+              {/* Step 5: Job Description & Contact */}
               <div className="space-y-3">
                 <div className="space-y-1.5">
                   <label htmlFor="content" className="text-xs font-mono uppercase text-zinc-600 dark:text-zinc-400 font-bold flex items-center gap-1.5">
-                    <span className="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px]">4</span>
+                    <span className="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px]">5</span>
                     <span>รายละเอียดงาน / ขอบเขตงาน และสิ่งที่ต้องส่งมอบ</span>
                   </label>
                   <textarea
@@ -823,23 +747,49 @@ export default function NewThreadPage() {
                   className="w-full bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200 dark:border-white/[0.08] focus:border-amber-500 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-colors"
                 />
 
-                {/* Quick market category tags */}
-                <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                  <span className="text-[10.5px] text-zinc-500 dark:text-zinc-400 font-mono">หมวดสินค้า:</span>
-                  {MARKET_QUICK_TAGS.map((tag) => (
-                    <button
-                      key={tag}
-                      type="button"
-                      onClick={() => setFlair(tag)}
-                      className={`px-2 py-0.5 rounded-md text-[11px] font-medium border transition-colors ${
-                        flair === tag
-                          ? 'bg-amber-500 text-white border-amber-500 font-bold'
-                          : 'bg-zinc-100 dark:bg-white/[0.04] text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-white/[0.08] hover:border-amber-400'
-                      }`}
-                    >
-                      {tag}
-                    </button>
-                  ))}
+                {/* Quick market category tags & editable input */}
+                <div className="space-y-1.5 pt-1">
+                  <div className="flex items-center justify-between">
+                    <label htmlFor="market-flair" className="text-xs font-mono uppercase text-zinc-600 dark:text-zinc-400 font-bold flex items-center gap-1.5">
+                      <Tag size={13} className="text-amber-500" />
+                      <span>แท็กสินค้า (Tag / Flair) - พิมพ์หรือแก้ไขเองได้</span>
+                    </label>
+                    {flair && (
+                      <button
+                        type="button"
+                        onClick={() => setFlair('')}
+                        className="text-[10.5px] text-zinc-400 hover:text-red-500 font-mono transition-colors"
+                      >
+                        ✕ ล้างแท็ก
+                      </button>
+                    )}
+                  </div>
+                  <input
+                    id="market-flair"
+                    type="text"
+                    value={flair}
+                    onChange={(e) => setFlair(e.target.value)}
+                    placeholder="พิมพ์แท็กเองได้ เช่น ไอที, มือถือ, เสื้อผ้า, การ์ดจอ, นัดรับ หรือเลือกจากแท็กด้านล่าง..."
+                    maxLength={50}
+                    className="w-full bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200 dark:border-white/[0.08] focus:border-amber-500 rounded-xl px-3.5 py-2 text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-amber-500 font-mono transition-colors"
+                  />
+                  <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                    <span className="text-[10.5px] text-zinc-500 dark:text-zinc-400 font-mono">แท็กแนะนำ:</span>
+                    {MARKET_QUICK_TAGS.map((tag) => (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => setFlair(tag)}
+                        className={`px-2 py-0.5 rounded-md text-[11px] font-medium border transition-colors ${
+                          flair === tag
+                            ? 'bg-amber-500 text-white border-amber-500 font-bold'
+                            : 'bg-zinc-100 dark:bg-white/[0.04] text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-white/[0.08] hover:border-amber-400'
+                        }`}
+                      >
+                        {tag}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -1187,16 +1137,36 @@ export default function NewThreadPage() {
 
               {/* Post Flair */}
               <div className="space-y-1.5">
-                <label className="text-xs font-mono uppercase text-zinc-600 dark:text-zinc-400 flex items-center justify-between">
-                  <span>แท็กโพสต์ / Flair (ไม่บังคับ)</span>
-                  <span className="text-[10px] text-zinc-400 font-mono">OPTIONAL</span>
-                </label>
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex items-center justify-between">
+                  <label htmlFor="general-flair" className="text-xs font-mono uppercase text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">
+                    <Tag size={13} className="text-red-500" />
+                    <span>แท็กโพสต์ / Flair (พิมพ์หรือแก้ไขเองได้)</span>
+                  </label>
+                  {flair && (
+                    <button
+                      type="button"
+                      onClick={() => setFlair('')}
+                      className="text-[10px] text-zinc-400 hover:text-red-500 font-mono transition-colors"
+                    >
+                      ✕ ล้างแท็ก
+                    </button>
+                  )}
+                </div>
+                <input
+                  id="general-flair"
+                  type="text"
+                  value={flair}
+                  onChange={(e) => setFlair(e.target.value)}
+                  placeholder="พิมพ์แท็กเองได้ เช่น ข่าวด่วน, เสวนา, มีม, ข้อสงสัย หรือเลือกจากแท็กด้านล่าง..."
+                  maxLength={50}
+                  className="w-full bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200 dark:border-white/[0.08] focus:border-red-500 rounded-lg px-3 py-2 text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-red-500 font-mono transition-colors"
+                />
+                <div className="flex flex-wrap gap-1.5 pt-0.5">
                   {['ข่าวด่วน', 'เสวนา', 'ข้อสงสัย', 'วิเคราะห์', 'มีม/บันเทิง', 'สาระ'].map((tag) => (
                     <button
                       key={tag}
                       type="button"
-                      onClick={() => setFlair(flair === tag ? '' : tag)}
+                      onClick={() => setFlair(tag)}
                       className={`px-2.5 py-1 rounded text-xs font-medium border transition-colors ${
                         flair === tag
                           ? 'bg-yellow-400 text-zinc-950 border-yellow-400 font-bold'
@@ -1471,38 +1441,6 @@ export default function NewThreadPage() {
                   </button>
                 </div>
               )}
-            </div>
-
-            {/* Anti-Spam Captcha */}
-            <div className="p-3 bg-zinc-50 dark:bg-black/40 border border-zinc-200 dark:border-white/[0.06] rounded-xl flex flex-wrap items-center justify-between gap-2.5">
-              <div className="flex items-center gap-2">
-                <ShieldCheck size={15} className="text-amber-500 shrink-0" />
-                <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-                  ยืนยันความปลอดภัย:
-                </span>
-                <div className="px-2.5 py-1 bg-amber-50 dark:bg-yellow-500/10 border border-amber-300 dark:border-yellow-500/25 rounded-md text-xs font-mono font-bold text-amber-700 dark:text-yellow-400">
-                  {captchaData ? captchaData.question : '...'}
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  required
-                  value={captchaAnswer}
-                  onChange={(e) => setCaptchaAnswer(e.target.value)}
-                  placeholder="ตอบคำถาม..."
-                  className="w-24 bg-white dark:bg-black/40 border border-zinc-300 dark:border-white/[0.08] rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 dark:text-white font-mono focus:outline-none focus:border-amber-500"
-                />
-                <button
-                  type="button"
-                  onClick={fetchCaptcha}
-                  className="p-1.5 text-zinc-400 hover:text-amber-500 rounded"
-                  title="เปลี่ยนโจทย์"
-                >
-                  <RefreshCw size={13} />
-                </button>
-              </div>
             </div>
 
             {/* Submit Button */}

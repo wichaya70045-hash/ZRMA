@@ -71,8 +71,8 @@ export async function POST(req: NextRequest) {
       captcha_answer,
     } = body;
 
-    // Validate Anti-Spam Captcha
-    if (!verifyCaptcha(captcha_token, captcha_answer)) {
+    // Validate Anti-Spam Captcha (optional - only enforced if client explicitly provided a token)
+    if (captcha_token && !verifyCaptcha(captcha_token, captcha_answer)) {
       return NextResponse.json(
         { error: 'คำตอบเพื่อยืนยันความปลอดภัยไม่ถูกต้องหรือหมดอายุแล้ว กรุณาลองใหม่อีกครั้ง' },
         { status: 400 }

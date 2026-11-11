@@ -6,7 +6,6 @@ import {
   Briefcase,
   Wrench,
   Banknote,
-  MapPin,
   Users,
   Send,
   CheckCircle2,
@@ -29,12 +28,6 @@ interface ThreadJobBoxProps {
   postAnonymously?: boolean;
   onJobUpdated?: (nextJob: JobData) => void;
 }
-
-const WORK_MODE_LABEL: Record<string, string> = {
-  remote: 'Remote (ออนไลน์)',
-  onsite: 'Onsite (หน้างาน)',
-  hybrid: 'Hybrid (ยืดหยุ่น)',
-};
 
 export default function ThreadJobBox({
   threadId,
@@ -191,41 +184,19 @@ export default function ThreadJobBox({
           <span>{job.budget || 'ค่าตอบแทนตามตกลง'}</span>
         </span>
 
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/90 dark:bg-black/35 border border-zinc-200 dark:border-white/[0.08] text-zinc-700 dark:text-zinc-300">
-          <MapPin size={13} className="text-red-500 shrink-0" />
-          <span>{WORK_MODE_LABEL[job.work_mode || 'remote']}</span>
-        </span>
-
         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/90 dark:bg-black/35 border border-zinc-200 dark:border-white/[0.08] text-zinc-700 dark:text-zinc-300 font-mono text-[11px]">
           <Users size={12} className="text-sky-500 shrink-0" />
           <span>{job.application_count || 0} ข้อเสนอ</span>
         </span>
       </div>
 
-      {/* Skills & Contact */}
-      {(job.skills && job.skills.length > 0) || (isInteractive && job.contact_info) ? (
-        <div className="space-y-1.5">
-          {job.skills && job.skills.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {job.skills.map((skill, idx) => (
-                <span
-                  key={`${skill}-${idx}`}
-                  className="px-2 py-0.5 rounded-md bg-white/80 dark:bg-white/[0.06] border border-zinc-200 dark:border-white/[0.08] text-[10.5px] font-mono text-zinc-700 dark:text-zinc-300"
-                >
-                  #{skill}
-                </span>
-              ))}
-            </div>
-          )}
-
-          {isInteractive && job.contact_info && (
-            <div className="text-[11px] text-zinc-600 dark:text-zinc-300 flex items-center gap-1.5 pt-0.5">
-              <MessageSquare size={12} className="text-amber-500 shrink-0" />
-              <span>ช่องทางติดต่อผู้ประกาศ: <strong className="font-mono">{job.contact_info}</strong></span>
-            </div>
-          )}
+      {/* Direct Contact info */}
+      {isInteractive && job.contact_info && (
+        <div className="text-[11px] text-zinc-600 dark:text-zinc-300 flex items-center gap-1.5 pt-0.5">
+          <MessageSquare size={12} className="text-amber-500 shrink-0" />
+          <span>ช่องทางติดต่อผู้ประกาศ: <strong className="font-mono">{job.contact_info}</strong></span>
         </div>
-      ) : null}
+      )}
 
       {/* Card Preview CTA vs Interactive Apply Flow */}
       {!isInteractive ? (
