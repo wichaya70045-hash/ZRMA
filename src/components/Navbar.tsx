@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
 import {
   Shield,
   Plus,
@@ -15,25 +16,139 @@ import {
   Settings as SettingsIcon,
   Sun,
   Moon,
+  Search,
+  Home,
+  Flame,
+  MessageSquare,
+  TrendingUp,
+  ArrowRight,
+  Layers,
 } from 'lucide-react';
 import SettingsModal from './SettingsModal';
 import { useSettings } from '@/lib/settings';
+import { Thread, Community } from '@/types';
 
 export default function Navbar() {
+  const router = useRouter();
+  const pathname = usePathname();
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const { settings, resolvedTheme, toggleThemeMode } = useSettings();
 
+  // Global Smart Search State
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [cachedThreads, setCachedThreads] = useState<Thread[]>([]);
+  const [cachedCommunities, setCachedCommunities] = useState<Community[]>([]);
+  const [hasLoadedIndex, setHasLoadedIndex] = useState(false);
+
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const mobileSearchInputRef = useRef<HTMLInputElement>(null);
+
+  // Lazy load search index when search bar is focused or opened
+  const loadSearchIndex = async () => {
+    if (hasLoadedIndex) return;
+    try {
+      const [tRes, cRes] = await Promise.all([
+        fetch('/api/threads?sort=hot'),
+        fetch('/api/communities'),
+      ]);
+      const tData = await tRes.json();
+      const cData = await cRes.json();
+      if (tData.threads) setCachedThreads(tData.threads);
+      if (cData.communities) setCachedCommunities(cData.communities);
+      setHasLoadedIndex(true);
+    } catch {
+      // ignore
+    }
+  };
+
+  // Global '/' shortcut to focus search bar
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.key === '/' &&
+        document.activeElement?.tagName !== 'INPUT' &&
+        document.activeElement?.tagName !== 'TEXTAREA'
+      ) {
+        e.preventDefault();
+        loadSearchIndex();
+        if (window.innerWidth >= 768) {
+          searchInputRef.current?.focus();
+        } else {
+          setShowMobileSearch(true);
+          setTimeout(() => mobileSearchInputRef.current?.focus(), 50);
+        }
+      }
+      if (e.key === 'Escape') {
+        setIsSearchFocused(false);
+        searchInputRef.current?.blur();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [hasLoadedIndex]);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+        setIsSearchFocused(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Filtered instant results
+  const cleanQuery = searchTerm.trim().toLowerCase();
+  const matchedCommunities = cleanQuery
+    ? cachedCommunities
+        .filter(
+          (c) =>
+            c.name.toLowerCase().includes(cleanQuery.replace(/^z\//, '')) ||
+            (c.description && c.description.toLowerCase().includes(cleanQuery))
+        )
+        .slice(0, 4)
+    : [];
+
+  const matchedThreads = cleanQuery
+    ? cachedThreads
+        .filter(
+          (t) =>
+            t.title.toLowerCase().includes(cleanQuery) ||
+            t.content.toLowerCase().includes(cleanQuery) ||
+            t.category.toLowerCase().includes(cleanQuery.replace(/^z\//, ''))
+        )
+        .slice(0, 5)
+    : [];
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = searchTerm.trim();
+    setIsSearchFocused(false);
+    setShowMobileSearch(false);
+    if (!q) {
+      router.push('/');
+    } else if (q.startsWith('z/') && q.length > 2) {
+      router.push(`/?category=${encodeURIComponent(q.replace(/^z\//, ''))}`);
+    } else {
+      router.push(`/?q=${encodeURIComponent(q)}`);
+    }
+  };
+
   return (
     <>
       <header className="sticky top-0 z-40 w-full border-b border-zinc-200 dark:border-white/[0.08] bg-white/90 dark:bg-[#090a0d]/95 backdrop-blur-md transition-colors">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 h-14 flex items-center justify-between gap-2 sm:gap-6">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 h-14 flex items-center justify-between gap-2 sm:gap-4">
           
-          {/* Brand Identity: ZRMA Community */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          {/* Left: Brand Identity + Quick Navigation Links */}
+          <div className="flex items-center gap-2 lg:gap-4 shrink-0">
             <Link
               href="/"
-              className="flex items-center gap-2.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 rounded-md"
+              className="flex items-center gap-2 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 rounded-md"
             >
               <div className="w-8 h-8 rounded-lg bg-gradient-to-b from-red-500/15 to-red-600/25 dark:from-red-600/20 dark:to-red-950/60 border border-red-500/35 dark:border-red-500/40 flex items-center justify-center text-red-600 dark:text-red-500 group-hover:border-red-500 group-hover:shadow-[0_0_12px_rgba(239,68,68,0.25)] transition-all shadow-sm shrink-0">
                 <Shield size={16} strokeWidth={2.4} />
@@ -43,19 +158,193 @@ export default function Navbar() {
                   <span className="font-extrabold text-sm tracking-tight text-zinc-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-yellow-400 transition-colors">
                     ZRMA
                   </span>
-                  <span className="font-mono text-[10px] text-zinc-500 dark:text-zinc-400 font-medium hidden sm:inline">
-                    COMMUNITY
-                  </span>
-                  <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-amber-500/10 dark:bg-yellow-500/10 text-amber-700 dark:text-yellow-400 border border-amber-500/25 dark:border-yellow-500/25">
+                  <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-amber-500/10 dark:bg-yellow-500/10 text-amber-700 dark:text-yellow-400 border border-amber-500/25 dark:border-yellow-500/25 hidden xl:inline-block">
                     ZERO-LOG
                   </span>
                 </div>
               </div>
             </Link>
+
+            {/* Quick Nav Links (Desktop) */}
+            <nav className="hidden lg:flex items-center gap-1 text-xs border-l border-zinc-200 dark:border-white/[0.08] pl-3">
+              <Link
+                href="/"
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg font-medium transition-colors ${
+                  pathname === '/'
+                    ? 'text-zinc-900 dark:text-white bg-zinc-100 dark:bg-white/[0.07]'
+                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100/70 dark:hover:bg-white/[0.04]'
+                }`}
+              >
+                <Home size={13} />
+                <span>ฟีดหลัก</span>
+              </Link>
+
+              <Link
+                href="/?category=breaking"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg font-medium text-zinc-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+              >
+                <Radio size={13} className="text-red-500" />
+                <span>ข่าวด่วน</span>
+              </Link>
+
+              <Link
+                href="/?sort=rising"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg font-medium text-zinc-600 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-yellow-400 hover:bg-amber-50 dark:hover:bg-yellow-500/10 transition-colors"
+              >
+                <Flame size={13} className="text-orange-500" />
+                <span>มาแรง</span>
+              </Link>
+            </nav>
+          </div>
+
+          {/* Center: Global Smart Search Bar (Desktop & Tablet) */}
+          <div ref={searchContainerRef} className="hidden md:flex flex-1 max-w-md mx-2 relative">
+            <form onSubmit={handleSearchSubmit} className="w-full relative">
+              <Search
+                size={14}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 pointer-events-none"
+              />
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchTerm}
+                onFocus={() => {
+                  setIsSearchFocused(true);
+                  loadSearchIndex();
+                }}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setIsSearchFocused(true);
+                }}
+                placeholder="ค้นหากระทู้ ข่าว หรือ z/ชุมชน..."
+                className="w-full bg-zinc-100/90 dark:bg-[#131620] hover:bg-zinc-100 dark:hover:bg-[#171b26] focus:bg-white dark:focus:bg-[#141722] border border-zinc-200 dark:border-white/[0.08] focus:border-red-500/60 dark:focus:border-red-500/60 rounded-xl pl-8 pr-14 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500/15 transition-all"
+              />
+
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                {searchTerm ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchTerm('');
+                      searchInputRef.current?.focus();
+                    }}
+                    className="p-0.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 rounded"
+                    aria-label="Clear search"
+                  >
+                    <X size={13} />
+                  </button>
+                ) : (
+                  <kbd className="px-1.5 py-0.5 text-[10px] font-mono font-semibold text-zinc-400 dark:text-zinc-500 bg-white dark:bg-white/[0.05] border border-zinc-200 dark:border-white/[0.08] rounded">
+                    /
+                  </kbd>
+                )}
+              </div>
+            </form>
+
+            {/* Live Search Results Dropdown */}
+            {isSearchFocused && cleanQuery.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1.5 bg-white dark:bg-[#101217] border border-zinc-200 dark:border-white/[0.1] rounded-xl shadow-2xl overflow-hidden z-50 animate-in fade-in duration-100">
+                {matchedCommunities.length === 0 && matchedThreads.length === 0 ? (
+                  <div className="p-4 text-center text-xs text-zinc-500">
+                    ไม่พบผลลัพธ์สำหรับ "{searchTerm}" — กด Enter เพื่อค้นหาในฟีด
+                  </div>
+                ) : (
+                  <div className="max-h-80 overflow-y-auto divide-y divide-zinc-100 dark:divide-white/[0.06]">
+                    {/* Matching Communities */}
+                    {matchedCommunities.length > 0 && (
+                      <div className="p-2">
+                        <div className="px-2 py-1 text-[10px] font-mono font-bold uppercase text-zinc-400 dark:text-zinc-500">
+                          ห้องชุมชน (Communities)
+                        </div>
+                        <div className="flex flex-wrap gap-1.5 mt-1 px-1">
+                          {matchedCommunities.map((c) => (
+                            <Link
+                              key={c.name}
+                              href={`/?category=${c.name}`}
+                              onClick={() => setIsSearchFocused(false)}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-white/[0.04] hover:bg-amber-50 dark:hover:bg-yellow-500/10 border border-zinc-200 dark:border-white/[0.08] text-xs font-mono font-semibold text-zinc-800 dark:text-zinc-200 hover:text-amber-700 dark:hover:text-yellow-400 transition-colors"
+                            >
+                              <Layers size={11} className="text-amber-600 dark:text-yellow-400" />
+                              <span>z/{c.name}</span>
+                              <span className="text-[10px] text-zinc-400">({c.post_count || 0})</span>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Matching Threads */}
+                    {matchedThreads.length > 0 && (
+                      <div className="p-2 space-y-0.5">
+                        <div className="px-2 py-1 text-[10px] font-mono font-bold uppercase text-zinc-400 dark:text-zinc-500">
+                          กระทู้ที่เกี่ยวข้อง (Threads)
+                        </div>
+                        {matchedThreads.map((t) => (
+                          <Link
+                            key={t.id}
+                            href={`/thread/${t.id}`}
+                            onClick={() => setIsSearchFocused(false)}
+                            className="flex items-start justify-between gap-2.5 p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-white/[0.04] transition-colors group"
+                          >
+                            <div className="min-w-0 flex-1">
+                              <div className="text-xs font-medium text-zinc-900 dark:text-zinc-100 group-hover:text-red-600 dark:group-hover:text-yellow-400 truncate">
+                                {t.title}
+                              </div>
+                              <div className="flex items-center gap-2 mt-0.5 text-[10px] font-mono text-zinc-500">
+                                <span className="text-amber-700 dark:text-yellow-400 font-semibold">
+                                  z/{t.category}
+                                </span>
+                                <span>•</span>
+                                <span className="flex items-center gap-0.5">
+                                  <TrendingUp size={10} /> {t.score}
+                                </span>
+                                <span>•</span>
+                                <span className="flex items-center gap-0.5">
+                                  <MessageSquare size={10} /> {t.comment_count || 0}
+                                </span>
+                              </div>
+                            </div>
+                            <ArrowRight size={13} className="text-zinc-400 group-hover:text-red-500 shrink-0 mt-0.5" />
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={handleSearchSubmit}
+                  className="w-full px-3 py-2 bg-zinc-50 dark:bg-white/[0.03] hover:bg-zinc-100 dark:hover:bg-white/[0.06] border-t border-zinc-200 dark:border-white/[0.06] text-left text-[11px] font-mono text-zinc-600 dark:text-zinc-400 flex items-center justify-between transition-colors"
+                >
+                  <span>ค้นหา "{searchTerm}" ในฟีดทั้งหมด</span>
+                  <span className="text-amber-600 dark:text-yellow-400 font-bold">Enter ↵</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+            {/* Mobile Search Toggle */}
+            <button
+              type="button"
+              onClick={() => {
+                setShowMobileSearch((prev) => !prev);
+                loadSearchIndex();
+                setTimeout(() => mobileSearchInputRef.current?.focus(), 60);
+              }}
+              className={`md:hidden p-1.5 rounded-md border transition-colors ${
+                showMobileSearch
+                  ? 'text-red-600 dark:text-yellow-400 bg-zinc-100 dark:bg-white/[0.08] border-zinc-300 dark:border-white/[0.12]'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-yellow-400 hover:bg-zinc-100 dark:hover:bg-white/[0.04] border-transparent'
+              }`}
+              title="ค้นหา"
+              aria-label="Toggle mobile search"
+            >
+              <Search size={16} strokeWidth={1.85} />
+            </button>
+
             {/* Quick Theme Mode Toggle (Light / Dark) */}
             <button
               type="button"
@@ -101,7 +390,7 @@ export default function Navbar() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-500 dark:bg-yellow-400 opacity-60"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500 dark:bg-yellow-400"></span>
               </span>
-              <span className="hidden sm:inline group-hover:text-amber-600 dark:group-hover:text-yellow-400 transition-colors">ห้องแชทสด</span>
+              <span className="hidden sm:inline group-hover:text-amber-600 dark:group-hover:text-yellow-400 transition-colors">แชทสด</span>
             </Link>
 
             <Link
@@ -114,6 +403,37 @@ export default function Navbar() {
             </Link>
           </div>
         </div>
+
+        {/* Expandable Mobile Search Bar Drawer */}
+        {showMobileSearch && (
+          <div className="md:hidden px-3 pb-2.5 pt-1 border-t border-zinc-200 dark:border-white/[0.06] bg-white dark:bg-[#090a0d] animate-in fade-in duration-150">
+            <form onSubmit={handleSearchSubmit} className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                <input
+                  ref={mobileSearchInputRef}
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="ค้นหากระทู้ ข่าว หรือ z/ห้อง..."
+                  className="w-full bg-zinc-100 dark:bg-[#131620] border border-zinc-200 dark:border-white/[0.08] focus:border-red-500 rounded-lg pl-8 pr-8 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 focus:outline-none"
+                />
+                {searchTerm && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchTerm('')}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400"
+                  >
+                    <X size={13} />
+                  </button>
+                )}
+              </div>
+              <button type="submit" className="btn-primary !py-1.5 !px-3 text-xs shrink-0">
+                ค้นหา
+              </button>
+            </form>
+          </div>
+        )}
       </header>
 
       {/* Settings Modal */}

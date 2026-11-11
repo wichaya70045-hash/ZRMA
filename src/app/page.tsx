@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Thread, RedditSort } from '@/types';
 import ThreadCard from '@/components/ThreadCard';
 import CategoryFilter from '@/components/CategoryFilter';
@@ -26,7 +27,8 @@ import {
   Sliders,
 } from 'lucide-react';
 
-export default function HomePage() {
+function HomeContent() {
+  const searchParams = useSearchParams();
   const { settings, updateSetting } = useSettings();
   const [threads, setThreads] = useState<Thread[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,20 +38,24 @@ export default function HomePage() {
   const [activeTabMobile, setActiveTabMobile] = useState<'threads' | 'chat'>('threads');
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const cat = params.get('category');
-      const sort = params.get('sort');
-      if (cat) {
-        setSelectedCategory(cat.replace(/^[zr]\//i, ''));
-      }
-      if (sort && ['hot', 'breaking', 'new', 'top', 'rising'].includes(sort)) {
-        setSelectedSort(sort as RedditSort);
-      } else if (!sort && settings.defaultSort) {
-        setSelectedSort(settings.defaultSort);
-      }
+    const cat = searchParams.get('category');
+    const sort = searchParams.get('sort');
+    const q = searchParams.get('q');
+
+    setSelectedCategory(cat ? cat.replace(/^[zr]\//i, '') : 'all');
+
+    if (sort && ['hot', 'breaking', 'new', 'top', 'rising'].includes(sort)) {
+      setSelectedSort(sort as RedditSort);
+    } else if (!sort && settings.defaultSort) {
+      setSelectedSort(settings.defaultSort);
     }
-  }, [settings.defaultSort]);
+
+    if (q !== null) {
+      setSearchQuery(q);
+    } else if (!cat && !sort) {
+      setSearchQuery('');
+    }
+  }, [searchParams, settings.defaultSort]);
 
   const fetchThreads = async () => {
     setIsLoading(true);
@@ -257,5 +263,20 @@ export default function HomePage() {
 
       </div>
     </div>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="space-y-3 py-4">
+          <div className="h-24 bg-white dark:bg-[#101217] border border-zinc-200 dark:border-white/[0.06] rounded-xl animate-pulse" />
+          <div className="h-36 bg-white dark:bg-[#101217] border border-zinc-200 dark:border-white/[0.06] rounded-xl animate-pulse" />
+        </div>
+      }
+    >
+      <HomeContent />
+    </Suspense>
   );
 }
