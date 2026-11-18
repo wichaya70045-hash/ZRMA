@@ -218,6 +218,7 @@ export async function POST(req: NextRequest) {
       poll_data: pollDataString,
       job_data: jobDataString,
       market_data: marketDataString,
+      requires_login: Boolean(body.requires_login || body.members_only),
       author_alias: useAccountIdentity
         ? sessionUser!.display_name
         : (author_alias ? author_alias.trim() : generateRandomAlias()),

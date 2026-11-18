@@ -78,6 +78,7 @@ export function getDatabase(): DatabaseSync {
         source_url TEXT,
         media_url TEXT,
         media_type TEXT,
+        requires_login INTEGER DEFAULT 0,
         author_alias TEXT NOT NULL,
         author_avatar TEXT NOT NULL,
         upvotes INTEGER DEFAULT 0,
@@ -211,6 +212,7 @@ export function getDatabase(): DatabaseSync {
     try { db.exec('ALTER TABLE chat_messages ADD COLUMN author_user_id TEXT;'); } catch {}
     try { db.exec('ALTER TABLE threads ADD COLUMN job_data TEXT;'); } catch {}
     try { db.exec('ALTER TABLE threads ADD COLUMN market_data TEXT;'); } catch {}
+    try { db.exec('ALTER TABLE threads ADD COLUMN requires_login INTEGER DEFAULT 0;'); } catch {}
 
     // Seed default communities and sample threads if empty
     try {
@@ -816,6 +818,7 @@ function mapThreadRow(r: any): Thread {
     report_count: Number(r.report_count),
     is_hidden: Number(r.is_hidden),
     is_pinned: Number(r.is_pinned || 0),
+    requires_login: Boolean(r.requires_login),
     is_edited: Number(r.is_edited || 0),
     edited_at: r.edited_at || null,
     expires_at: r.expires_at,
@@ -930,6 +933,7 @@ export function createThread(data: {
   poll_data?: string | null;
   job_data?: string | null;
   market_data?: string | null;
+  requires_login?: number | boolean;
   author_alias: string;
   author_avatar: string;
   author_user_id?: string | null;
@@ -954,8 +958,8 @@ export function createThread(data: {
   }
 
   database.prepare(`
-    INSERT INTO threads (id, title, content, category, flair, source_url, media_url, media_type, poll_data, job_data, market_data, author_alias, author_avatar, author_user_id, is_pinned, edit_token, is_edited, expires_at, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
+    INSERT INTO threads (id, title, content, category, flair, source_url, media_url, media_type, poll_data, job_data, market_data, requires_login, author_alias, author_avatar, author_user_id, is_pinned, edit_token, is_edited, expires_at, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
   `).run(
     data.id,
     data.title,
@@ -968,6 +972,7 @@ export function createThread(data: {
     data.poll_data || null,
     data.job_data || null,
     data.market_data || null,
+    data.requires_login ? 1 : 0,
     data.author_alias,
     data.author_avatar,
     data.author_user_id || null,
@@ -1098,6 +1103,7 @@ export function updateThread(id: string, data: {
   category?: string;
   flair?: string | null;
   source_url?: string | null;
+  requires_login?: boolean | number;
   edit_token?: string | null;
   current_user_id?: string | null;
 }): { success: boolean; thread?: Thread; error?: string } {
@@ -1122,6 +1128,7 @@ export function updateThread(id: string, data: {
 
   const now = new Date().toISOString();
   const cleanCat = (data.category || existing.category).toLowerCase().trim().replace(/^[zr]\//i, '');
+  const reqLogin = data.requires_login !== undefined ? (data.requires_login ? 1 : 0) : (existing.requires_login ? 1 : 0);
 
   database.prepare(`
     UPDATE threads
@@ -1130,6 +1137,7 @@ export function updateThread(id: string, data: {
         category = ?,
         flair = ?,
         source_url = ?,
+        requires_login = ?,
         is_edited = 1,
         edited_at = ?
     WHERE id = ?
@@ -1139,6 +1147,7 @@ export function updateThread(id: string, data: {
     cleanCat,
     data.flair !== undefined ? (data.flair?.trim() || null) : existing.flair,
     data.source_url !== undefined ? (data.source_url?.trim() || null) : existing.source_url,
+    reqLogin,
     now,
     id
   );

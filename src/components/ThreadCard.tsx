@@ -22,6 +22,8 @@ import {
   Edit3,
   Trash2,
   BarChart2,
+  Lock,
+  Unlock,
 } from 'lucide-react';
 import { AuthorIdentityChip } from './IdentityAvatar';
 import ReportModal from './ReportModal';
@@ -50,10 +52,11 @@ export default function ThreadCard({
   onThreadUpdated,
 }: ThreadCardProps) {
   const { settings } = useSettings();
-  const { user } = useAuth();
+  const { user, openAuthModal } = useAuth();
   const activeLayout = layout || settings.feedLayout;
 
   const [thread, setThread] = useState<Thread>(initialThread);
+  const isLoginRestricted = Boolean(thread.requires_login && !user);
   const [isDeleted, setIsDeleted] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -220,11 +223,25 @@ export default function ThreadCard({
         {/* Media Thumbnail Pill (If media exists) */}
         {thread.media_url && (
           <div
-            onClick={() => setIsMediaRevealed(true)}
+            onClick={(e) => {
+              if (isLoginRestricted) {
+                e.stopPropagation();
+                openAuthModal('login');
+              } else {
+                setIsMediaRevealed(true);
+              }
+            }}
             className="w-10 h-10 rounded-md bg-zinc-100 dark:bg-black/60 border border-zinc-200 dark:border-white/[0.08] overflow-hidden shrink-0 flex items-center justify-center relative cursor-pointer group/thumb"
-            title="คลิกเพื่อดูรูปภาพ"
+            title={isLoginRestricted ? 'สื่อถูกล็อกสำหรับสมาชิก - คลิกเพื่อเข้าสู่ระบบ' : 'คลิกเพื่อดูรูปภาพ'}
           >
-            {isVideo ? (
+            {isLoginRestricted ? (
+              <div className="relative w-full h-full flex items-center justify-center bg-black/60">
+                <div className="absolute inset-0 filter blur-md scale-125 opacity-25">
+                  {isImage && <img src={thread.media_url} alt="" className="w-full h-full object-cover" />}
+                </div>
+                <Lock size={13} className="text-amber-400 relative z-10" />
+              </div>
+            ) : isVideo ? (
               <Film size={15} className="text-amber-600 dark:text-yellow-400" />
             ) : isImage ? (
               <img
@@ -267,6 +284,19 @@ export default function ThreadCard({
             {thread.flair && (
               <span className="px-1 py-0.2 rounded text-[9px] font-semibold border text-amber-700 dark:text-yellow-400 bg-amber-50 dark:bg-yellow-500/10 border-amber-200 dark:border-yellow-500/25">
                 {thread.flair}
+              </span>
+            )}
+            {thread.requires_login && (
+              <span
+                className={`px-1.5 py-0.2 rounded text-[9px] font-mono font-bold border flex items-center gap-1 shrink-0 ${
+                  user
+                    ? 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/25'
+                    : 'text-amber-700 dark:text-yellow-400 bg-amber-50 dark:bg-yellow-500/10 border-amber-200 dark:border-yellow-500/25'
+                }`}
+                title={user ? 'คุณล็อกอินแล้ว - ดูสื่อได้ทันที' : 'จำกัดเฉพาะสมาชิกที่ Login แล้ว'}
+              >
+                {user ? <Unlock size={9} /> : <Lock size={9} />}
+                <span>{user ? 'ปลดล็อก' : 'เฉพาะสมาชิก'}</span>
               </span>
             )}
             {thread.poll && (
@@ -524,6 +554,21 @@ export default function ThreadCard({
               </span>
             )}
 
+            {/* Login-Only / Members-Only badge */}
+            {thread.requires_login && (
+              <span
+                className={`px-1.5 py-0.2 rounded text-[10px] font-mono font-bold border flex items-center gap-1 ml-1 ${
+                  user
+                    ? 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/25'
+                    : 'text-amber-700 dark:text-yellow-400 bg-amber-50 dark:bg-yellow-500/10 border-amber-200 dark:border-yellow-500/25'
+                }`}
+                title={user ? 'คุณเข้าสู่ระบบแล้ว - สื่อปลดล็อกแล้ว' : 'จำกัดเฉพาะสมาชิกที่ Login แล้ว (สื่อถูกเบลอ)'}
+              >
+                {user ? <Unlock size={10} /> : <Lock size={10} />}
+                <span>{user ? 'ปลดล็อกแล้ว (สมาชิก)' : 'เฉพาะสมาชิก'}</span>
+              </span>
+            )}
+
             {/* Expiration badge (Touch of Orange) */}
             <div className="flex items-center gap-1 font-mono text-[10px] text-orange-600 dark:text-orange-400 ml-auto bg-orange-50 dark:bg-orange-500/10 px-2 py-0.5 rounded border border-orange-200 dark:border-orange-500/20 tabular-nums">
               <Clock size={11} className="text-orange-600 dark:text-orange-400" />
@@ -549,10 +594,43 @@ export default function ThreadCard({
             </p>
           )}
 
-          {/* Media Preview: Image or Video with Auto-Blur Support */}
+          {/* Media Preview: Image or Video with Auto-Blur & Login Gate Support */}
           {thread.media_url && (
             <div className="mb-3 rounded-lg overflow-hidden border border-zinc-200 dark:border-white/[0.08] bg-zinc-100 dark:bg-black/40 relative">
-              {settings.blurMedia && !isMediaRevealed ? (
+              {isLoginRestricted ? (
+                /* Login Required Blur Gate */
+                <div className="relative group/blur overflow-hidden">
+                  <div className="filter blur-2xl scale-125 pointer-events-none select-none max-h-80 overflow-hidden opacity-30">
+                    {isVideo ? (
+                      <video src={thread.media_url} className="w-full max-h-80 object-cover" />
+                    ) : (
+                      <img src={thread.media_url} alt="" className="w-full max-h-80 object-cover" />
+                    )}
+                  </div>
+                  <div className="absolute inset-0 bg-black/75 backdrop-blur-md flex flex-col items-center justify-center p-5 text-center z-10">
+                    <div className="w-10 h-10 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 mb-2 shadow-lg">
+                      <Lock size={18} />
+                    </div>
+                    <div className="text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 mb-1">
+                      <span>ภาพหรือวิดีโอนี้สำหรับสมาชิกเท่านั้น</span>
+                    </div>
+                    <p className="text-[11px] text-zinc-300 max-w-sm mb-2.5">
+                      ผู้โพสต์ตั้งค่าให้ดูได้เฉพาะผู้ใช้ที่ Login แล้ว สื่อจึงถูกเบลอไว้สำหรับผู้เยี่ยมชม
+                    </p>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openAuthModal('login');
+                      }}
+                      className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs flex items-center gap-1.5 transition-all shadow-md active:scale-95"
+                    >
+                      <Lock size={12} />
+                      <span>เข้าสู่ระบบเพื่อปลดล็อกสื่อ</span>
+                    </button>
+                  </div>
+                </div>
+              ) : settings.blurMedia && !isMediaRevealed ? (
                 <div className="relative group/blur">
                   <div className="filter blur-xl scale-110 pointer-events-none select-none max-h-80 overflow-hidden opacity-40">
                     {isVideo ? (

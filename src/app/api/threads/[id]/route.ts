@@ -52,6 +52,7 @@ export async function PUT(
       category: category ? category.trim() : undefined,
       flair: flair !== undefined ? (flair?.trim() || null) : undefined,
       source_url: source_url !== undefined ? (source_url?.trim() || null) : undefined,
+      requires_login: body.requires_login !== undefined ? Boolean(body.requires_login) : undefined,
       edit_token: edit_token ? String(edit_token).trim() : null,
       current_user_id: sessionUser?.id || null,
     });

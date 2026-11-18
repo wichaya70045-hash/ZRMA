@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Thread } from '@/types';
 import { getAuthoredThreadToken, saveAuthoredThread } from '@/lib/privacy';
 import { useAuth } from '@/lib/authContext';
-import { X, Check, AlertCircle, Key, Edit3 } from 'lucide-react';
+import { X, Check, AlertCircle, Key, Edit3, Lock } from 'lucide-react';
 
 interface EditThreadModalProps {
   isOpen: boolean;
@@ -27,6 +27,7 @@ export default function EditThreadModal({
   const [category, setCategory] = useState(thread.category);
   const [flair, setFlair] = useState(thread.flair || '');
   const [sourceUrl, setSourceUrl] = useState(thread.source_url || '');
+  const [requiresLogin, setRequiresLogin] = useState(Boolean(thread.requires_login));
   const [passcode, setPasscode] = useState('');
   const [hasStoredToken, setHasStoredToken] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,6 +40,7 @@ export default function EditThreadModal({
       setCategory(thread.category);
       setFlair(thread.flair || '');
       setSourceUrl(thread.source_url || '');
+      setRequiresLogin(Boolean(thread.requires_login));
       setErrorMsg('');
 
       const token = getAuthoredThreadToken(thread.id);
@@ -81,6 +83,7 @@ export default function EditThreadModal({
           category: category.trim(),
           flair: flair.trim() || null,
           source_url: sourceUrl.trim() || null,
+          requires_login: requiresLogin,
           edit_token: effectiveToken,
         }),
       });
@@ -184,6 +187,36 @@ export default function EditThreadModal({
                 className="w-full bg-zinc-50 dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.08] focus:border-amber-500 dark:focus:border-yellow-400 rounded-lg px-3 py-1.5 text-xs text-zinc-900 dark:text-white focus:outline-none transition-colors font-mono"
               />
             </div>
+          </div>
+
+          {/* Members Only Option */}
+          <div className="p-3 bg-zinc-50 dark:bg-black/40 border border-zinc-200 dark:border-white/[0.06] rounded-xl flex items-center justify-between gap-3">
+            <div className="flex items-start gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-500/25 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0 mt-0.5">
+                <Lock size={13} />
+              </div>
+              <div>
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 block">
+                  จำกัดให้ดูเฉพาะคนที่ Login แล้ว
+                </span>
+                <span className="text-[11px] text-zinc-500 leading-tight block">
+                  ภาพหรือวิดีโอจะถูกเบลออัตโนมัติสำหรับผู้เยี่ยมชมที่ยังไม่ได้ล็อกอิน
+                </span>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setRequiresLogin(!requiresLogin)}
+              className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                requiresLogin ? 'bg-amber-500' : 'bg-zinc-300 dark:bg-zinc-700'
+              }`}
+            >
+              <span
+                className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                  requiresLogin ? 'translate-x-4' : 'translate-x-0'
+                }`}
+              />
+            </button>
           </div>
 
           {/* Passcode Confirmation */}

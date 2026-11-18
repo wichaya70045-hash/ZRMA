@@ -110,6 +110,7 @@ export interface Thread {
   report_count: number;
   is_hidden: number; // 0 or 1
   is_pinned?: number; // 0 or 1 for pinned breaking news
+  requires_login?: boolean; // 1 if post is restricted to logged-in users and media is blurred for guests
   is_edited?: number; // 0 or 1
   edited_at?: string | null;
   expires_at: string;

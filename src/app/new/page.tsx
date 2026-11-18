@@ -124,6 +124,7 @@ export default function NewThreadPage() {
   const [expiresHours, setExpiresHours] = useState<number>(72);
   const [editPasscode, setEditPasscode] = useState('');
   const [showAdvancedPasscode, setShowAdvancedPasscode] = useState(false);
+  const [requiresLogin, setRequiresLogin] = useState(false);
 
   // Community Poll state
   const [hasPoll, setHasPoll] = useState(false);
@@ -355,6 +356,7 @@ export default function NewThreadPage() {
         author_alias: customAuthorAlias.trim() || identity?.alias || 'u/นิรนาม #????',
         author_avatar: identity?.avatarIcon || 'terminal',
         post_anonymously: postAnonymously,
+        requires_login: requiresLogin,
         is_pinned: isPinned && postMode === 'general' ? 1 : 0,
         expires_hours: expiresHours,
         edit_token: editPasscode.trim(),
@@ -1401,6 +1403,54 @@ export default function NewThreadPage() {
                     {opt.label}
                   </button>
                 ))}
+              </div>
+            </div>
+
+            {/* Login-Only & Media Blur Option */}
+            <div
+              onClick={() => setRequiresLogin((prev) => !prev)}
+              className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between gap-3 ${
+                requiresLogin
+                  ? 'bg-amber-500/10 border-amber-500/40 text-amber-900 dark:text-yellow-300 ring-1 ring-amber-500/20'
+                  : 'bg-zinc-50 dark:bg-black/30 border-zinc-200 dark:border-white/[0.06] text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-white/[0.15]'
+              }`}
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div
+                  className={`p-2 rounded-lg shrink-0 transition-colors ${
+                    requiresLogin
+                      ? 'bg-amber-500 text-white'
+                      : 'bg-zinc-200 dark:bg-white/[0.08] text-zinc-600 dark:text-zinc-400'
+                  }`}
+                >
+                  <Lock size={15} />
+                </div>
+                <div className="space-y-0.5 min-w-0">
+                  <div className="text-xs font-bold flex items-center gap-1.5">
+                    <span>จำกัดให้ดูได้เฉพาะคนที่ Login แล้ว</span>
+                    {requiresLogin && (
+                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-600 dark:text-yellow-400 font-mono font-bold">
+                        เปิดใช้งาน
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                    รูปภาพและวิดีโอจะถูกเบลออัตโนมัติสำหรับผู้เยี่ยมชมที่ไม่ได้เข้าสู่ระบบ
+                  </p>
+                </div>
+              </div>
+
+              {/* Custom Toggle Switch */}
+              <div
+                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                  requiresLogin ? 'bg-amber-500' : 'bg-zinc-300 dark:bg-zinc-700'
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    requiresLogin ? 'translate-x-4' : 'translate-x-0'
+                  }`}
+                />
               </div>
             </div>
 
