@@ -69,18 +69,20 @@ export async function PUT(req: NextRequest) {
 
     if (body.avatar_url !== undefined) {
       const rawUrl = body.avatar_url ? String(body.avatar_url).trim() : '';
+      const isDataImage = /^data:image\/(jpeg|jpg|png|webp|gif);base64,/i.test(rawUrl);
       if (
         rawUrl &&
         !rawUrl.startsWith('/uploads/') &&
         !rawUrl.startsWith('https://') &&
-        !rawUrl.startsWith('http://')
+        !rawUrl.startsWith('http://') &&
+        !isDataImage
       ) {
         return NextResponse.json(
           { error: 'URL รูปโปรไฟล์ไม่ถูกต้อง (รองรับเฉพาะไฟล์ที่อัปโหลดหรือ http/https)' },
           { status: 400 }
         );
       }
-      updates.avatar_url = rawUrl ? rawUrl.slice(0, 300) : null;
+      updates.avatar_url = rawUrl ? rawUrl.slice(0, isDataImage ? 5_000_000 : 500) : null;
     }
 
     if (body.avatar_frame !== undefined) {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { getCommentsByThread, createComment, getThreadById } from '@/lib/db';
+import { formatDbError } from '@/lib/prisma';
 import { verifyCaptcha } from '@/lib/captcha';
 import { getSessionUser } from '@/lib/auth';
 import { broadcastToRoom } from '@/lib/sse';
@@ -17,7 +18,7 @@ export async function GET(
     return NextResponse.json({ comments });
   } catch (err: any) {
     console.error('Error fetching comments:', err);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: formatDbError(err) }, { status: 500 });
   }
 }
 
@@ -90,6 +91,6 @@ export async function POST(
     return NextResponse.json({ comment }, { status: 201 });
   } catch (err: any) {
     console.error('Error adding comment:', err);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: formatDbError(err) }, { status: 500 });
   }
 }

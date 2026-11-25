@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserWithPasswordByUsername } from '@/lib/db';
+import { formatDbError } from '@/lib/prisma';
 import { verifyPassword, attachSessionCookie } from '@/lib/auth';
 
 export async function POST(req: NextRequest) {
@@ -29,6 +30,6 @@ export async function POST(req: NextRequest) {
     return res;
   } catch (err) {
     console.error('POST /api/auth/login error:', err);
-    return NextResponse.json({ error: 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ' }, { status: 500 });
+    return NextResponse.json({ error: formatDbError(err, 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ') }, { status: 500 });
   }
 }

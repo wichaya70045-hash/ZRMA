@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getThreadById, updateThread, deleteThread } from '@/lib/db';
+import { formatDbError } from '@/lib/prisma';
 import { getSessionUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -22,7 +23,7 @@ export async function GET(
     return NextResponse.json({ thread });
   } catch (err: any) {
     console.error('Error fetching thread:', err);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: formatDbError(err) }, { status: 500 });
   }
 }
 

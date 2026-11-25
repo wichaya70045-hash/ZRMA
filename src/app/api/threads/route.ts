@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { getThreads, createThread } from '@/lib/db';
+import { formatDbError } from '@/lib/prisma';
 import { verifyCaptcha } from '@/lib/captcha';
 import { getSessionUser } from '@/lib/auth';
 import { broadcastToRoom } from '@/lib/sse';
@@ -50,7 +51,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ threads });
   } catch (err: any) {
     console.error('Error fetching threads:', err);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: formatDbError(err) }, { status: 500 });
   }
 }
 
@@ -237,6 +238,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ thread: newThread, edit_token: token }, { status: 201 });
   } catch (err: any) {
     console.error('Error creating thread:', err);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: formatDbError(err) }, { status: 500 });
   }
 }

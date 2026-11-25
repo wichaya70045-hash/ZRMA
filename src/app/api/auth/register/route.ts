@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { createUser, getUserByUsername } from '@/lib/db';
+import { formatDbError } from '@/lib/prisma';
 import { hashPassword, attachSessionCookie } from '@/lib/auth';
 
 export async function POST(req: NextRequest) {
@@ -50,6 +51,6 @@ export async function POST(req: NextRequest) {
     return res;
   } catch (err) {
     console.error('POST /api/auth/register error:', err);
-    return NextResponse.json({ error: 'ไม่สามารถสมัครสมาชิกได้' }, { status: 500 });
+    return NextResponse.json({ error: formatDbError(err, 'ไม่สามารถสมัครสมาชิกได้') }, { status: 500 });
   }
 }

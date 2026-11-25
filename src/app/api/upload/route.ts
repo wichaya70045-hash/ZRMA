@@ -47,19 +47,45 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const filename = `${crypto.randomUUID()}${extension}`;
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    const toInlineDataUrl = () => {
+      if (mediaType === 'image' && buffer.length <= 3.5 * 1024 * 1024) {
+        return NextResponse.json({
+          success: true,
+          url: `data:${mime};base64,${buffer.toString('base64')}`,
+          media_type: mediaType,
+          filename,
+        });
+      }
+      return NextResponse.json(
+        {
+          error:
+            mediaType === 'video'
+              ? 'Vercel ไม่รองรับการเก็บไฟล์วิดีโอลงดิสก์โดยตรง กรุณาวางลิงก์วิดีโอ (URL) แทน'
+              : 'บน Vercel รองรับอัปโหลดรูปภาพขนาดไม่เกิน 3.5MB (หรือกรุณาวางลิงก์ URL ของรูปภาพแทน)',
+        },
+        { status: 400 }
+      );
+    };
+
+    if (process.env.VERCEL) {
+      return toInlineDataUrl();
+    }
+
     const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
     try {
       await fs.mkdir(uploadsDir, { recursive: true });
-    } catch {
-      // directory already exists
+      const destinationPath = path.join(uploadsDir, filename);
+      await fs.writeFile(destinationPath, buffer);
+    } catch (fsErr: any) {
+      if (fsErr?.code === 'EROFS' || fsErr?.code === 'EACCES' || fsErr?.code === 'EPERM') {
+        return toInlineDataUrl();
+      }
+      throw fsErr;
     }
-
-    const filename = `${crypto.randomUUID()}${extension}`;
-    const destinationPath = path.join(uploadsDir, filename);
-
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    await fs.writeFile(destinationPath, buffer);
 
     const url = `/uploads/${filename}`;
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCommunities, createOrUpdateCommunity } from '@/lib/db';
+import { formatDbError } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,7 +10,7 @@ export async function GET() {
     return NextResponse.json({ communities });
   } catch (err: any) {
     console.error('Error fetching communities:', err);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: formatDbError(err) }, { status: 500 });
   }
 }
 
@@ -45,6 +46,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ community }, { status: 201 });
   } catch (err: any) {
     console.error('Error creating community:', err);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: formatDbError(err) }, { status: 500 });
   }
 }

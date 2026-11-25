@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { getChatMessages, sendChatMessage, updateChatMessage, deleteChatMessage } from '@/lib/db';
+import { formatDbError } from '@/lib/prisma';
 import { getSessionUser } from '@/lib/auth';
 import { broadcastToRoom } from '@/lib/sse';
 
@@ -15,7 +16,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ messages });
   } catch (err: any) {
     console.error('Error fetching chat messages:', err);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: formatDbError(err) }, { status: 500 });
   }
 }
 
@@ -57,7 +58,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message, edit_token: token }, { status: 201 });
   } catch (err: any) {
     console.error('Error sending chat message:', err);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: formatDbError(err) }, { status: 500 });
   }
 }
 
