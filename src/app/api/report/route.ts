@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     }
 
     const reportId = crypto.randomUUID();
-    const result = reportContent({
+    const result = await reportContent({
       id: reportId,
       target_type,
       target_id,

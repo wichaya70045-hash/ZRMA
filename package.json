@@ -10,8 +10,14 @@
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "prisma:migrate": "prisma migrate dev",
+    "prisma:seed": "node prisma/seed.mjs",
     "prisma:studio": "prisma studio",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
     "postinstall": "prisma generate"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

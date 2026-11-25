@@ -13,7 +13,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const comments = getCommentsByThread(id);
+    const comments = await getCommentsByThread(id);
     return NextResponse.json({ comments });
   } catch (err: any) {
     console.error('Error fetching comments:', err);
@@ -27,7 +27,7 @@ export async function POST(
 ) {
   try {
     const { id: threadId } = await params;
-    const thread = getThreadById(threadId);
+    const thread = await getThreadById(threadId);
     if (!thread) {
       return NextResponse.json(
         { error: 'ไม่พบกระทู้เป้าหมาย หรือกระทู้หมดอายุแล้ว' },
@@ -49,7 +49,7 @@ export async function POST(
     } = body;
 
     // Verify Captcha
-    if (!verifyCaptcha(captcha_token, captcha_answer)) {
+    if (!(await verifyCaptcha(captcha_token, captcha_answer))) {
       return NextResponse.json(
         { error: 'คำตอบความปลอดภัยไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง' },
         { status: 400 }
@@ -67,7 +67,7 @@ export async function POST(
     const useAccountIdentity = Boolean(sessionUser && body.post_anonymously !== true);
 
     const commentId = crypto.randomUUID();
-    const comment = createComment({
+    const comment = await createComment({
       id: commentId,
       thread_id: threadId,
       parent_id: parent_id || null,

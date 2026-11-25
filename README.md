@@ -58,13 +58,32 @@
 
 ---
 
+## 🧱 เทคโนโลยีหลัก (Tech Stack)
+
+- **Frontend / Fullstack Framework**: Next.js 15 (App Router, React 19, TypeScript, Tailwind CSS)
+- **ORM**: Prisma (`@prisma/client` & `prisma`)
+- **Database**: PostgreSQL 16 (รันผ่าน `docker-compose.yml` หรือ Cloud PostgreSQL)
+- **Real-time**: Server-Sent Events (SSE)
+
+---
+
 ## 💻 วิธีการรันโปรเจกต์ (Quickstart)
 
 ```bash
-# ติดตั้ง Dependencies
+# 1. ติดตั้ง Dependencies และสร้าง Prisma Client
 npm install
 
-# รันโหมด Production (แนะนำ)
+# 2. ตั้งค่า Environment (.env)
+cp .env.example .env
+
+# 3. เปิดฐานข้อมูล PostgreSQL 16 ด้วย Docker Desktop
+docker compose up -d
+
+# 4. ซิงก์ตารางเข้าสู่ PostgreSQL และเพิ่มข้อมูลเริ่มต้น
+npx prisma db push
+npm run prisma:seed
+
+# 5. รันโหมด Production (แนะนำ)
 npm run build
 npm start
 
@@ -73,3 +92,4 @@ npm run dev
 ```
 
 เปิดใช้งานที่เบราว์เซอร์: **`http://localhost:3000`**
+หรือดูตารางข้อมูลผ่าน GUI ได้ที่: **`npm run prisma:studio`**

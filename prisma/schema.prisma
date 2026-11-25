@@ -1,5 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// ZRMA Community - Prisma Schema for PostgreSQL
 
 generator client {
   provider = "prisma-client-js"
@@ -22,21 +21,22 @@ model Community {
 }
 
 model User {
-  id           String    @id @default(uuid())
-  username     String    @unique
-  displayName  String    @map("display_name")
-  passwordHash String    @map("password_hash")
-  bio          String?   @default("")
-  avatarIcon   String?   @default("shield") @map("avatar_icon")
-  avatarUrl    String?   @map("avatar_url")
-  avatarFrame  String?   @default("none") @map("avatar_frame")
-  bannerTheme  String?   @default("obsidian") @map("banner_theme")
-  nameColor    String?   @default("default") @map("name_color")
-  customBadge  String?   @map("custom_badge")
-  createdAt    DateTime  @default(now()) @map("created_at")
+  id           String        @id @default(uuid())
+  username     String        @unique
+  displayName  String        @map("display_name")
+  passwordHash String        @map("password_hash")
+  bio          String?       @default("")
+  avatarIcon   String?       @default("shield") @map("avatar_icon")
+  avatarUrl    String?       @map("avatar_url")
+  avatarFrame  String?       @default("none") @map("avatar_frame")
+  bannerTheme  String?       @default("obsidian") @map("banner_theme")
+  nameColor    String?       @default("default") @map("name_color")
+  customBadge  String?       @map("custom_badge")
+  createdAt    DateTime      @default(now()) @map("created_at")
 
   threads      Thread[]
   comments     Comment[]
+  chatMessages ChatMessage[]
 
   @@map("users")
 }
@@ -44,7 +44,7 @@ model User {
 model Thread {
   id            String    @id @default(uuid())
   title         String
-  content       String
+  content       String    @db.Text
   category      String
   flair         String?
   sourceUrl     String?   @map("source_url")
@@ -62,9 +62,9 @@ model Thread {
   isEdited      Boolean   @default(false) @map("is_edited")
   editedAt      DateTime? @map("edited_at")
   editToken     String?   @map("edit_token")
-  pollData      String?   @map("poll_data")
-  jobData       String?   @map("job_data")
-  marketData    String?   @map("market_data")
+  pollData      Json?     @map("poll_data")
+  jobData       Json?     @map("job_data")
+  marketData    Json?     @map("market_data")
   expiresAt     DateTime  @map("expires_at")
   createdAt     DateTime  @default(now()) @map("created_at")
 
@@ -83,7 +83,7 @@ model Comment {
   parentId     String?   @map("parent_id")
   quoteText    String?   @map("quote_text")
   quoteAuthor  String?   @map("quote_author")
-  content      String
+  content      String    @db.Text
   mediaUrl     String?   @map("media_url")
   authorAlias  String    @map("author_alias")
   authorAvatar String    @map("author_avatar")
@@ -111,7 +111,7 @@ model Comment {
 model ChatMessage {
   id           String    @id @default(uuid())
   roomId       String    @default("global") @map("room_id")
-  content      String
+  content      String    @db.Text
   authorAlias  String    @map("author_alias")
   authorAvatar String    @map("author_avatar")
   authorUserId String?   @map("author_user_id")
@@ -121,6 +121,8 @@ model ChatMessage {
   editedAt     DateTime? @map("edited_at")
   editToken    String?   @map("edit_token")
   createdAt    DateTime  @default(now()) @map("created_at")
+
+  author       User?     @relation(fields: [authorUserId], references: [id], onDelete: SetNull)
 
   @@index([roomId, createdAt(sort: Desc)], map: "idx_chat_room")
   @@map("chat_messages")
@@ -152,8 +154,8 @@ model GhostRoom {
 }
 
 model UsedCaptcha {
-  tokenHash String   @id @map("token_hash")
-  expiresAt BigInt   @map("expires_at")
+  tokenHash String @id @map("token_hash")
+  expiresAt BigInt @map("expires_at")
 
   @@index([expiresAt], map: "idx_used_captchas_exp")
   @@map("used_captchas")

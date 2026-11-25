@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: zrma-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: zrma_postgres_password
+      POSTGRES_DB: zrma
+    ports:
+      - "5433:5432"
+    volumes:
+      - zrma_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d zrma"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  zrma_pgdata:

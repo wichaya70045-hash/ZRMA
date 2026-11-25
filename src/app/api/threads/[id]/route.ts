@@ -10,7 +10,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const thread = getThreadById(id);
+    const thread = await getThreadById(id);
 
     if (!thread) {
       return NextResponse.json(
@@ -46,7 +46,7 @@ export async function PUT(
 
     const sessionUser = await getSessionUser(req);
 
-    const result = updateThread(id, {
+    const result = await updateThread(id, {
       title: title.trim(),
       content: cleanContent,
       category: category ? category.trim() : undefined,
@@ -85,7 +85,7 @@ export async function DELETE(
     }
 
     const sessionUser = await getSessionUser(req);
-    const result = deleteThread(
+    const result = await deleteThread(
       id,
       edit_token ? String(edit_token).trim() : null,
       sessionUser?.id || null

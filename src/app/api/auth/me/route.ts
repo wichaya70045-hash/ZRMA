@@ -35,14 +35,14 @@ export async function PUT(req: NextRequest) {
           { status: 400 }
         );
       }
-      const fullRecord = getUserWithPasswordById(sessionUser.id);
+      const fullRecord = await getUserWithPasswordById(sessionUser.id);
       if (!fullRecord || !verifyPassword(currentPassword, fullRecord.password_hash)) {
         return NextResponse.json(
           { error: 'รหัสผ่านปัจจุบันไม่ถูกต้อง' },
           { status: 400 }
         );
       }
-      updateUserPassword(sessionUser.id, hashPassword(newPassword));
+      await updateUserPassword(sessionUser.id, hashPassword(newPassword));
     }
 
     const updates: Parameters<typeof updateUserProfile>[1] = {};
@@ -112,7 +112,7 @@ export async function PUT(req: NextRequest) {
       updates.custom_badge = badge;
     }
 
-    const updated = updateUserProfile(sessionUser.id, updates);
+    const updated = await updateUserProfile(sessionUser.id, updates);
     return NextResponse.json({ success: true, user: updated });
   } catch (err) {
     console.error('PUT /api/auth/me error:', err);

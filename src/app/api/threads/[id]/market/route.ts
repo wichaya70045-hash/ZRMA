@@ -17,7 +17,7 @@ export async function POST(
 
     if (body.action === 'toggle_status') {
       const nextStatus: MarketStatus = body.status === 'sold' ? 'sold' : 'available';
-      const result = toggleMarketStatus(
+      const result = await toggleMarketStatus(
         threadId,
         nextStatus,
         body.edit_token ? String(body.edit_token).trim() : null,

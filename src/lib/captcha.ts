@@ -49,7 +49,7 @@ export function generateCaptcha(): CaptchaData {
 /**
  * Verifies the user's answer against the signed token.
  */
-export function verifyCaptcha(token: string, userAnswer: string | number): boolean {
+export async function verifyCaptcha(token: string, userAnswer: string | number): Promise<boolean> {
   if (!token || userAnswer === undefined || userAnswer === null || userAnswer === '') {
     return false;
   }
@@ -78,12 +78,12 @@ export function verifyCaptcha(token: string, userAnswer: string | number): boole
 
       // Check anti-replay: ensure single-use token
       const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
-      if (isCaptchaUsed(tokenHash)) {
+      if (await isCaptchaUsed(tokenHash)) {
         return false;
       }
 
       // Mark token as consumed
-      markCaptchaUsed(tokenHash, expiresAt);
+      await markCaptchaUsed(tokenHash, expiresAt);
       return true;
     }
     return false;

@@ -7,7 +7,7 @@ export async function GET(
 ) {
   try {
     const { username } = await params;
-    const data = getPublicProfileByUsername(decodeURIComponent(username));
+    const data = await getPublicProfileByUsername(decodeURIComponent(username));
     if (!data) {
       return NextResponse.json({ error: 'ไม่พบผู้ใช้งานนี้' }, { status: 404 });
     }

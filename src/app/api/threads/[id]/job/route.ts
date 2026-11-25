@@ -19,7 +19,7 @@ export async function POST(
     // Author toggles job status (open / closed)
     if (body.action === 'toggle_status') {
       const nextStatus: JobStatus = body.status === 'closed' ? 'closed' : 'open';
-      const result = toggleJobStatus(
+      const result = await toggleJobStatus(
         threadId,
         nextStatus,
         body.edit_token ? String(body.edit_token).trim() : null,
@@ -61,7 +61,7 @@ export async function POST(
       created_at: new Date().toISOString(),
     };
 
-    const result = applyToJobThread(threadId, application);
+    const result = await applyToJobThread(threadId, application);
     if (!result.success || !result.job) {
       return NextResponse.json(
         { error: result.error || 'ไม่สามารถส่งคำขอรับงานได้' },

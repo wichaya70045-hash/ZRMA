@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const communities = getCommunities();
+    const communities = await getCommunities();
     return NextResponse.json({ communities });
   } catch (err: any) {
     console.error('Error fetching communities:', err);
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
       title = `z/${name}`;
     }
 
-    const community = createOrUpdateCommunity({
+    const community = await createOrUpdateCommunity({
       name,
       title: title.trim(),
       description: description ? description.trim() : `ชุมชนแลกเปลี่ยนข่าวสาร z/${name}`,

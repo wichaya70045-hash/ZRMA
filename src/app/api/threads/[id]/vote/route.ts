@@ -14,7 +14,7 @@ export async function POST(
     const type = body.type === 'down' ? 'down' : body.type === 'cancel' ? 'cancel' : 'up';
     const prevVote = body.prev_vote || body.previous_vote || undefined;
 
-    const result = voteThread(id, type, prevVote);
+    const result = await voteThread(id, type, prevVote);
     if (!result) {
       return NextResponse.json({ error: 'Thread not found' }, { status: 404 });
     }

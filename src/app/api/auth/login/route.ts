@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const record = getUserWithPasswordByUsername(username);
+    const record = await getUserWithPasswordByUsername(username);
     if (!record || !verifyPassword(password, record.password_hash)) {
       return NextResponse.json(
         { error: 'Username หรือรหัสผ่านไม่ถูกต้อง' },

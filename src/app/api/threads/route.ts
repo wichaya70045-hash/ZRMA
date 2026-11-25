@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
         ? rawMarketStatus
         : undefined;
 
-    const threads = getThreads(
+    const threads = await getThreads(
       category,
       sort,
       { onlyJobs, jobType },
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
     } = body;
 
     // Validate Anti-Spam Captcha (optional - only enforced if client explicitly provided a token)
-    if (captcha_token && !verifyCaptcha(captcha_token, captcha_answer)) {
+    if (captcha_token && !(await verifyCaptcha(captcha_token, captcha_answer))) {
       return NextResponse.json(
         { error: 'คำตอบเพื่อยืนยันความปลอดภัยไม่ถูกต้องหรือหมดอายุแล้ว กรุณาลองใหม่อีกครั้ง' },
         { status: 400 }
@@ -206,7 +206,7 @@ export async function POST(req: NextRequest) {
 
     const id = crypto.randomUUID();
     const token = body.edit_token?.trim() || crypto.randomBytes(16).toString('hex');
-    const newThread = createThread({
+    const newThread = await createThread({
       id,
       title: title.trim(),
       content: cleanContent,

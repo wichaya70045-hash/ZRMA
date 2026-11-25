@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const rooms = getGhostRooms();
+    const rooms = await getGhostRooms();
     return NextResponse.json({ rooms });
   } catch (err: any) {
     console.error('Error fetching ghost rooms:', err);
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
       .trim()
       .replace(/[^a-z0-9_\-]/g, '');
 
-    const room = createGhostRoom({
+    const room = await createGhostRoom({
       id,
       name: cleanName,
       title: title.trim(),

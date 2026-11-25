@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const items = getTickerItems();
+    const items = await getTickerItems();
     return NextResponse.json({ items });
   } catch (err: any) {
     console.error('Error fetching ticker items:', err);

@@ -121,7 +121,7 @@ export async function getSessionUser(req?: NextRequest): Promise<UserProfile | n
     if (!token) return null;
     const userId = verifySessionToken(token);
     if (!userId) return null;
-    return getUserById(userId);
+    return await getUserById(userId);
   } catch {
     return null;
   }

@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const existing = getUserByUsername(rawUsername);
+    const existing = await getUserByUsername(rawUsername);
     if (existing) {
       return NextResponse.json(
         { error: 'ชื่อผู้ใช้นี้ถูกใช้งานแล้ว กรุณาเลือกชื่ออื่น' },
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     const passwordHash = hashPassword(password);
     const id = `usr-${crypto.randomUUID().slice(0, 12)}`;
 
-    const user = createUser({
+    const user = await createUser({
       id,
       username: rawUsername,
       display_name: displayName,

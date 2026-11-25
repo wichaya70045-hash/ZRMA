@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
   if (room.startsWith('ghost_')) {
     const ghostName = room.replace(/^ghost_/, '');
     const currentCount = getActiveListenersCount(roomChannel);
-    updateGhostRoomPresence(ghostName, currentCount);
+    await updateGhostRoomPresence(ghostName, currentCount).catch(() => {});
     broadcastToRoom(roomChannel, 'presence_update', { active_users: currentCount });
   }
 
@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
     }
   }, 15000);
 
-  req.signal.addEventListener('abort', () => {
+  req.signal.addEventListener('abort', async () => {
     clearInterval(pingInterval);
     unsubscribe();
     
@@ -52,9 +52,9 @@ export async function GET(req: NextRequest) {
       const ghostName = room.replace(/^ghost_/, '');
       const remaining = getActiveListenersCount(roomChannel);
       if (remaining <= 0) {
-        destroyGhostRoom(ghostName);
+        await destroyGhostRoom(ghostName).catch(() => {});
       } else {
-        updateGhostRoomPresence(ghostName, remaining);
+        await updateGhostRoomPresence(ghostName, remaining).catch(() => {});
         broadcastToRoom(roomChannel, 'presence_update', { active_users: remaining });
       }
     }

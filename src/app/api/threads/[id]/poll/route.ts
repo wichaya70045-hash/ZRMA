@@ -20,7 +20,7 @@ export async function POST(
       );
     }
 
-    const result = voteThreadPoll(id, Number(option_id));
+    const result = await voteThreadPoll(id, Number(option_id));
     if (!result.success) {
       return NextResponse.json({ error: result.error || 'ไม่สามารถลงคะแนนได้' }, { status: 400 });
     }

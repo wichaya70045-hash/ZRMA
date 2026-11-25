@@ -10,7 +10,7 @@ export async function GET(
 ) {
   try {
     const { name } = await params;
-    const room = getGhostRoom(name);
+    const room = await getGhostRoom(name);
     if (!room || room.is_destroyed === 1) {
       return NextResponse.json({ error: 'ห้องนี้ถูกทำลายและสลายตัวไปแล้ว', is_destroyed: true }, { status: 404 });
     }
@@ -30,14 +30,14 @@ export async function POST(
     const body = await req.json();
     const { action, active_count } = body;
 
-    const room = getGhostRoom(name);
+    const room = await getGhostRoom(name);
     if (!room || room.is_destroyed === 1) {
       return NextResponse.json({ destroyed: true });
     }
 
     if (action === 'leave' && (active_count === undefined || active_count <= 0)) {
       // Room is empty! Destroy it immediately!
-      destroyGhostRoom(name);
+      await destroyGhostRoom(name);
       broadcastToRoom(`chat_ghost_${name}`, 'room_destroyed', {
         reason: 'ผู้ใช้งานทุกคนออกจากห้องแล้ว ห้องและข้อความถูกลบทำลายตัวเองเรียบร้อย'
       });
@@ -45,7 +45,7 @@ export async function POST(
     }
 
     if (typeof active_count === 'number') {
-      updateGhostRoomPresence(name, active_count);
+      await updateGhostRoomPresence(name, active_count);
       broadcastToRoom(`chat_ghost_${name}`, 'presence_update', { active_users: active_count });
     }
 
@@ -62,7 +62,7 @@ export async function DELETE(
 ) {
   try {
     const { name } = await params;
-    destroyGhostRoom(name);
+    await destroyGhostRoom(name);
     broadcastToRoom(`chat_ghost_${name}`, 'room_destroyed', {
       reason: 'ห้องถูกสั่งทำลายตัวเองเรียบร้อยแล้ว'
     });

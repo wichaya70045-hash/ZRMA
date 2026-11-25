@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const room = searchParams.get('room') || 'global';
-    const messages = getChatMessages(room);
+    const messages = await getChatMessages(room);
 
     return NextResponse.json({ messages });
   } catch (err: any) {
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
 
     const id = crypto.randomUUID();
     const token = edit_token || crypto.randomBytes(12).toString('hex');
-    const message = sendChatMessage({
+    const message = await sendChatMessage({
       id,
       room_id,
       content: content.trim(),
@@ -80,7 +80,7 @@ export async function PUT(req: NextRequest) {
 
     const sessionUser = await getSessionUser(req);
 
-    const result = updateChatMessage(id, {
+    const result = await updateChatMessage(id, {
       content: content.trim(),
       author_alias,
       edit_token,
@@ -122,7 +122,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     const sessionUser = await getSessionUser(req);
-    const result = deleteChatMessage(id, author_alias, edit_token || undefined, sessionUser?.id || null);
+    const result = await deleteChatMessage(id, author_alias, edit_token || undefined, sessionUser?.id || null);
     if (!result.success) {
       return NextResponse.json({ error: result.error || 'ไม่สามารถลบข้อความได้' }, { status: 403 });
     }
